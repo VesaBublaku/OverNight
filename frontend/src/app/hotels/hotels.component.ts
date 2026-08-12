@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-hotels',
   standalone: true,
-  imports: [CommonModule, Header, Footer],
+  imports: [CommonModule, Header, Footer, RouterModule],
   templateUrl: './hotels.component.html',
   styleUrls: ['./hotels.component.css']
 })
