@@ -1,0 +1,183 @@
+<app-header></app-header>
+
+<!-- Hero Section -->
+<section class="relative w-full h-[500px] md:h-[600px] overflow-hidden flex flex-col justify-end">
+  <!-- Background Image -->
+  <div class="absolute inset-0 z-0">
+    <img [src]="room.image" class="w-full h-full object-cover" />
+  </div>
+  
+  <!-- Gradient Overlays -->
+  <div class="absolute inset-0 z-10 bg-black/30"></div>
+  <div class="absolute inset-0 z-10 bg-gradient-to-t from-[#FAF8F5] via-black/40 to-transparent"></div>
+  
+  <!-- Top Navigation (Absolute) -->
+  <div class="absolute top-8 left-4 right-4 sm:left-8 sm:right-8 z-20 flex items-center justify-between">
+    <a routerLink="/room" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">
+      &larr; Back
+    </a>
+    <a routerLink="/hotel-details" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">
+      View Hotel
+    </a>
+  </div>
+
+  <!-- Hero Content -->
+  <div class="relative z-20 max-w-[85rem] mx-auto w-full px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="max-w-4xl">
+      <!-- Location Label -->
+      <div class="text-[10px] font-semibold text-white/80 tracking-[0.3em] uppercase mb-3 drop-shadow-md">
+        {{room.city}} &bull; {{room.hotelName}}
+      </div>
+      
+      <!-- Title -->
+      <h1 class="text-5xl md:text-6xl font-serif text-white mb-6 drop-shadow-lg">Room #{{room.number}}</h1>
+      
+      <!-- Badges -->
+      <div class="flex flex-wrap items-center gap-3 mb-4">
+        <span class="inline-flex items-center bg-black/60 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full text-[11px] font-semibold tracking-[0.05em]">
+          {{room.price}} / night
+        </span>
+        <span class="inline-flex items-center bg-black/60 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full text-[11px] font-semibold tracking-[0.05em]">
+          Capacity {{room.capacity}}
+        </span>
+        <span *ngIf="room.extendable" class="inline-flex items-center bg-[#464132]/80 backdrop-blur-md border border-[#7A6A4E]/50 text-white px-4 py-2 rounded-full text-[11px] font-semibold tracking-[0.05em]">
+          Extendable stay
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Details Section -->
+<section class="bg-[#FAF8F5] pt-12 pb-24 px-4 min-h-screen">
+  <div class="max-w-[70rem] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left Column (Overview & Room Details) -->
+    <div class="lg:col-span-8 flex flex-col gap-8">
+      
+      <!-- Overview Card -->
+      <div class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-5">Overview</div>
+        <p class="text-gray-500 text-sm font-light leading-relaxed">
+          A refined space in {{room.hotelName}} — {{room.city}}. Designed for quiet comfort and effortless rest, this room offers a balanced atmosphere that feels welcoming from the moment you arrive. With flexible extension options for longer stays. Natural light, clean finishes, and a carefully arranged layout create a space that is both practical and relaxing. Enjoy WiFi, AC, Premium bedding, Smart TV, along with a polished environment that feels premium without being overstated — ideal for both short visits and extended stays.
+        </p>
+      </div>
+      
+      <!-- Room Details Card -->
+      <div class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
+        <div class="flex items-center justify-between mb-8">
+          <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase">Room Details</div>
+          <a routerLink="/hotel-details" class="text-[9px] font-semibold text-gray-500 hover:text-gray-900 tracking-[0.2em] uppercase transition-colors">
+            View Hotel &rarr;
+          </a>
+        </div>
+        
+        <!-- Location & Stay Grids -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="border border-gray-100 rounded-2xl p-6">
+            <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Location</div>
+            <ul class="space-y-3 text-sm text-gray-500 font-light">
+              <li>Hotel: <span class="text-gray-900 font-medium">{{room.hotelName}}</span></li>
+              <li>City: <span class="text-gray-900 font-medium">{{room.city}}</span></li>
+              <li>Room: <span class="text-gray-900 font-medium">#{{room.number}}</span></li>
+            </ul>
+          </div>
+          <div class="border border-gray-100 rounded-2xl p-6">
+            <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Stay</div>
+            <ul class="space-y-3 text-sm text-gray-500 font-light">
+              <li>Price: <span class="text-gray-900 font-medium">{{room.price}} / night</span></li>
+              <li>Capacity: <span class="text-gray-900 font-medium">{{room.capacity}}</span></li>
+              <li>Extendable: <span class="text-gray-900 font-medium">{{room.extendable ? 'Yes' : 'No'}}</span></li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Condition Note -->
+        <div class="bg-[#FAF5EF] rounded-2xl p-6 border border-[#E8E3DB] mb-8">
+          <div class="text-[9px] font-semibold text-gray-500 tracking-[0.3em] uppercase mb-2">Condition Note</div>
+          <p class="text-sm text-gray-700 font-light">Lamp flickers occasionally</p>
+        </div>
+        
+        <!-- Amenities -->
+        <div class="mb-8">
+          <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Amenities</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-gray-50 border border-gray-100 text-gray-500 px-4 py-2 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">WiFi</span>
+            <span class="bg-gray-50 border border-gray-100 text-gray-500 px-4 py-2 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">AC</span>
+            <span class="bg-gray-50 border border-gray-100 text-gray-500 px-4 py-2 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Premium Bedding</span>
+            <span class="bg-gray-50 border border-gray-100 text-gray-500 px-4 py-2 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Smart TV</span>
+          </div>
+        </div>
+        
+        <!-- Check-in & Policies -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="border border-gray-100 rounded-2xl p-6">
+            <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Check-in</div>
+            <p class="text-sm text-gray-500 font-light leading-relaxed">
+              Standard check-in is typically mid-afternoon. Exact times can be confirmed at the front desk.
+            </p>
+          </div>
+          <div class="border border-gray-100 rounded-2xl p-6">
+            <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Policies</div>
+            <p class="text-sm text-gray-500 font-light leading-relaxed">
+              Cancellation windows and special rules can be added later — your booking flow is ready.
+            </p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Right Column (At a Glance / Book Card) -->
+    <div class="lg:col-span-4 sticky top-8">
+      <div class="bg-white rounded-[2rem] p-8 shadow-[0_4px_24px_rgb(0,0,0,0.04)] border border-gray-50">
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">At a Glance</div>
+        
+        <div class="text-3xl font-serif text-gray-900 mb-4">
+          {{room.price}} <span class="text-sm font-light text-gray-400">/ night</span>
+        </div>
+        
+        <p class="text-sm text-gray-500 font-light mb-6">
+          Book this room as a guest. You'll pick your dates on the booking page.
+        </p>
+        
+        <!-- Specs Table -->
+        <div class="border border-gray-100 rounded-2xl overflow-hidden mb-6">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <span class="text-[10px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Capacity</span>
+            <span class="text-sm text-gray-900 font-medium">{{room.capacity}}</span>
+          </div>
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <span class="text-[10px] font-semibold text-gray-400 tracking-[0.15em] uppercase">Extendable</span>
+            <span class="text-sm text-gray-900 font-medium">{{room.extendable ? 'Yes' : 'No'}}</span>
+          </div>
+          <div class="flex items-center justify-between p-4">
+            <span class="text-[10px] font-semibold text-gray-400 tracking-[0.15em] uppercase">City</span>
+            <span class="text-sm text-gray-900 font-medium">{{room.city}}</span>
+          </div>
+        </div>
+        
+        <!-- Notice -->
+        <div class="bg-[#FAF5EF] border border-[#E8E3DB] rounded-xl p-4 mb-6 text-sm text-gray-700 font-light">
+          Payment is handled at the front desk.
+        </div>
+        
+        <!-- Action Button -->
+        <a routerLink="/booking" class="block text-center w-full bg-[#D9BE84] hover:bg-[#C2AA76] text-black px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm mb-4">
+          Book This Room
+        </a>
+        
+        <p class="text-xs text-gray-400 font-light mb-8">
+          No account required.
+        </p>
+        
+        <a routerLink="/room" class="text-[9px] font-semibold text-gray-500 hover:text-gray-900 tracking-[0.15em] uppercase transition-colors flex items-center gap-2">
+          Back to Search &larr;
+        </a>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<app-footer></app-footer>

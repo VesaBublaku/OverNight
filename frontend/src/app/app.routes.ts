@@ -6,6 +6,8 @@ import {Footer} from './footer/footer';
 import {Room} from './room/room';
 import {HotelsComponent} from './hotels/hotels.component';
 import {HotelDetailsComponent} from './hotel-details/hotel-details.component';
+import {RoomDetailsComponent} from './room-details/room-details.component';
+import {BookingComponent} from './booking/booking.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,4 +17,6 @@ export const routes: Routes = [
   { path: 'header', component: Header },
   { path: 'footer', component: Footer },
   { path: 'room', component: Room },
+  { path: 'room-details', component: RoomDetailsComponent},
+  { path: 'booking', component: BookingComponent },
 ];
