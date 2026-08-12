@@ -1,0 +1,126 @@
+<app-header></app-header>
+
+<div class="bg-white min-h-screen pt-12 pb-24">
+  <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Top Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-gray-200 pb-8">
+      <div>
+        <div class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.3em] uppercase mb-4">Search Rooms</div>
+        <h1 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">Find your next stay.</h1>
+        <p class="text-gray-500 text-sm font-light max-w-xl">Filter by city, capacity, price, amenities — then book in minutes. Clean, calm, and built for browsing.</p>
+
+        <div class="mt-6 inline-flex items-center bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-xs text-gray-600">
+          Results: ...
+        </div>
+      </div>
+
+      <div class="flex flex-col items-end mt-6 md:mt-0">
+        <div class="bg-[#FAF5EF] rounded-xl p-4 w-64 mb-4 border border-[#E8E3DB]">
+          <div class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-2">Sort By</div>
+          <select class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-[#BCA47B] cursor-pointer">
+            <option>Featured</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+          </select>
+        </div>
+        <button class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase hover:text-gray-900 transition-colors mr-2">Reset Filters</button>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="flex flex-col lg:flex-row gap-8">
+
+      <!-- Sidebar Filters -->
+      <div class="w-full lg:w-[320px] flex-shrink-0">
+        <div class="bg-[#FAF8F5] rounded-3xl p-8 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
+          <div class="mb-8">
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-2">Filters</div>
+            <p class="text-gray-500 text-sm font-light">Refine results with a calm, precise search.</p>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
+            <input type="text" placeholder="Ottawa" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Min Guests</label>
+              <input type="number" placeholder="1" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Max Price</label>
+              <input type="number" placeholder="250" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Amenity Contains</label>
+            <input type="text" placeholder="WiFi, AC, balcony..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+          </div>
+
+          <div class="bg-[#FAF5EF] rounded-xl p-4 flex items-center justify-between mb-8 border border-[#E8E3DB]">
+            <div>
+              <div class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1">Extendable Only</div>
+              <div class="text-[10px] text-gray-400 font-light">Show rooms you can extend.</div>
+            </div>
+            <input type="checkbox" class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900" />
+          </div>
+
+          <div class="flex items-center gap-3 mb-8">
+            <button class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Apply</button>
+            <button class="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Reset</button>
+          </div>
+
+          <div class="bg-[#111827] text-white rounded-2xl p-6">
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">Tip</div>
+            <p class="text-xs font-light leading-relaxed text-gray-300">Start broad, then tighten price & amenities. The best stays hide in the middle.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Cards Grid -->
+      <div class="flex-1">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div *ngFor="let room of rooms" class="bg-[#FAF8F5] rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.03)] overflow-hidden border border-gray-50">
+            <!-- Image Area with badges -->
+            <div class="relative h-72 w-full">
+              <img [src]="room.image" class="w-full h-full object-cover" />
+              <!-- Gradient Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+              <!-- Badges -->
+              <div class="absolute top-4 left-4">
+                <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[11px] font-semibold tracking-wider px-3.5 py-1.5 rounded-full">{{room.price}} / night</span>
+              </div>
+
+              <!-- Content over image -->
+              <div class="absolute bottom-5 left-5 right-5">
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">{{room.city}}</span>
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Room #{{room.roomNumber}}</span>
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Capacity {{room.capacity}}</span>
+                  <span *ngIf="room.extendable" class="bg-[#464132]/60 backdrop-blur-md border border-[#7A6A4E]/30 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Extendable</span>
+                </div>
+                <h3 class="text-2xl font-serif text-white mb-1.5 drop-shadow-md">{{room.title}}</h3>
+                <p class="text-gray-300 text-xs font-light">Amenities: {{room.amenities}}</p>
+              </div>
+            </div>
+
+            <!-- Bottom Action Area -->
+            <div class="px-6 py-5 flex items-center justify-between bg-[#FAF8F5]">
+              <span class="text-[13px] text-gray-500 font-light">Flexible stay options available</span>
+              <button class="bg-white hover:bg-gray-50 text-gray-900 px-5 py-2.5 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-2 shadow-sm">
+                View <span class="text-[#BCA47B] font-bold">&rarr;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
