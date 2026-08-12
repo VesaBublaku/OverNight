@@ -1,0 +1,241 @@
+<app-header></app-header>
+
+<section class="relative h-[85vh] min-h-[700px] flex items-center overflow-hidden">
+  <div class="absolute inset-0 w-full h-full">
+    <img src="https://images.unsplash.com/photo-1542314831-c6a4d14d8c85?auto=format&fit=crop&w=1920&q=80" alt="Luxury Resort" class="w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-black/50"></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="flex items-center justify-between mb-8 pt-4">
+      <button class="md:hidden text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </nav>
+
+    <div class="flex flex-col items-center text-center">
+      <!-- Tagline -->
+      <div class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.2em] uppercase mb-3">
+        OVERNIGHT STAYS • EFFORTLESS BOOKING
+      </div>
+
+      <h4 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-light leading-tight md:leading-[1.15] mb-4 max-w-4xl">
+        Find a room that feels like it <span class="font-serif italic text-[#BCA47B]">was made for you.</span>
+      </h4>
+
+      <p class="text-white/80 text-sm md:text-base font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+        Explore elegant hotels, premium amenities, and a booking experience designed to be calm, polished, and beautiful.
+      </p>
+
+      <div class="w-full max-w-4xl mx-auto bg-white/5 backdrop-blur-lg rounded-3xl p-5 border border-white/10 shadow-2xl">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+          <!-- City -->
+          <div class="relative">
+            <label class="block text-[9px] font-semibold text-white/60 uppercase tracking-[0.15em] mb-2 text-left">City</label>
+            <div class="bg-white/10 hover:bg-white/15 transition-all rounded-xl px-4 py-2.5 border border-white/5">
+              <input type="text" placeholder="Ottawa" class="w-full bg-transparent text-white text-sm font-light focus:outline-none placeholder:text-white/40" />
+            </div>
+          </div>
+
+          <!-- Check-in -->
+          <div class="relative">
+            <label class="block text-[9px] font-semibold text-white/60 uppercase tracking-[0.15em] mb-2 text-left">Check-in</label>
+            <div class="bg-white/10 hover:bg-white/15 transition-all rounded-xl px-4 py-2.5 border border-white/5 flex items-center justify-between cursor-pointer">
+              <input type="text" placeholder="mm/dd/yyyy" class="w-full bg-transparent text-white text-sm font-light focus:outline-none placeholder:text-white/40 pointer-events-none" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white/40 flex-shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            </div>
+          </div>
+
+          <!-- Check-out -->
+          <div class="relative">
+            <label class="block text-[9px] font-semibold text-white/60 uppercase tracking-[0.15em] mb-2 text-left">Check-out</label>
+            <div class="bg-white/10 hover:bg-white/15 transition-all rounded-xl px-4 py-2.5 border border-white/5 flex items-center justify-between cursor-pointer">
+              <input type="text" placeholder="mm/dd/yyyy" class="w-full bg-transparent text-white text-sm font-light focus:outline-none placeholder:text-white/40 pointer-events-none" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white/40 flex-shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            </div>
+          </div>
+
+          <!-- Guests -->
+          <div class="relative">
+            <label class="block text-[9px] font-semibold text-white/60 uppercase tracking-[0.15em] mb-2 text-left">Guests</label>
+            <div class="bg-white/10 hover:bg-white/15 transition-all rounded-xl px-4 py-2.5 border border-white/5 flex items-center justify-between cursor-pointer">
+              <span class="text-white text-sm font-light">2</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white/40 flex-shrink-0"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: Hint + Search Button -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-5 pt-3 border-t border-white/5">
+          <p class="text-white/50 text-[10px] font-light tracking-wide mb-4 sm:mb-0">
+            Filter by price, amenities, and extendable rooms on the results page.
+          </p>
+          <button class="bg-[#BCA47B] hover:bg-[#A98D65] text-gray-900 px-8 py-2.5 rounded-full text-[10px] font-semibold tracking-[0.2em] uppercase transition-all shadow-lg hover:shadow-xl active:scale-95 w-full sm:w-auto">
+            Search Rooms
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature Pills - Centered -->
+      <div class="flex flex-wrap justify-center gap-3 mt-6">
+        <div class="px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-white/80 text-[10px] font-light transition-all hover:bg-white/10 hover:scale-105 cursor-pointer">
+          Boutique hotels
+        </div>
+        <div class="px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-white/80 text-[10px] font-light transition-all hover:bg-white/10 hover:scale-105 cursor-pointer">
+          Premium amenities
+        </div>
+        <div class="px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-white/80 text-[10px] font-light transition-all hover:bg-white/10 hover:scale-105 cursor-pointer">
+          Elegant booking flow
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Elegance Section -->
+<section class="py-24 bg-[#FAF8F5]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+      <div>
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-4">Refined Experience</div>
+        <h2 class="text-4xl md:text-5xl font-serif text-gray-900 mb-6">Elegance in every detail.</h2>
+        <p class="text-gray-600 text-sm font-light leading-relaxed mb-8 max-w-md">
+          LuxStay is designed like a boutique brand: quiet luxury, soft tones, refined typography, and an interface that feels calm — even when it's handling serious hotel operations behind the scenes.
+        </p>
+        <ul class="space-y-4 mb-10 text-gray-600 font-light text-sm">
+          <li class="flex items-center gap-2">
+            <span class="w-1 h-1 bg-gray-500 rounded-full"></span> Seamless room discovery and booking flow
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1 h-1 bg-gray-500 rounded-full"></span> Clean hotel & chain browsing for guests
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="w-1 h-1 bg-gray-500 rounded-full"></span> Built to scale into customer & admin dashboards later
+          </li>
+        </ul>
+        <button class="bg-[#DFCA9F] hover:bg-[#D4B78F] text-gray-900 px-8 py-3 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">
+          View Hotel Chains
+        </button>
+      </div>
+      <div>
+        <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1000&q=80" alt="Elegant Interior" class="w-full h-auto rounded-3xl shadow-xl" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section class="py-24 bg-white border-t border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-4">Luxury Features</div>
+      <h2 class="text-4xl md:text-5xl font-serif text-gray-900 mb-4">What LuxStay does best</h2>
+      <p class="text-gray-500 font-light text-sm">Simple, refined, and built for real-world workflows.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_24px_rgb(0,0,0,0.03)] transition-transform hover:-translate-y-1">
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-6">Feature</div>
+        <h3 class="text-[28px] font-serif text-gray-900 mb-4">Central Discovery</h3>
+        <p class="text-gray-500 text-sm font-light leading-relaxed">Search rooms by city, dates, capacity, price, and amenities — with elegant filtering.</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_24px_rgb(0,0,0,0.03)] transition-transform hover:-translate-y-1">
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-6">Feature</div>
+        <h3 class="text-[28px] font-serif text-gray-900 mb-4">Hotel Details</h3>
+        <p class="text-gray-500 text-sm font-light leading-relaxed">Each hotel page highlights the brand, location, and context behind the stay.</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_24px_rgb(0,0,0,0.03)] transition-transform hover:-translate-y-1">
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-6">Feature</div>
+        <h3 class="text-[28px] font-serif text-gray-900 mb-4">Fast Guest Booking</h3>
+        <p class="text-gray-500 text-sm font-light leading-relaxed">Book without login — the system creates your customer profile automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Grid -->
+<section class="py-24 bg-[#FAF8F5]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-4">Testimonials</div>
+      <h2 class="text-4xl md:text-5xl font-serif text-gray-900 mb-4">What our clients say</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+      <div class="bg-white rounded-3xl p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50/50">
+        <p class="text-gray-600 text-sm italic font-light leading-relaxed mb-6">
+          "This system transformed the way we operate across multiple locations. Intuitive, elegant, dependable."
+        </p>
+        <div class="text-gray-900 text-sm font-semibold mb-1">Olivia Marceau</div>
+        <div class="text-gray-400 text-xs font-light tracking-wide">Operations Director, Aurum Hotels</div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50/50">
+        <p class="text-gray-600 text-sm italic font-light leading-relaxed mb-6">
+          "Exceptional design meets powerful features. Our team adapted instantly — the experience feels premium."
+        </p>
+        <div class="text-gray-900 text-sm font-semibold mb-1">Thomas Greene</div>
+        <div class="text-gray-400 text-xs font-light tracking-wide">General Manager, Grand Crest</div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50/50">
+        <p class="text-gray-600 text-sm italic font-light leading-relaxed mb-6">
+          "Clients love the calm booking flow, and our staff love how clean everything feels to manage."
+        </p>
+        <div class="text-gray-900 text-sm font-semibold mb-1">Aisha Rahman</div>
+        <div class="text-gray-400 text-xs font-light tracking-wide">Concierge Lead, Golden Sands</div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50/50">
+        <p class="text-gray-600 text-sm italic font-light leading-relaxed mb-6">
+          "A premium tool for premium service. LuxStay really delivers — the UI feels like a luxury brand."
+        </p>
+        <div class="text-gray-900 text-sm font-semibold mb-1">Carlos Mendez</div>
+        <div class="text-gray-400 text-xs font-light tracking-wide">Director of Guest Experience</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Beautiful Spaces -->
+<section class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-serif text-gray-900 mb-4">Our beautiful spaces</h2>
+      <p class="text-gray-500 font-light text-sm">A taste of the atmosphere LuxStay represents.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="h-96 rounded-[2rem] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" alt="Space 1" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+      </div>
+      <div class="h-96 rounded-[2rem] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&q=80" alt="Space 2" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+      </div>
+      <div class="h-96 rounded-[2rem] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80" alt="Space 3" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== READY SECTION ===== -->
+<section class="bg-[#FAF8F5] py-16 px-4">
+  <div class="max-w-5xl mx-auto bg-white rounded-2xl px-10 md:px-14 py-10 shadow-[0_2px_16px_rgb(0,0,0,0.04)]">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <div class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.3em] uppercase mb-3">Ready</div>
+        <h2 class="text-3xl md:text-[2.5rem] font-serif text-gray-900 leading-tight mb-2">Experience elegance in every stay.</h2>
+        <p class="text-gray-400 text-sm font-light">Start by searching rooms in your city — the rest is designed to feel effortless.</p>
+      </div>
+      <div class="flex-shrink-0">
+        <a href="#" class="inline-block bg-[#111827] hover:bg-black text-white px-8 py-3.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Find a Room</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>
+
+<router-outlet></router-outlet>

@@ -1,0 +1,33 @@
+<app-header></app-header>
+
+<section class="py-20 bg-[#FAF8F5]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+      <div>
+        <div class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.3em] uppercase mb-4">Hotel Chains</div>
+        <h2 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">Explore iconic brands</h2>
+        <p class="text-gray-400 text-sm font-light max-w-md leading-relaxed">Discover world-class hotel groups and explore their curated portfolios of luxury and comfort.</p>
+      </div>
+      <div class="flex-shrink-0 w-full md:w-64">
+        <input type="text" placeholder="Search brands..." class="w-full bg-[#F5F1EB] border border-[#E8E3DB] rounded-xl px-5 py-3 text-sm text-gray-700 font-light placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div *ngFor="let chain of chains" class="bg-white rounded-[1.25rem] shadow-[0_4px_24px_rgb(0,0,0,0.04)] overflow-hidden">
+        <!-- Logo Area -->
+        <div class="bg-[#FAF5EF] flex items-center justify-center h-48">
+          <img [src]="chain.image" [alt]="chain.name + ' logo'" class="h-20 w-auto object-contain" />
+        </div>
+        <!-- Info Area -->
+        <div class="px-7 pt-6 pb-7">
+          <h3 class="text-xl font-serif text-gray-900 mb-1">{{chain.name}}</h3>
+          <p class="text-gray-400 text-sm font-light mb-5">Hotels in this chain: <span class="font-semibold text-gray-600">{{chain.hotels}}</span></p>
+          <button class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">View Hotels</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>
