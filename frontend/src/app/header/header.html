@@ -1,22 +1,35 @@
 <nav class="w-full bg-white border-b border-gray-100 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-20">
-      <a routerLink="/home" class="flex items-baseline gap-2 cursor-pointer">
-        <span class="text-gray-900 text-[32px] font-serif tracking-tight">LuxStay</span>
+      <a routerLink="/" class="flex items-baseline gap-2 cursor-pointer">
+        <span class="text-gray-900 text-[32px] font-serif tracking-tight">OverNight</span>
         <span class="text-gray-400 text-[10px] font-semibold tracking-[0.2em] uppercase">Hotels</span>
       </a>
+
       <div class="hidden md:flex items-center space-x-10">
         <a routerLink="/chains" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">View Hotel Chains</a>
         <a routerLink="/hotels" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Explore Hotels</a>
         <a routerLink="/room" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Find a Room</a>
-        <a routerLink="/hotel-details" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Hotel Details</a>
-        <a routerLink="/room-details" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Room Details</a>
-        <a routerLink="/booking" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Booking</a>
+        <a routerLink="/room-details" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">View Room</a>
+        <a routerLink="/hotel-details" class="text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">View Hotel</a>
       </div>
-      <div class="flex items-center space-x-6">
-        <button class="hidden md:block text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Search</button>
-        <button class="bg-[#111827] hover:bg-black text-white px-8 py-3 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Book Now</button>
+
+      <div class="flex items-center gap-4">
+        <a routerLink="/reservations" class="hidden md:inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">
+          My Stays
+        </a>
+
+        <a routerLink="/profile" class="w-9 h-9 rounded-full bg-[#FAF5EF] border border-[#E8E3DB] flex items-center justify-center hover:bg-[#F0E6D4] transition-colors cursor-pointer" title="My Profile">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#BCA47B]" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+          </svg>
+        </a>
+
+        <a routerLink="/booking" class="bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">
+          Book Now
+        </a>
       </div>
     </div>
   </div>
 </nav>
+
