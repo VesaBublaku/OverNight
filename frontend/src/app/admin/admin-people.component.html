@@ -1,6 +1,3 @@
-<!-- ======================================================
-     ADMIN: Staff & Customers Management
-     ====================================================== -->
 <div class="min-h-screen bg-[#FAF8F5]">
 
   <!-- Top Bar -->
@@ -22,14 +19,12 @@
 
   <div class="p-8">
 
-    <!-- Page Header -->
     <div class="mb-8 flex items-end justify-between">
       <div>
         <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">Management</div>
         <h1 class="text-4xl font-serif text-gray-900 mb-2">Staff & Customers</h1>
         <p class="text-gray-500 text-sm font-light">Manage customer records and hotel staff across all properties.</p>
       </div>
-      <!-- Tabs -->
       <div class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
         <button (click)="activeTab='customers'" [class.bg-[#111827]]="activeTab==='customers'" [class.text-white]="activeTab==='customers'" [class.text-gray-500]="activeTab!=='customers'"
           class="px-5 py-2 rounded-lg text-[10px] font-semibold tracking-[0.15em] uppercase transition-all">
@@ -54,7 +49,6 @@
         </button>
       </div>
 
-      <!-- Customers Table -->
       <div class="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.03)]">
         <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase bg-[#FAF8F5]">
           <div class="col-span-3">Customer</div>
@@ -67,7 +61,6 @@
 
         <div *ngFor="let c of filteredCustomers; let last = last" [class.border-b]="!last" class="border-gray-100">
           <div class="grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-[#FAF8F5] transition-colors group">
-            <!-- Name + Email -->
             <div class="col-span-3 flex items-center gap-3">
               <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#D9BE84]/40 to-[#BCA47B]/40 flex items-center justify-center shrink-0 border border-[#D9BE84]/20">
                 <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.name.charAt(0)}}</span>
@@ -105,7 +98,6 @@
 
     <!-- ===== STAFF TAB ===== -->
     <div *ngIf="activeTab === 'staff'">
-      <!-- Stats row -->
       <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_2px_8px_rgb(0,0,0,0.03)]">
           <div class="text-[9px] font-semibold text-gray-400 tracking-[0.25em] uppercase mb-2">Total Staff</div>
@@ -121,7 +113,6 @@
         </div>
       </div>
 
-      <!-- Search + Add -->
       <div class="flex items-center gap-4 mb-6">
         <input [(ngModel)]="staffSearch" type="text" placeholder="Search by name, role or hotel…"
           class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors shadow-sm" />
@@ -131,10 +122,8 @@
         </button>
       </div>
 
-      <!-- Staff Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div *ngFor="let s of filteredStaff" class="bg-white border border-gray-100 rounded-[1.5rem] p-6 hover:border-[#E8E3DB] hover:shadow-[0_4px_24px_rgb(0,0,0,0.05)] transition-all group flex gap-5 items-start shadow-[0_2px_8px_rgb(0,0,0,0.03)]">
-          <!-- Avatar -->
           <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#D9BE84] to-[#BCA47B] flex items-center justify-center shrink-0 border border-white">
             <span class="text-white text-base font-serif font-bold">{{s.name.charAt(0)}}</span>
           </div>
@@ -274,7 +263,7 @@
   </div>
 </div>
 
-<!-- ===== DELETE CONFIRM ===== -->
+
 <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showDeleteConfirm=false"></div>
   <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-sm shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 text-center">

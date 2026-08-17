@@ -15,6 +15,11 @@ import { AdminShellComponent } from './admin/admin-shell.component';
 import { AdminHotelsComponent } from './admin/admin-hotels.component';
 import { AdminPeopleComponent } from './admin/admin-people.component';
 import { adminGuard } from './admin/admin.guard';
+import {StaffLoginComponent} from './staff/staff-login.component';
+import {StaffShellComponent} from './staff/staff-shell.component';
+import {StaffDashboardComponent} from './staff/staff';
+import {staffGuard} from './staff/staff.guard';
+import {StaffPaymentsComponent} from './staff/staff-payments';
 
 export const routes: Routes = [
   // ── Public ──────────────────────────────────────
@@ -40,6 +45,20 @@ export const routes: Routes = [
       { path: '',        redirectTo: 'hotels', pathMatch: 'full' },
       { path: 'hotels',  component: AdminHotelsComponent },
       { path: 'people',  component: AdminPeopleComponent },
+    ]
+  },
+
+
+  // ── Staff ────────────────────────────────────────
+  { path: 'staff-login', component: StaffLoginComponent },
+  {
+    path: 'staff',
+    component: StaffShellComponent,
+    canActivate: [staffGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: StaffDashboardComponent },
+      { path: 'payments', component: StaffPaymentsComponent },
     ]
   },
 ];
