@@ -2,12 +2,14 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {Footer} from '../footer/footer';
 import {Header} from '../header/header';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-room',
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     Footer,
     Header
   ],

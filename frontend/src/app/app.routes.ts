@@ -20,6 +20,8 @@ import {StaffShellComponent} from './staff/staff-shell.component';
 import {StaffDashboardComponent} from './staff/staff';
 import {staffGuard} from './staff/staff.guard';
 import {StaffPaymentsComponent} from './staff/staff-payments';
+import {UserLoginComponent} from './log-in/log-in';
+import {UserSignupComponent} from './signup/signup';
 
 export const routes: Routes = [
   // ── Public ──────────────────────────────────────
@@ -32,6 +34,8 @@ export const routes: Routes = [
   { path: 'booking', component: BookingComponent },
   { path: 'reservations', component: ReservationsComponent },
   { path: 'profile', component: ProfileComponent },
+  { path: 'login', component: UserLoginComponent },
+  { path: 'signup', component: UserSignupComponent },
   { path: 'header', component: Header },
   { path: 'footer', component: Footer },
 
