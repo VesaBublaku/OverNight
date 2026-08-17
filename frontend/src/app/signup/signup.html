@@ -1,0 +1,92 @@
+<div class="min-h-screen bg-[#FAF8F5] flex items-center justify-center px-4 py-8">
+  <div class="w-full max-w-md">
+    
+    <div class="text-center mb-10">
+      <a routerLink="/" class="inline-flex items-baseline gap-2">
+        <span class="text-gray-900 text-[32px] font-serif tracking-tight">LuxStay</span>
+        <span class="text-gray-400 text-[10px] font-semibold tracking-[0.2em] uppercase">Guest</span>
+      </a>
+      <p class="text-gray-500 text-sm font-light mt-3">Create your account</p>
+    </div>
+
+    <div class="bg-white rounded-[2rem] p-10 shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-50">
+      <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Guest Portal</div>
+      <h1 class="text-3xl font-serif text-gray-900 mb-8">Sign Up</h1>
+
+      <div *ngIf="error" class="bg-red-50 border border-red-100 text-red-600 text-sm font-light rounded-xl px-4 py-3 mb-6">
+        {{error}}
+      </div>
+
+      <div *ngIf="successMessage" class="bg-emerald-50 border border-emerald-100 text-emerald-600 text-sm font-light rounded-xl px-4 py-3 mb-6">
+        {{successMessage}}
+      </div>
+
+      <form (ngSubmit)="signup()" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Full Name</label>
+          <input
+            [(ngModel)]="name"
+            name="name"
+            type="text"
+            placeholder="John Doe"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
+          <input
+            [(ngModel)]="email"
+            name="email"
+            type="email"
+            placeholder="you@email.com"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Password</label>
+          <input
+            [(ngModel)]="password"
+            name="password"
+            type="password"
+            placeholder="Min 6 characters"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+            required
+            minlength="6"
+          />
+          <p class="text-[10px] text-gray-400 mt-1">Password must be at least 6 characters</p>
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Confirm Password</label>
+          <input
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="Confirm your password"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+            required
+          />
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-[#111827] hover:bg-black text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">
+            Create Account
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-xs text-gray-400 font-light">
+          Already have an account?
+          <a routerLink="/user/login" class="text-[#BCA47B] hover:underline font-medium">Sign In</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="text-center mt-6">
+      <a routerLink="/" class="text-[10px] font-semibold text-gray-400 hover:text-gray-700 tracking-[0.15em] uppercase transition-colors">
+        &larr; Back to site
+      </a>
+    </div>
+  </div>
+</div>
