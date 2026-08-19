@@ -19,7 +19,7 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String emial;
+    private String email;
 
     @JsonIgnore
     @Column(name = "password_hash", nullable = false)
@@ -48,6 +48,9 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @PrePersist
     protected void onCreate() {
