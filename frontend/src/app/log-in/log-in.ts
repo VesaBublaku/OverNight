@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import {UserService} from '../services/user.service';
 
 @Component({
   selector: 'app-user-login',
@@ -15,7 +16,10 @@ export class UserLoginComponent {
   error = '';
   successMessage = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private userService: UserService,
+    private router: Router
+  ) {}
 
   login(): void {
     this.error = '';
@@ -26,25 +30,17 @@ export class UserLoginComponent {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-    const user = users.find((u: any) =>
-      u.email.toLowerCase() === this.email.toLowerCase() &&
-      u.password === this.password
-    );
-
-    if (user) {
-      localStorage.setItem('isUserLoggedIn', 'true');
-      localStorage.setItem('user_name', user.name);
-      localStorage.setItem('user_email', user.email);
-
-      this.successMessage = `Welcome back, ${user.name}!`;
-
-      setTimeout(() => {
-        this.router.navigate(['/']);
-      }, 1000);
-    } else {
-      this.error = 'Invalid email or password.';
-    }
+    this.userService.login(this.email, this.password).subscribe({
+      next: (response) => {
+        this.successMessage = 'Login successful! Redirecting...';
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Login error:', err);
+        this.error = err.error?.message || 'Invalid email or password.';
+      }
+    });
   }
 }

@@ -109,7 +109,7 @@ public class UserController {
         response.put("message", "User deactivated successfully");
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/exists/{email}")
     public ResponseEntity<Map<String, Boolean>> existsByEmail(@PathVariable String email) {
         Map<String, Boolean> response = new HashMap<>();
