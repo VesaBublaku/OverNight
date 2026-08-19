@@ -1,6 +1,7 @@
 package com.overnight.OverNight.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,6 +52,15 @@ public class User {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @JsonProperty
+    public void setPassword(String password) {
+        this.passwordHash = password;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 
     @PrePersist
     protected void onCreate() {

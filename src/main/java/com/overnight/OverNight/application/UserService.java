@@ -1,5 +1,6 @@
 package com.overnight.OverNight.application;
 
+import com.overnight.OverNight.config.JwtUtil;
 import com.overnight.OverNight.domain.User;
 import com.overnight.OverNight.infrastructure.UserRepo;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -16,33 +19,65 @@ public class UserService {
 
     private final UserRepo userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    @Transactional
-    public User login(String email, String password) {
+    public Map<String, Object> login(String email, String password) {
+        System.out.println("Email: " + email);
+        System.out.println("Password length: " + (password != null ? password.length() : 0));
+
         User user = userRepo.findByEmailAndDeletedAtIsNull(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> {
+                    System.out.println("User NOT found for email: " + email);
+                    return new RuntimeException("Invalid credentials");
+                });
 
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        System.out.println("User found: " + user.getEmail());
+        System.out.println("Stored hash: " + user.getPasswordHash());
+
+        boolean matches = passwordEncoder.matches(password, user.getPasswordHash());
+        System.out.println("🔬 Password matches: " + matches);
+
+        if (!matches) {
+            System.out.println("Password does NOT match!");
             throw new RuntimeException("Invalid credentials");
         }
 
         if (!user.getIsActive()) {
+            System.out.println("User is inactive!");
             throw new RuntimeException("Account is deactivated");
         }
 
-        return user;
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", user);
+
+        return response;
     }
 
     @Transactional
-    public User register(User user) {
+    public Map<String, Object> register(User user) {
         if (userRepo.existsByEmailAndDeletedAtIsNull(user.getEmail())) {
             throw new RuntimeException("Email already exists");
+        }
+
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            throw new RuntimeException("Password is required");
         }
 
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         user.setIsActive(true);
 
-        return userRepo.save(user);
+        User savedUser = userRepo.save(user);
+
+        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", savedUser);
+
+        return response;
     }
 
     @Transactional(readOnly = true)

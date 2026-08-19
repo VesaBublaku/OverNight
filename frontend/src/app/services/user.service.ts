@@ -5,7 +5,8 @@ import {Observable, tap} from 'rxjs';
 export interface User {
   id?: number;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
+  password?: string;
   firstName: string;
   lastName: string;
   phone?: string;
@@ -21,31 +22,22 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8080/api/users';
+  private apiUrl = 'http://localhost:8082/api/users';
 
   constructor(private http: HttpClient) {}
 
-  // ── Auth ──────────────────────────────────────────────
-  register(user: User): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/register`, user).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          localStorage.setItem('token', response.token);
-        }
-      })
-    );
+  register(user: User): Observable<any> {
+    console.log('📤 UserService.register called with:', user);
+    return this.http.post(`${this.apiUrl}/register`, user);
   }
 
-  login(email: string, password: string): Observable<User> {
-    const loginRequest = { email, passwordHash: password };
-    return this.http.post<User>(`${this.apiUrl}/login`, loginRequest).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response));
-        }
-      })
-    );
+  login(email: string, password: string): Observable<any> {
+    const loginRequest = {
+      email: email,
+      password: password
+    };
+    console.log('📤 UserService.login called with:', loginRequest);
+    return this.http.post(`${this.apiUrl}/login`, loginRequest);
   }
 
   logout(): void {

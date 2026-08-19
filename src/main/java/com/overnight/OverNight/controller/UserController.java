@@ -13,20 +13,30 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = {"http://localhost:4300", "http://localhost:4200"})  // ← Add this
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody User loginRequest) {
-        User user = userService.login(loginRequest.getEmail(), loginRequest.getPasswordHash());
-        return ResponseEntity.ok(user);
+    public ResponseEntity<Map<String, Object>> login(@RequestBody User loginRequest) {
+        System.out.println("📥 ===== LOGIN REQUEST =====");
+        System.out.println("Email: " + loginRequest.getEmail());
+        System.out.println("PasswordHash (from Angular): '" + loginRequest.getPasswordHash() + "'");
+        System.out.println("PasswordHash length: " + (loginRequest.getPasswordHash() != null ? loginRequest.getPasswordHash().length() : 0));
+
+        Map<String, Object> response = userService.login(
+                loginRequest.getEmail(),
+                loginRequest.getPasswordHash()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        return ResponseEntity.ok(userService.register(user));
+    public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
+        Map<String, Object> response = userService.register(user);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")

@@ -24,14 +24,22 @@ export class UserLoginComponent {
   login(): void {
     this.error = '';
     this.successMessage = '';
+    
+    const trimmedEmail = this.email.trim();
+    const trimmedPassword = this.password.trim();
 
-    if (!this.email || !this.password) {
+    if (!trimmedEmail || !trimmedPassword) {
       this.error = 'Please enter both email and password.';
       return;
     }
 
-    this.userService.login(this.email, this.password).subscribe({
+    console.log('📤 Login attempt:');
+    console.log('Email:', trimmedEmail);
+    console.log('Password length:', trimmedPassword.length);
+
+    this.userService.login(trimmedEmail, trimmedPassword).subscribe({
       next: (response) => {
+        console.log('Login success:', response);
         this.successMessage = 'Login successful! Redirecting...';
         setTimeout(() => {
           this.router.navigate(['/']);

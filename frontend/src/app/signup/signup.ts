@@ -13,10 +13,10 @@ import {UserService} from '../services/user.service';
 export class UserSignupComponent {
   name = '';
   email = '';
-  password = '';
-  confirmPassword = '';
   phone = '';
   address = '';
+  password = '';
+  confirmPassword = '';
   error = '';
   successMessage = '';
 
@@ -48,24 +48,29 @@ export class UserSignupComponent {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+
     const user = {
       email: this.email,
-      passwordHash: this.password,
+      password: this.password,
       firstName: firstName,
       lastName: lastName,
-      phone: this.phone,
-      address: this.address
+      phone: this.phone || '',
+      address: this.address || ''
     };
+
+    console.log('📤 Sending to backend:', user);
 
     this.userService.register(user).subscribe({
       next: (response) => {
+        console.log('Registration success:', response);
         this.successMessage = 'Account created successfully! Redirecting to login...';
         setTimeout(() => {
-          this.router.navigate(['/user/login']);
+          this.router.navigate(['/login']);
         }, 1500);
       },
       error: (err) => {
-        console.error('Registration error:', err);
+        console.error('Registration error details:', err);
+        console.error('Error body:', err.error);
         this.error = err.error?.message || 'Registration failed. Please try again.';
       }
     });
