@@ -24,7 +24,7 @@ export class UserLoginComponent {
   login(): void {
     this.error = '';
     this.successMessage = '';
-    
+
     const trimmedEmail = this.email.trim();
     const trimmedPassword = this.password.trim();
 
