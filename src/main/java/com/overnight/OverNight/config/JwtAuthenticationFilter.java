@@ -1,7 +1,9 @@
 package com.overnight.OverNight.config;
 
-import com.overnight.OverNight.infrastructure.UserRepo;
+import com.overnight.OverNight.domain.Staff;
 import com.overnight.OverNight.domain.User;
+import com.overnight.OverNight.infrastructure.StaffRepo;
+import com.overnight.OverNight.infrastructure.UserRepo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepo userRepo;
+    private final StaffRepo staffRepo;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -55,10 +58,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         null,
                                         Collections.emptyList()
                                 );
-
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         request.setAttribute("userId", userId);
                         SecurityContextHolder.getContext().setAuthentication(authToken);
+                    } else {
+                        Staff staff = staffRepo.findByEmailAndDeletedAtIsNull(email)
+                                .orElse(null);
+
+                        if (staff != null) {
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(
+                                            staff,
+                                            null,
+                                            Collections.emptyList()
+                                    );
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            request.setAttribute("userId", userId);
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        }
                     }
                 } catch (Exception e) {
                 }

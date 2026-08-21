@@ -135,7 +135,7 @@ public class StaffService {
     public List<Staff> getStaffByRole(String role) {
         return staffRepo.findByRole(role);
     }
-    
+
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return staffRepo.existsByEmailAndDeletedAtIsNull(email);
