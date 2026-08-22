@@ -30,7 +30,7 @@ public class StaffController {
     }
 
     @PostMapping("/register")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Staff staff) {
         System.out.println("📥 Staff registration for: " + staff.getEmail());
         Map<String, Object> response = staffService.register(staff);

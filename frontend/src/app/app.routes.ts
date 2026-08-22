@@ -54,7 +54,7 @@ export const routes: Routes = [
 
 
   // ── Staff ────────────────────────────────────────
-  { path: 'staff-login', component: StaffLoginComponent },
+  { path: 'staff/login', component: StaffLoginComponent },
   {
     path: 'staff',
     component: StaffShellComponent,

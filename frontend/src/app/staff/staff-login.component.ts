@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { StaffService } from '../services/staff.service';
 
 @Component({
   selector: 'app-staff-login',
@@ -33,11 +34,21 @@ import { Router, RouterModule } from '@angular/router';
           <div class="space-y-5">
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email / Username</label>
-              <input #username type="text" placeholder="staff@luxstay.com" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+              <input
+                #username
+                type="text"
+                placeholder="staff@luxstay.com"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Password</label>
-              <input #password type="password" placeholder="••••••••" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+              <input
+                #password
+                type="password"
+                placeholder="••••••••"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              />
             </div>
             <div class="pt-2">
               <button (click)="login(username.value, password.value)" class="w-full bg-[#111827] hover:bg-black text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">
@@ -53,12 +64,12 @@ import { Router, RouterModule } from '@angular/router';
             <div class="grid grid-cols-2 gap-2 mt-2 text-xs text-gray-600">
               <div class="text-center">
                 <span class="font-medium text-gray-700">Front Desk:</span>
-                <span class="block text-gray-500 text-[10px]">frontdesk@luxstay.com</span>
+                <span class="block text-gray-500 text-[10px]">frontdeskluxstay.com</span>
                 <span class="block text-gray-400 text-[9px]">password: staff123</span>
               </div>
               <div class="text-center">
                 <span class="font-medium text-gray-700">Manager:</span>
-                <span class="block text-gray-500 text-[10px]">manager@luxstay.com</span>
+                <span class="block text-gray-500 text-[10px]">managerluxstay.com</span>
                 <span class="block text-gray-400 text-[9px]">password: manager456</span>
               </div>
             </div>
@@ -82,47 +93,12 @@ export class StaffLoginComponent {
   error = '';
   successMessage = '';
 
-  private staffCredentials = [
-    {
-      email: 'frontdesk@luxstay.com',
-      password: 'staff123',
-      role: 'Front Desk',
-      name: 'Sarah Johnson',
-      hotel: 'Marriott Downtown'
-    },
-    {
-      email: 'manager@luxstay.com',
-      password: 'manager456',
-      role: 'Manager',
-      name: 'Michael Chen',
-      hotel: 'Hilton Garden Inn'
-    },
-    {
-      email: 'concierge@luxstay.com',
-      password: 'concierge789',
-      role: 'Concierge',
-      name: 'Emma Wilson',
-      hotel: 'The Ritz-Carlton'
-    },
-    {
-      email: 'housekeeping@luxstay.com',
-      password: 'clean123',
-      role: 'Housekeeping',
-      name: 'Maria Rodriguez',
-      hotel: 'Sheraton Hotel'
-    },
-    {
-      email: 'staff@luxstay.com',
-      password: 'staff123',
-      role: 'Staff',
-      name: 'Staff User',
-      hotel: 'LuxStay Hotel'
-    }
-  ];
+  constructor(
+    private staffService: StaffService,
+    private router: Router
+  ) {}
 
-  constructor(private router: Router) {}
-
-  login(email: string, password: string) {
+  login(email: string, password: string): void {
     this.error = '';
     this.successMessage = '';
 
@@ -131,35 +107,25 @@ export class StaffLoginComponent {
       return;
     }
 
-    const staff = this.staffCredentials.find(
-      s => s.email.toLowerCase() === email.toLowerCase() && s.password === password
-    );
+    console.log('📤 Staff login attempt:', { email });
 
-    if (staff) {
-      localStorage.setItem('overnight_role', 'staff');
-      localStorage.setItem('staff_name', staff.name);
-      localStorage.setItem('staff_role', staff.role);
-      localStorage.setItem('staff_hotel', staff.hotel);
-      localStorage.setItem('staff_email', staff.email);
-      localStorage.setItem('isLoggedIn', 'true');
-
-      this.successMessage = `Welcome back, ${staff.name}! Redirecting...`;
-
-      setTimeout(() => {
-        this.router.navigate(['/staff/dashboard']);
-      }, 1000);
-    } else {
-      this.error = 'Invalid credentials. Please check your email and password.';
-    }
+    this.staffService.login(email, password).subscribe({
+      next: (response) => {
+        console.log('Staff login success:', response);
+        this.successMessage = `Welcome back, ${response.staff.firstName}! Redirecting...`;
+        setTimeout(() => {
+          this.router.navigate(['/staff/dashboard']);
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Staff login error:', err);
+        this.error = err.error?.message || 'Invalid credentials. Please try again.';
+      }
+    });
   }
 
-  logout() {
-    localStorage.removeItem('overnight_role');
-    localStorage.removeItem('staff_name');
-    localStorage.removeItem('staff_role');
-    localStorage.removeItem('staff_hotel');
-    localStorage.removeItem('staff_email');
-    localStorage.removeItem('isLoggedIn');
+  logout(): void {
+    this.staffService.logout();
     this.router.navigate(['/staff/login']);
   }
 }
