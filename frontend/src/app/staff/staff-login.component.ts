@@ -107,7 +107,7 @@ export class StaffLoginComponent {
       return;
     }
 
-    console.log('📤 Staff login attempt:', { email });
+    console.log('Staff login attempt:', { email });
 
     this.staffService.login(email, password).subscribe({
       next: (response) => {
