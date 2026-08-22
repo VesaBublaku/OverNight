@@ -70,7 +70,7 @@ public class Room {
     public String getHotelName() {
         return hotel != null ? hotel.getName() : null;
     }
-    
+
     public String getRoomTitle() {
         return "Room #" + roomNumber + " - " + (hotel != null ? hotel.getName() : "");
     }
