@@ -50,13 +50,17 @@ public class Room {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "room_type_id")
+    private RoomType roomType;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "room_amenities",
+            name = "room_room_amenities",
             joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+            inverseJoinColumns = @JoinColumn(name = "room_amenity_id")
     )
-    private List<Amenity> amenities = new ArrayList<>();
+    private List<RoomAmenity> roomAmenities = new ArrayList<>();
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)

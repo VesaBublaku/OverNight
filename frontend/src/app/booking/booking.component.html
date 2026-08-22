@@ -6,11 +6,11 @@
   <div class="absolute inset-0 z-0">
     <img [src]="room.image" class="w-full h-full object-cover" />
   </div>
-  
+
   <!-- Gradient Overlays -->
   <div class="absolute inset-0 z-10 bg-black/40"></div>
   <div class="absolute inset-0 z-10 bg-gradient-to-t from-[#FAF8F5] via-black/50 to-transparent"></div>
-  
+
   <!-- Top Navigation (Absolute) -->
   <div class="absolute top-8 left-4 right-4 sm:left-8 sm:right-8 z-20 flex items-center justify-between">
     <a routerLink="/room-details" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">
@@ -27,7 +27,7 @@
     <div class="text-[9px] font-semibold text-white/80 tracking-[0.3em] uppercase mb-3 drop-shadow-md">
       Booking &bull; {{room.city}} &bull; {{room.hotelName}}
     </div>
-    
+
     <!-- Title -->
     <h1 class="text-4xl md:text-5xl font-serif text-white mb-4 drop-shadow-lg">Complete your reservation</h1>
     <p class="text-white/80 text-sm font-light max-w-2xl drop-shadow-md">
@@ -59,10 +59,10 @@
 <!-- Main Form Section -->
 <section class="bg-[#FAF8F5] pt-24 pb-24 px-4 min-h-screen">
   <div class="max-w-[70rem] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    
+
     <!-- Left Column (Forms) -->
     <div class="lg:col-span-8 flex flex-col gap-6">
-      
+
       <!-- STEP 1: Guest Details -->
       <div class="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
         <div class="flex items-center justify-between mb-8">
@@ -90,7 +90,7 @@
             <input type="email" placeholder="you@example.com" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400 mb-2" />
             <p class="text-xs text-gray-400 font-light">We use this (with your ID) to find-or-create your customer record.</p>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Date of Birth</label>
@@ -136,7 +136,7 @@
               <input type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
             </div>
           </div>
-          
+
           <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Notes (Optional)</label>
             <textarea placeholder="e.g., Late check-in requested" rows="4" class="w-full bg-[#FAF8F5] border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"></textarea>
@@ -159,7 +159,173 @@
             </ul>
           </div>
 
-          <!-- Confirm Button -->
+        </div>
+      </div>
+
+      <!-- ===== STEP 3: Payment ===== -->
+      <div class="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-2">Step 3</div>
+            <h2 class="text-2xl font-serif text-gray-900 mb-1">Payment</h2>
+            <p class="text-gray-500 text-sm font-light">Choose how you'd like to pay for your stay.</p>
+          </div>
+          <span class="bg-[#FAF5EF] text-gray-500 border border-[#E8E3DB] px-4 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">
+      Secure
+    </span>
+        </div>
+
+        <!-- Payment Option Toggle - Refined -->
+        <div class="grid grid-cols-2 gap-3 mb-8">
+          <button
+            class="py-3 px-4 rounded-xl text-sm font-light transition-all border"
+            [class.bg-[#FAF5EF]]="paymentMethod === 'online'"
+            [class.border-[#BCA47B]]="paymentMethod === 'online'"
+            [class.border-gray-200]="paymentMethod !== 'online'"
+            [class.text-gray-900]="paymentMethod === 'online'"
+            [class.text-gray-500]="paymentMethod !== 'online'"
+            (click)="paymentMethod = 'online'">
+            Pay Online
+          </button>
+          <button
+            class="py-3 px-4 rounded-xl text-sm font-light transition-all border"
+            [class.bg-[#FAF5EF]]="paymentMethod === 'hotel'"
+            [class.border-[#BCA47B]]="paymentMethod === 'hotel'"
+            [class.border-gray-200]="paymentMethod !== 'hotel'"
+            [class.text-gray-900]="paymentMethod === 'hotel'"
+            [class.text-gray-500]="paymentMethod !== 'hotel'"
+            (click)="paymentMethod = 'hotel'">
+            Pay at Hotel
+          </button>
+        </div>
+
+        <!-- Online Payment Form -->
+        <div *ngIf="paymentMethod === 'online'" class="space-y-6">
+          <div class="bg-[#FAF8F5] border border-gray-100 text-gray-600 text-sm font-light rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
+            <span class="text-[#BCA47B]"></span>
+            Your payment is secure and encrypted.
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Card Number</label>
+            <input
+              type="text"
+              placeholder="1234 5678 9012 3456"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              [(ngModel)]="cardNumber"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Expiry Date</label>
+              <input
+                type="text"
+                placeholder="MM/YY"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+                [(ngModel)]="expiryDate"
+              />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">CVV</label>
+              <input
+                type="password"
+                placeholder="•••"
+                maxlength="4"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+                [(ngModel)]="cvv"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Cardholder Name</label>
+            <input
+              type="text"
+              placeholder="Name on card"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              [(ngModel)]="cardholderName"
+            />
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="bg-[#FAF8F5] rounded-2xl p-6 border border-gray-100">
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Subtotal</span>
+              <span class="text-gray-700">${{ subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Tax (10%)</span>
+              <span class="text-gray-700">${{ tax.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Service Fee (3%)</span>
+              <span class="text-gray-700">${{ serviceFee.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between text-base font-medium pt-3 border-t border-gray-200">
+              <span class="text-gray-700">Total</span>
+              <span class="text-[#BCA47B] font-bold">${{ totalAmount.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <!-- Online Pay Button -->
+          <div class="pt-2">
+            <button
+              (click)="processPayment()"
+              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
+              Pay ${{ totalAmount.toFixed(2) }} Now
+            </button>
+            <p class="text-xs text-gray-400 font-light text-center mt-4">Your card will be charged immediately.</p>
+          </div>
+        </div>
+
+        <!-- Pay at Hotel Option -->
+        <div *ngIf="paymentMethod === 'hotel'" class="space-y-6">
+          <div class="bg-[#FAF8F5] border border-gray-100 text-gray-600 text-sm font-light rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
+            <span class="text-[#BCA47B]"></span>
+            You'll pay at the front desk when you check in.
+          </div>
+
+          <div class="bg-[#FAF8F5] rounded-2xl p-6 border border-gray-100">
+            <div class="flex items-start gap-3">
+              <span class="text-xl text-[#BCA47B]"></span>
+              <div>
+                <h4 class="font-medium text-gray-900 mb-1">Pay at Check-in</h4>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">
+                  You'll be able to pay with cash, credit card, or debit card at the front desk.
+                  No payment is required to confirm your reservation.
+                </p>
+                <ul class="mt-3 space-y-1 text-sm text-gray-400 font-light list-disc pl-5">
+                  <li>Reservation will be held for 24 hours</li>
+                  <li>Free cancellation up to 48 hours before check-in</li>
+                  <li>Payment accepted: Cash, Credit Card, Debit Card</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="bg-[#FAF8F5] rounded-2xl p-6 border border-gray-100">
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Subtotal</span>
+              <span class="text-gray-700">${{ subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Tax (10%)</span>
+              <span class="text-gray-700">${{ tax.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between mb-2 text-sm">
+              <span class="text-gray-500 font-light">Service Fee (3%)</span>
+              <span class="text-gray-700">${{ serviceFee.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between text-base font-medium pt-3 border-t border-gray-200">
+              <span class="text-gray-700">Total</span>
+              <span class="text-[#BCA47B] font-bold">${{ totalAmount.toFixed(2) }}</span>
+            </div>
+            <p class="text-xs text-gray-400 font-light mt-2">Amount to be paid at the hotel.</p>
+          </div>
+
+          <!-- Confirm Reservation Button -->
           <div class="pt-4">
             <button class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
               Confirm Reservation
@@ -170,13 +336,13 @@
           </div>
         </div>
       </div>
-      
+
     </div>
-    
+
     <!-- Right Column (Summary) -->
     <div class="lg:col-span-4 sticky top-8">
       <div class="bg-white rounded-[2rem] overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.04)] border border-gray-50">
-        
+
         <!-- Summary Header Image -->
         <div class="relative h-40 w-full">
           <img [src]="room.image" class="w-full h-full object-cover" />
@@ -187,7 +353,7 @@
             <div class="text-xs text-gray-300 font-light">{{room.city}} &bull; Room #{{room.number}}</div>
           </div>
         </div>
-        
+
         <!-- Summary Details -->
         <div class="p-6 md:p-8">
           <div class="flex items-center justify-between mb-2">
@@ -198,7 +364,7 @@
             <span class="text-sm text-gray-600 font-light">Nights</span>
             <span class="text-sm font-medium text-gray-900">&mdash;</span>
           </div>
-          
+
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm text-gray-500 font-light">Subtotal</span>
             <span class="text-sm font-medium text-gray-600">CA$0.00</span>
@@ -207,12 +373,12 @@
             <span class="text-sm text-gray-500 font-light">Service fee (3%)</span>
             <span class="text-sm font-medium text-gray-600">CA$0.00</span>
           </div>
-          
+
           <div class="flex items-center justify-between mb-8">
             <span class="text-base text-gray-900 font-semibold">Total</span>
             <span class="text-base font-bold text-gray-900">CA$0.00</span>
           </div>
-          
+
           <!-- Amenities -->
           <div class="bg-[#FAF8F5] rounded-xl p-5 mb-8 border border-gray-100">
             <div class="text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-4">Amenities</div>
@@ -223,16 +389,16 @@
               <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Work Desk</span>
             </div>
           </div>
-          
+
           <!-- Back Button -->
           <a routerLink="/room" class="block text-center w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-6 py-3.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">
             Back to Search
           </a>
         </div>
-        
+
       </div>
     </div>
-    
+
   </div>
 </section>
 

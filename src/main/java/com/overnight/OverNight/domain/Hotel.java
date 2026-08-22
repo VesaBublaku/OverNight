@@ -69,6 +69,22 @@ public class Hotel {
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Room> rooms = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "hotel_hotel_amenities",
+            joinColumns = @JoinColumn(name = "hotel_id"),
+            inverseJoinColumns = @JoinColumn(name = "hotel_amenity_id")
+    )
+    private List<HotelAmenity> hotelAmenities = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RoomPolicy> policies = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Service> services = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -88,5 +104,9 @@ public class Hotel {
 
     public String getFullAddress() {
         return address + ", " + city;
+    }
+
+    public String getCityName() {
+        return city != null ? city.getName() : null;
     }
 }

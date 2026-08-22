@@ -13,15 +13,27 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "amenities")
-public class Amenity {
+@Table(name = "room_types")
+public class RoomType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "base_price")
+    private Double basePrice;
+
+    @Column(name = "max_occupancy")
+    private Integer maxOccupancy;
+
+    @Column(name = "icon")
+    private String icon; // For UI display
 
     @Column(name = "is_active")
     private Boolean isActive = true;
@@ -36,7 +48,12 @@ public class Amenity {
     private LocalDateTime deletedAt;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "amenities")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id")
+    private Hotel hotel;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL)
     private List<Room> rooms = new ArrayList<>();
 
     @PrePersist
@@ -48,10 +65,5 @@ public class Amenity {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 }

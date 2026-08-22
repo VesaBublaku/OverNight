@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/api/staff/login",
                                 "/api/staff/exists/**",
                                 "/api/staff/register",
-                                "/api/cities/**"
+                                "/api/cities/**",
+                                "/api/amenities/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
