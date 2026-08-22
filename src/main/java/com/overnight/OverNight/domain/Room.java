@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,9 +32,6 @@ public class Room {
     @Column(name = "is_extendable")
     private Boolean isExtendable = false;
 
-    @Column(columnDefinition = "TEXT")
-    private String amenities;
-
     @Column(name = "condition_note", columnDefinition = "TEXT")
     private String conditionNote;
 
@@ -50,6 +49,14 @@ public class Room {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "room_amenities",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
+    )
+    private List<Amenity> amenities = new ArrayList<>();
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
