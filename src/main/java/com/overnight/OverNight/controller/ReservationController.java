@@ -124,7 +124,7 @@ public class ReservationController {
         Reservation updated = reservationService.updateStatus(id, status);
         return ResponseEntity.ok(updated);
     }
-    
+
     @GetMapping("/stats/revenue")
     public ResponseEntity<Map<String, Object>> getRevenueStats() {
         Map<String, Object> stats = new HashMap<>();
