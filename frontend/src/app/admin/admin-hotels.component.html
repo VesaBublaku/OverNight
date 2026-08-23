@@ -135,7 +135,7 @@
           <div class="flex items-start justify-between mb-4">
             <div>
               <div class="text-[10px] font-semibold text-gray-400 tracking-[0.25em] uppercase mb-2">Room</div>
-              <div class="text-3xl font-serif text-gray-900">#{{room.number}}</div>
+              <div class="text-3xl font-serif text-gray-900">#{{room.roomNumber}}</div>
             </div>
             <div class="text-right">
               <div class="text-xl font-light text-[#BCA47B]">CA${{room.price}}</div>
@@ -145,13 +145,14 @@
 
           <div class="flex flex-wrap gap-2 mb-4">
             <span class="bg-[#FAF8F5] text-gray-500 border border-gray-100 px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">Capacity {{room.capacity}}</span>
-            <span *ngIf="room.extendable" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">Extendable</span>
+            <span *ngIf="room.isExtendable" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">Extendable</span>
+            <span *ngIf="room.roomTypeName" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">{{room.roomTypeName}}</span>
           </div>
 
-          <div class="text-gray-400 text-xs font-light mb-3 leading-relaxed">{{room.amenities}}</div>
+          <div class="text-gray-400 text-xs font-light mb-3 leading-relaxed">{{room.amenities || 'No amenities listed'}}</div>
 
-          <div *ngIf="room.condition !== 'Good' && room.condition !== 'Excellent'" class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-light px-3 py-2 rounded-lg mb-4">
-            ⚠ {{room.condition}}
+          <div *ngIf="room.conditionNote && room.conditionNote !== 'Good' && room.conditionNote !== 'Excellent'" class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-light px-3 py-2 rounded-lg mb-4">
+            ⚠ {{room.conditionNote}}
           </div>
 
           <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
@@ -161,109 +162,210 @@
             <button (click)="confirmDelete('room', room.id)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-500 px-3 py-2 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors text-center">
               Delete
             </button>
+          </div>
         </div>
 
         <div *ngIf="filteredRooms.length === 0" class="col-span-3 py-16 text-center text-gray-400 text-sm">
           No rooms yet. <button (click)="openAddRoom()" class="text-[#BCA47B] underline">Add one?</button>
         </div>
       </div>
-    </div>
   </div>
 </div>
 
-<!-- ===== HOTEL MODAL ===== -->
-<div *ngIf="showHotelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showHotelModal=false"></div>
-  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10">
-    <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingHotel.id ? 'Edit' : 'New Hotel'}}</div>
-    <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingHotel.id ? 'Edit Hotel' : 'Add Hotel'}}</h2>
-    <p class="text-gray-500 text-sm font-light mb-8">Fill in the hotel details below.</p>
+  <!-- ===== HOTEL MODAL ===== -->
+  <div *ngIf="showHotelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showHotelModal=false"></div>
+    <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-2xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
+      <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingHotel.id ? 'Edit' : 'New Hotel'}}</div>
+      <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingHotel.id ? 'Edit Hotel' : 'Add Hotel'}}</h2>
+      <p class="text-gray-500 text-sm font-light mb-8">Fill in the hotel details below.</p>
 
-    <div class="space-y-5">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel Name</label>
-          <input [(ngModel)]="editingHotel.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. Marriott Downtown" />
+      <div class="space-y-5">
+        <!-- Row 1: Hotel Name + City -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel Name</label>
+            <input [(ngModel)]="editingHotel.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. Marriott Downtown" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
+            <select [(ngModel)]="editingHotel.cityId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+              <option value="">Select City</option>
+              <option *ngFor="let city of cities" [value]="city.id">{{city.name}}</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
-          <input [(ngModel)]="editingHotel.city" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. Ottawa" />
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Chain</label>
-          <input [(ngModel)]="editingHotel.chain" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. Marriott" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Rating (1–5)</label>
-          <input [(ngModel)]="editingHotel.rating" type="number" min="1" max="5" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
-        </div>
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Address</label>
-        <input [(ngModel)]="editingHotel.address" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Full street address" />
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Contact Email</label>
-        <input [(ngModel)]="editingHotel.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="hotel@example.com" />
-      </div>
-    </div>
 
-    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
-      <button (click)="showHotelModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
-      <button (click)="saveHotel()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingHotel.id ? 'Save Changes' : 'Add Hotel'}}</button>
+        <!-- Row 2: Chain + Rating -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Chain</label>
+            <select [(ngModel)]="editingHotel.chain" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+              <option value="">Select Chain</option>
+              <option *ngFor="let chain of hotelChains" [value]="chain.name">{{chain.name}}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Rating (1–5)</label>
+            <select [(ngModel)]="editingHotel.rating" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+              <option value="1">★</option>
+              <option value="2">★★</option>
+              <option value="3">★★★</option>
+              <option value="4">★★★★</option>
+              <option value="5">★★★★★</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Address -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Address</label>
+          <input [(ngModel)]="editingHotel.address" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Full street address" />
+        </div>
+
+        <!-- Row 4: Email -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Contact Email</label>
+          <input [(ngModel)]="editingHotel.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="hotel@example.com" />
+        </div>
+
+        <!-- Row 5: Image URL -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Image URL</label>
+          <input [(ngModel)]="editingHotel.imageUrl" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="https://example.com/hotel-image.jpg" />
+          <div *ngIf="editingHotel.imageUrl" class="mt-2">
+            <img [src]="editingHotel.imageUrl" class="h-20 w-auto rounded-lg object-cover border border-gray-200" alt="Hotel preview" />
+          </div>
+        </div>
+
+        <!-- Row 6: Description -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Description</label>
+          <textarea [(ngModel)]="editingHotel.description" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Hotel description..."></textarea>
+        </div>
+
+        <!-- Row 7: Check-in + Check-out -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-in Time</label>
+            <input [(ngModel)]="editingHotel.checkIn" type="time" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-out Time</label>
+            <input [(ngModel)]="editingHotel.checkOut" type="time" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          </div>
+        </div>
+
+        <!-- Row 8: Hotel Chain (ID) + Status -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel Chain</label>
+            <select [(ngModel)]="editingHotel.hotelChainId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+              <option value="">Select Hotel Chain</option>
+              <option *ngFor="let chain of hotelChains" [value]="chain.id">{{chain.name}}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+            <select [(ngModel)]="editingHotel.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+              <option [value]="true">Active</option>
+              <option [value]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+        <button (click)="showHotelModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
+        <button (click)="saveHotel()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingHotel.id ? 'Save Changes' : 'Add Hotel'}}</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ===== ROOM MODAL ===== -->
-<div *ngIf="showRoomModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showRoomModal=false"></div>
-  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10">
-    <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingRoom.id ? 'Edit' : 'New Room'}}</div>
-    <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingRoom.id ? 'Edit Room' : 'Add Room'}}</h2>
-    <p class="text-gray-500 text-sm font-light mb-8">In <span class="text-gray-900 font-medium">{{selectedHotel?.name}}</span></p>
+  <!-- ===== ROOM MODAL ===== -->
+  <div *ngIf="showRoomModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showRoomModal=false"></div>
+    <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-2xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
+      <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingRoom.id ? 'Edit' : 'New Room'}}</div>
+      <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingRoom.id ? 'Edit Room' : 'Add Room'}}</h2>
+      <p class="text-gray-500 text-sm font-light mb-8">In <span class="text-gray-900 font-medium">{{selectedHotel?.name}}</span></p>
 
-    <div class="space-y-5">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Room Number</label>
-          <input [(ngModel)]="editingRoom.number" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. 101" />
+      <div class="space-y-5">
+        <!-- Row 1: Room Number + Price -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Room Number</label>
+            <input [(ngModel)]="editingRoom.roomNumber" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. 101" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Price / Night (CA$)</label>
+            <input [(ngModel)]="editingRoom.price" type="number" step="0.01" min="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. 250.00" />
+          </div>
         </div>
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Price / Night (CA$)</label>
-          <input [(ngModel)]="editingRoom.price" type="number" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Capacity (guests)</label>
-          <input [(ngModel)]="editingRoom.capacity" type="number" min="1" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
-        </div>
-        <div class="flex flex-col justify-end pb-1">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input [(ngModel)]="editingRoom.extendable" type="checkbox" class="w-4 h-4 rounded accent-[#BCA47B]" />
-            <span class="text-sm text-gray-600 font-light">Extendable stay</span>
-          </label>
-        </div>
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Amenities</label>
-        <input [(ngModel)]="editingRoom.amenities" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="WiFi, AC, Smart TV…" />
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Condition Note</label>
-        <input [(ngModel)]="editingRoom.condition" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Good, or describe any issues" />
-      </div>
-    </div>
 
-    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
-      <button (click)="showRoomModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
-      <button (click)="saveRoom()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingRoom.id ? 'Save Changes' : 'Add Room'}}</button>
+        <!-- Row 2: Capacity + Extendable -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Capacity (guests)</label>
+            <input [(ngModel)]="editingRoom.capacity" type="number" min="1" max="10" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="e.g. 2" />
+          </div>
+          <div class="flex items-center justify-end pb-1">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input [(ngModel)]="editingRoom.isExtendable" type="checkbox" class="w-4 h-4 rounded accent-[#BCA47B]" />
+              <span class="text-sm text-gray-600 font-light">Extendable stay</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Row 3: Room Type -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Room Type</label>
+          <select [(ngModel)]="editingRoom.roomTypeId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+            <option [value]="undefined">Select Room Type</option>
+            <option *ngFor="let type of roomTypes" [value]="type.id">{{type.name}} - ${{type.basePrice}}/night</option>
+          </select>
+        </div>
+
+        <!-- Row 4: Amenities -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Amenities</label>
+          <select [(ngModel)]="editingRoom.roomAmenityIds" multiple class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors min-h-[100px]">
+            <option *ngFor="let amenity of roomAmenities" [value]="amenity.id">{{amenity.name}}</option>
+          </select>
+          <p class="text-xs text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple amenities</p>
+        </div>
+
+        <!-- Row 5: Image URL -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Image URL</label>
+          <input [(ngModel)]="editingRoom.imageUrl" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="https://example.com/room-image.jpg" />
+          <div *ngIf="editingRoom.imageUrl" class="mt-2">
+            <img [src]="editingRoom.imageUrl" class="h-20 w-auto rounded-lg object-cover border border-gray-200" alt="Room preview" />
+          </div>
+        </div>
+
+        <!-- Row 6: Condition Note -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Condition Note</label>
+          <input [(ngModel)]="editingRoom.conditionNote" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Good, or describe any issues" />
+        </div>
+
+        <!-- Row 7: Status -->
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+          <select [(ngModel)]="editingRoom.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+        <button (click)="showRoomModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
+        <button (click)="saveRoom()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingRoom.id ? 'Save Changes' : 'Add Room'}}</button>
+      </div>
     </div>
   </div>
-</div>
 
 <!-- ===== DELETE CONFIRM ===== -->
 <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">

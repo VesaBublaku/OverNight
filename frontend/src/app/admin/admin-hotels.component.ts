@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -6,21 +6,66 @@ interface Hotel {
   id: number;
   name: string;
   city: string;
+  cityId?: number;
+  cityName?: string;
   chain: string;
   rating: number;
   address: string;
   email: string;
+  imageUrl?: string;
+  description?: string;
+  checkIn?: string;
+  checkOut?: string;
+  hotelChainId?: number;
+  hotelChainName?: string;
+  isActive?: boolean;
   rooms: Room[];
 }
 
 interface Room {
   id: number;
-  number: string;
+  roomNumber: string;
   price: number;
   capacity: number;
-  extendable: boolean;
-  amenities: string;
-  condition: string;
+  isExtendable: boolean;
+  conditionNote: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  roomTypeId?: number;
+  roomAmenityIds?: number[];
+  roomTypeName?: string;
+  amenities?: string;  // For display
+  extendable?: boolean; // For backward compatibility
+  condition?: string;   // For backward compatibility
+  number?: string;      // For backward compatibility
+}
+
+interface City {
+  id: number;
+  name: string;
+  country?: string;
+}
+
+interface HotelChain {
+  id: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  hotelCount?: number;
+}
+
+interface RoomType {
+  id: number;
+  name: string;
+  description?: string;
+  basePrice: number;
+  maxOccupancy: number;
+}
+
+interface RoomAmenity {
+  id: number;
+  name: string;
+  description?: string;
 }
 
 @Component({
@@ -29,57 +74,109 @@ interface Room {
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-hotels.component.html',
 })
-export class AdminHotelsComponent {
-  // ── State ──────────────────────────────────────────────
+export class AdminHotelsComponent implements OnInit {
   activeTab: 'hotels' | 'rooms' = 'hotels';
   selectedHotelId: number | null = null;
 
   showHotelModal = false;
-  showRoomModal   = false;
+  showRoomModal = false;
   showDeleteConfirm = false;
   deleteTarget: { type: 'hotel' | 'room'; id: number } | null = null;
 
   editingHotel: Partial<Hotel> = {};
-  editingRoom:  Partial<Room>  = {};
+  editingRoom: Partial<Room> = {};
 
   hotelSearch = '';
-  roomSearch  = '';
+  roomSearch = '';
 
-  // ── Mock Data ──────────────────────────────────────────
+  cities: City[] = [];
+  hotelChains: HotelChain[] = [];
+  roomTypes: RoomType[] = [];
+  roomAmenities: RoomAmenity[] = [];
+
   hotels: Hotel[] = [
     {
       id: 1, name: 'Marriott St Johns East', city: 'St Johns', chain: 'Marriott',
       rating: 4, address: '200 Coventry Rd, St Johns, NL', email: 'stjohns@marriott.com',
+      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+      description: 'A refined boutique stay with calm interiors, thoughtful details, and a smooth booking experience.',
+      checkIn: '15:00',
+      checkOut: '11:00',
       rooms: [
-        { id: 1, number: '217', price: 300.86, capacity: 4, extendable: true, amenities: 'WiFi, AC, Smart TV, Work Desk', condition: 'Good' },
-        { id: 2, number: '218', price: 260.00, capacity: 2, extendable: false, amenities: 'WiFi, AC', condition: 'Good' },
-      ]
-    },
-    {
-      id: 2, name: 'Delta Coventry Suites', city: 'Ottawa', chain: 'Delta',
-      rating: 2, address: '200 Coventry Rd, Ottawa, ON K1K 4S3', email: 'delta-1@outlook.ca',
-      rooms: [
-        { id: 3, number: '122', price: 413.21, capacity: 4, extendable: true, amenities: 'WiFi, AC, Premium Bedding, Smart TV', condition: 'Lamp flickers occasionally' },
-      ]
-    },
-    {
-      id: 3, name: 'Westin Montreal Notre-Dame', city: 'Montreal', chain: 'Westin',
-      rating: 5, address: '350 Dalhousie St, Montreal, QC', email: 'montreal@westin.com',
-      rooms: [
-        { id: 4, number: '138', price: 306.98, capacity: 4, extendable: true, amenities: 'WiFi, AC, Smart TV, Mini Bar', condition: 'Excellent' },
-        { id: 5, number: '139', price: 280.00, capacity: 2, extendable: false, amenities: 'WiFi, AC', condition: 'Good' },
+        {
+          id: 1, roomNumber: '217', price: 300.86, capacity: 4, isExtendable: true,
+          conditionNote: 'Good', imageUrl: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80',
+          amenities: 'WiFi, AC, Smart TV, Work Desk'
+        },
+        {
+          id: 2, roomNumber: '218', price: 260.00, capacity: 2, isExtendable: false,
+          conditionNote: 'Good',
+          amenities: 'WiFi, AC'
+        },
       ]
     },
   ];
 
   nextHotelId = 4;
-  nextRoomId  = 6;
+  nextRoomId = 6;
 
-  // ── Computed ───────────────────────────────────────────
+  constructor() {}
+
+  ngOnInit(): void {
+    this.loadCities();
+    this.loadHotelChains();
+    this.loadRoomTypes();
+    this.loadRoomAmenities();
+  }
+
+  loadCities(): void {
+    this.cities = [
+      { id: 1, name: 'St Johns', country: 'Canada' },
+      { id: 2, name: 'Ottawa', country: 'Canada' },
+      { id: 3, name: 'Montreal', country: 'Canada' },
+      { id: 4, name: 'Toronto', country: 'Canada' },
+      { id: 5, name: 'Vancouver', country: 'Canada' },
+    ];
+  }
+
+  loadHotelChains(): void {
+    this.hotelChains = [
+      { id: 1, name: 'Marriott' },
+      { id: 2, name: 'Hilton' },
+      { id: 3, name: 'Hyatt' },
+      { id: 4, name: 'Westin' },
+      { id: 5, name: 'Delta' },
+    ];
+  }
+
+  loadRoomTypes(): void {
+    this.roomTypes = [
+      { id: 1, name: 'Standard', basePrice: 150, maxOccupancy: 2 },
+      { id: 2, name: 'Deluxe', basePrice: 250, maxOccupancy: 4 },
+      { id: 3, name: 'Suite', basePrice: 400, maxOccupancy: 6 },
+      { id: 4, name: 'Penthouse', basePrice: 600, maxOccupancy: 8 },
+    ];
+  }
+
+  loadRoomAmenities(): void {
+    this.roomAmenities = [
+      { id: 1, name: 'Free WiFi' },
+      { id: 2, name: 'Air Conditioning' },
+      { id: 3, name: 'Smart TV' },
+      { id: 4, name: 'Mini Bar' },
+      { id: 5, name: 'Work Desk' },
+      { id: 6, name: 'Premium Bedding' },
+      { id: 7, name: 'Balcony' },
+      { id: 8, name: 'Room Service' },
+    ];
+  }
+
   get filteredHotels() {
     const q = this.hotelSearch.toLowerCase();
     return this.hotels.filter(h =>
-      h.name.toLowerCase().includes(q) || h.city.toLowerCase().includes(q) || h.chain.toLowerCase().includes(q)
+      h.name.toLowerCase().includes(q) ||
+      h.city.toLowerCase().includes(q) ||
+      h.chain.toLowerCase().includes(q)
     );
   }
 
@@ -91,15 +188,29 @@ export class AdminHotelsComponent {
     if (!this.selectedHotel) return [];
     const q = this.roomSearch.toLowerCase();
     return this.selectedHotel.rooms.filter(r =>
-      r.number.includes(q) || r.amenities.toLowerCase().includes(q)
+      r.roomNumber.includes(q) ||
+      (r.amenities && r.amenities.toLowerCase().includes(q))
     );
   }
 
   get totalRooms() { return this.hotels.reduce((s, h) => s + h.rooms.length, 0); }
 
-  // ── Hotel CRUD ─────────────────────────────────────────
   openAddHotel() {
-    this.editingHotel = { name:'', city:'', chain:'', rating:3, address:'', email:'' };
+    this.editingHotel = {
+      name: '',
+      cityId: undefined,
+      city: '',
+      chain: '',
+      rating: 3,
+      address: '',
+      email: '',
+      imageUrl: '',
+      description: '',
+      checkIn: '15:00',
+      checkOut: '11:00',
+      hotelChainId: undefined,
+      isActive: true
+    };
     this.showHotelModal = true;
   }
 
@@ -111,11 +222,92 @@ export class AdminHotelsComponent {
   saveHotel() {
     if (this.editingHotel.id) {
       const idx = this.hotels.findIndex(h => h.id === this.editingHotel.id);
-      if (idx > -1) this.hotels[idx] = { ...this.hotels[idx], ...this.editingHotel } as Hotel;
+      if (idx > -1) {
+        if (this.editingHotel.cityId) {
+          const city = this.cities.find(c => c.id === this.editingHotel.cityId);
+          this.editingHotel.city = city ? city.name : '';
+        }
+        if (this.editingHotel.hotelChainId) {
+          const chain = this.hotelChains.find(c => c.id === this.editingHotel.hotelChainId);
+          this.editingHotel.chain = chain ? chain.name : '';
+        }
+        this.hotels[idx] = { ...this.hotels[idx], ...this.editingHotel } as Hotel;
+      }
     } else {
-      this.hotels.push({ ...this.editingHotel, id: this.nextHotelId++, rooms: [] } as Hotel);
+      if (this.editingHotel.cityId) {
+        const city = this.cities.find(c => c.id === this.editingHotel.cityId);
+        this.editingHotel.city = city ? city.name : '';
+      }
+      if (this.editingHotel.hotelChainId) {
+        const chain = this.hotelChains.find(c => c.id === this.editingHotel.hotelChainId);
+        this.editingHotel.chain = chain ? chain.name : '';
+      }
+      this.hotels.push({
+        ...this.editingHotel,
+        id: this.nextHotelId++,
+        rooms: []
+      } as Hotel);
     }
     this.showHotelModal = false;
+  }
+
+  openAddRoom() {
+    this.editingRoom = {
+      roomNumber: '',
+      price: 0,
+      capacity: 2,
+      isExtendable: false,
+      conditionNote: 'Good',
+      imageUrl: '',
+      roomTypeId: undefined,
+      roomAmenityIds: [],
+      isActive: true
+    };
+    this.showRoomModal = true;
+  }
+
+  openEditRoom(r: Room) {
+    this.editingRoom = { ...r };
+    this.showRoomModal = true;
+  }
+
+  saveRoom() {
+    const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
+    if (!hotel) return;
+
+    if (this.editingRoom.id) {
+      const idx = hotel.rooms.findIndex(r => r.id === this.editingRoom.id);
+      if (idx > -1) {
+        // Get room type name if selected
+        if (this.editingRoom.roomTypeId) {
+          const type = this.roomTypes.find(t => t.id === this.editingRoom.roomTypeId);
+          this.editingRoom.roomTypeName = type ? type.name : '';
+        }
+        if (this.editingRoom.roomAmenityIds && this.editingRoom.roomAmenityIds.length > 0) {
+          const amenityNames = this.roomAmenities
+            .filter(a => this.editingRoom.roomAmenityIds?.includes(a.id))
+            .map(a => a.name);
+          this.editingRoom.amenities = amenityNames.join(', ');
+        }
+        hotel.rooms[idx] = { ...hotel.rooms[idx], ...this.editingRoom } as Room;
+      }
+    } else {
+      if (this.editingRoom.roomTypeId) {
+        const type = this.roomTypes.find(t => t.id === this.editingRoom.roomTypeId);
+        this.editingRoom.roomTypeName = type ? type.name : '';
+      }
+      if (this.editingRoom.roomAmenityIds && this.editingRoom.roomAmenityIds.length > 0) {
+        const amenityNames = this.roomAmenities
+          .filter(a => this.editingRoom.roomAmenityIds?.includes(a.id))
+          .map(a => a.name);
+        this.editingRoom.amenities = amenityNames.join(', ');
+      }
+      hotel.rooms.push({
+        ...this.editingRoom,
+        id: this.nextRoomId++
+      } as Room);
+    }
+    this.showRoomModal = false;
   }
 
   confirmDelete(type: 'hotel' | 'room', id: number) {
@@ -134,29 +326,6 @@ export class AdminHotelsComponent {
     }
     this.showDeleteConfirm = false;
     this.deleteTarget = null;
-  }
-
-  // ── Room CRUD ──────────────────────────────────────────
-  openAddRoom() {
-    this.editingRoom = { number:'', price:0, capacity:2, extendable:false, amenities:'', condition:'Good' };
-    this.showRoomModal = true;
-  }
-
-  openEditRoom(r: Room) {
-    this.editingRoom = { ...r };
-    this.showRoomModal = true;
-  }
-
-  saveRoom() {
-    const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
-    if (!hotel) return;
-    if (this.editingRoom.id) {
-      const idx = hotel.rooms.findIndex(r => r.id === this.editingRoom.id);
-      if (idx > -1) hotel.rooms[idx] = { ...hotel.rooms[idx], ...this.editingRoom } as Room;
-    } else {
-      hotel.rooms.push({ ...this.editingRoom, id: this.nextRoomId++ } as Room);
-    }
-    this.showRoomModal = false;
   }
 
   selectHotel(id: number) {

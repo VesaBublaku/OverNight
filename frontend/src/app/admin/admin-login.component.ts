@@ -61,16 +61,6 @@ import {FormsModule} from '@angular/forms';
               </button>
             </div>
           </form>
-
-          <div class="mt-6 p-4 bg-[#FAF8F5] rounded-xl border border-gray-100">
-            <p class="text-xs text-gray-400 font-light text-center">
-              Demo Admin Credentials:
-            </p>
-            <div class="mt-2 text-xs text-gray-600 text-center">
-              <p><span class="font-medium">Email:</span> adminluxstay.com</p>
-              <p><span class="font-medium">Password:</span> admin123</p>
-            </div>
-          </div>
         </div>
 
         <div class="text-center mt-6 flex items-center justify-center gap-4">

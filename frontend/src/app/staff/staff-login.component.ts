@@ -56,24 +56,6 @@ import { StaffService } from '../services/staff.service';
               </button>
             </div>
           </div>
-
-          <div class="mt-6 p-4 bg-[#FAF8F5] rounded-xl border border-gray-100">
-            <p class="text-xs text-gray-400 font-light text-center">
-              Demo Staff Credentials:
-            </p>
-            <div class="grid grid-cols-2 gap-2 mt-2 text-xs text-gray-600">
-              <div class="text-center">
-                <span class="font-medium text-gray-700">Front Desk:</span>
-                <span class="block text-gray-500 text-[10px]">frontdeskluxstay.com</span>
-                <span class="block text-gray-400 text-[9px]">password: staff123</span>
-              </div>
-              <div class="text-center">
-                <span class="font-medium text-gray-700">Manager:</span>
-                <span class="block text-gray-500 text-[10px]">managerluxstay.com</span>
-                <span class="block text-gray-400 text-[9px]">password: manager456</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="text-center mt-6 flex items-center justify-center gap-4">
@@ -81,7 +63,7 @@ import { StaffService } from '../services/staff.service';
             &larr; Back to site
           </a>
           <span class="text-gray-200">|</span>
-          <a routerLink="/admin/login" class="text-[10px] font-semibold text-[#BCA47B] hover:text-[#A08B65] tracking-[0.15em] uppercase transition-colors">
+          <a routerLink="/admin-login" class="text-[10px] font-semibold text-[#BCA47B] hover:text-[#A08B65] tracking-[0.15em] uppercase transition-colors">
             Admin Login
           </a>
         </div>
