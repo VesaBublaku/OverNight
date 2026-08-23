@@ -3,6 +3,7 @@ package com.overnight.OverNight.application;
 import com.overnight.OverNight.config.JwtUtil;
 import com.overnight.OverNight.domain.User;
 import com.overnight.OverNight.infrastructure.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,9 @@ public class UserService {
     private final UserRepo userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final ActivityLogService activityLogService;
 
-    public Map<String, Object> login(String email, String password) {
+    public Map<String, Object> login(String email, String password, HttpServletRequest request) {
         System.out.println("Email: " + email);
         System.out.println("Password length: " + (password != null ? password.length() : 0));
 
@@ -53,11 +55,13 @@ public class UserService {
         response.put("token", token);
         response.put("user", user);
 
+        activityLogService.logLogin(user, request);
+
         return response;
     }
 
     @Transactional
-    public Map<String, Object> register(User user) {
+    public Map<String, Object> register(User user, HttpServletRequest request) {
         if (userRepo.existsByEmailAndDeletedAtIsNull(user.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -77,6 +81,9 @@ public class UserService {
         response.put("token", token);
         response.put("user", savedUser);
 
+        activityLogService.logWithIp("CREATE", "USER", savedUser.getId(),
+                "User registered: " + savedUser.getEmail(), request);
+
         return response;
     }
 
@@ -86,7 +93,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(Long userId, User updatedUser) {
+    public User updateUser(Long userId, User updatedUser, HttpServletRequest request) {
         User user = findById(userId);
 
         if (updatedUser.getFirstName() != null) user.setFirstName(updatedUser.getFirstName());
@@ -95,15 +102,23 @@ public class UserService {
         if (updatedUser.getAddress() != null) user.setAddress(updatedUser.getAddress());
         if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
 
-        return userRepo.save(user);
+        User savedUser = userRepo.save(user);
+
+        activityLogService.logWithIp("UPDATE", "USER", userId,
+                "User updated: " + savedUser.getEmail(), request);
+
+        return savedUser;
     }
 
     @Transactional
-    public void deleteUser(Long userId) {
+    public void deleteUser(Long userId,HttpServletRequest request) {
         User user = findById(userId);
         user.setDeletedAt(LocalDateTime.now());
         user.setIsActive(false);
         userRepo.save(user);
+
+        activityLogService.logWithIp("DELETE", "USER", userId,
+                "User deleted: " + user.getEmail(), request);
     }
 
     @Transactional(readOnly = true)
@@ -152,5 +167,9 @@ public class UserService {
         User user = findById(userId);
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepo.save(user);
+    }
+
+    public void logout(User user) {
+        activityLogService.logLogout(user);
     }
 }

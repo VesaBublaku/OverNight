@@ -2,6 +2,7 @@ package com.overnight.OverNight.controller;
 
 import com.overnight.OverNight.application.UserService;
 import com.overnight.OverNight.domain.User;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,14 +14,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"http://localhost:4300", "http://localhost:4200"})  // ← Add this
+@CrossOrigin(origins = {"http://localhost:4300"})
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody User loginRequest) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody User loginRequest, HttpServletRequest request) {
         System.out.println("📥 ===== LOGIN REQUEST =====");
         System.out.println("Email: " + loginRequest.getEmail());
         System.out.println("PasswordHash (from Angular): '" + loginRequest.getPasswordHash() + "'");
@@ -28,14 +29,15 @@ public class UserController {
 
         Map<String, Object> response = userService.login(
                 loginRequest.getEmail(),
-                loginRequest.getPasswordHash()
+                loginRequest.getPasswordHash(),
+                request
         );
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
-        Map<String, Object> response = userService.register(user);
+    public ResponseEntity<Map<String, Object>> register(@RequestBody User user, HttpServletRequest request) {
+        Map<String, Object> response = userService.register(user, request);
         return ResponseEntity.ok(response);
     }
 
@@ -49,14 +51,18 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> updateCurrentUser(
             @RequestAttribute("userId") Long userId,
-            @RequestBody User updatedUser) {
-        return ResponseEntity.ok(userService.updateUser(userId, updatedUser));
+            @RequestBody User updatedUser,
+            HttpServletRequest request) {
+        User user = userService.updateUser(userId, updatedUser, request);
+        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, String>> deleteCurrentUser(@RequestAttribute("userId") Long userId) {
-        userService.deleteUser(userId);
+    public ResponseEntity<Map<String, String>> deleteCurrentUser(
+            @RequestAttribute("userId") Long userId,
+            HttpServletRequest request) {
+        userService.deleteUser(userId, request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Account deleted successfully");
         return ResponseEntity.ok(response);
@@ -66,10 +72,21 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updatePassword(
             @RequestAttribute("userId") Long userId,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
         userService.updatePassword(userId, request.get("newPassword"));
         Map<String, String> response = new HashMap<>();
         response.put("message", "Password updated successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> logout(@RequestAttribute("userId") Long userId) {
+        User user = userService.findById(userId);
+        userService.logout(user);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
         return ResponseEntity.ok(response);
     }
 
@@ -89,14 +106,18 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> updateUser(
             @PathVariable Long id,
-            @RequestBody User updatedUser) {
-        return ResponseEntity.ok(userService.updateUser(id, updatedUser));
+            @RequestBody User updatedUser,
+            HttpServletRequest request) {
+        User user = userService.updateUser(id, updatedUser, request);
+        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Map<String, String>> deleteUser(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+        userService.deleteUser(id, request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User deleted successfully");
         return ResponseEntity.ok(response);
@@ -104,7 +125,9 @@ public class UserController {
 
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> activateUser(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> activateUser(
+            @PathVariable Long id,
+            HttpServletRequest request) {
         userService.activateUser(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User activated successfully");
@@ -113,7 +136,9 @@ public class UserController {
 
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deactivateUser(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> deactivateUser(
+            @PathVariable Long id,
+            HttpServletRequest request) {
         userService.deactivateUser(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User deactivated successfully");
