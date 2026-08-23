@@ -97,7 +97,7 @@ public class RoomTypeController {
         response.put("message", "Room type deactivated successfully");
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/exists/{name}")
     public ResponseEntity<Map<String, Boolean>> existsByName(@PathVariable String name) {
         Map<String, Boolean> response = new HashMap<>();
