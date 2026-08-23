@@ -162,38 +162,62 @@
 <!-- ===== CUSTOMER MODAL ===== -->
 <div *ngIf="showCustomerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showCustomerModal=false"></div>
-  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10">
+  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
     <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingCustomer.id ? 'Edit' : 'New Customer'}}</div>
     <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingCustomer.id ? 'Edit Customer' : 'Add Customer'}}</h2>
     <p class="text-gray-500 text-sm font-light mb-8">Customer identity record.</p>
+
     <div class="space-y-5">
+      <!-- Row 1: First Name + Last Name -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Full Name</label>
-          <input [(ngModel)]="editingCustomer.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Jane Doe" />
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">First Name</label>
+          <input [(ngModel)]="editingCustomer.firstName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Jane" />
         </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Last Name</label>
+          <input [(ngModel)]="editingCustomer.lastName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Doe" />
+        </div>
+      </div>
+
+      <!-- Row 2: Email + Phone -->
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
           <input [(ngModel)]="editingCustomer.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="email@example.com" />
         </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
-          <input [(ngModel)]="editingCustomer.city" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Toronto" />
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Phone</label>
+          <input [(ngModel)]="editingCustomer.phone" type="tel" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="+1 000 000 0000" />
         </div>
+      </div>
+
+      <!-- Row 3: Address -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Address</label>
+        <input [(ngModel)]="editingCustomer.address" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="123 Main Street, Toronto, ON" />
+      </div>
+
+      <!-- Row 4: Date of Birth + Member Since -->
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Date of Birth</label>
           <input [(ngModel)]="editingCustomer.dob" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
         </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Member Since</label>
+          <input [(ngModel)]="editingCustomer.memberSince" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="2025" />
+        </div>
       </div>
+
+      <!-- Row 5: ID Type + ID Number -->
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">ID Type</label>
           <select [(ngModel)]="editingCustomer.idType" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-            <option>Passport</option>
-            <option>Driver's Lic</option>
-            <option>National ID</option>
+            <option value="Passport">Passport</option>
+            <option value="Driver's Lic">Driver's Lic</option>
+            <option value="National ID">National ID</option>
           </select>
         </div>
         <div>
@@ -201,7 +225,17 @@
           <input [(ngModel)]="editingCustomer.idNumber" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Document number" />
         </div>
       </div>
+
+      <!-- Row 6: Status -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+        <select [(ngModel)]="editingCustomer.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option [value]="true">Active</option>
+          <option [value]="false">Inactive</option>
+        </select>
+      </div>
     </div>
+
     <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
       <button (click)="showCustomerModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
       <button (click)="saveCustomer()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingCustomer.id ? 'Save Changes' : 'Add Customer'}}</button>
@@ -212,57 +246,73 @@
 <!-- ===== STAFF MODAL ===== -->
 <div *ngIf="showStaffModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showStaffModal=false"></div>
-  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10">
+  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
     <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingStaff.id ? 'Edit' : 'New Staff Member'}}</div>
     <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingStaff.id ? 'Edit Staff Member' : 'Add Staff Member'}}</h2>
     <p class="text-gray-500 text-sm font-light mb-8">Fill in the staff member's details.</p>
+
     <div class="space-y-5">
+      <!-- Row 1: First Name + Last Name -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Full Name</label>
-          <input [(ngModel)]="editingStaff.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Staff name" />
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">First Name</label>
+          <input [(ngModel)]="editingStaff.firstName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="John" />
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
-          <input [(ngModel)]="editingStaff.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="name@overnight.ca" />
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Last Name</label>
+          <input [(ngModel)]="editingStaff.lastName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Doe" />
         </div>
       </div>
+
+      <!-- Row 2: Email + Phone -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
+          <input [(ngModel)]="editingStaff.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="staff@overnight.ca" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Phone</label>
+          <input [(ngModel)]="editingStaff.phone" type="tel" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="+1 000 000 0000" />
+        </div>
+      </div>
+
+      <!-- Row 3: Role + Status -->
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Role</label>
           <select [(ngModel)]="editingStaff.role" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-            <option>Front Desk</option>
-            <option>Manager</option>
-            <option>Concierge</option>
-            <option>Housekeeping</option>
-            <option>Security</option>
-            <option>Chef</option>
+            <option value="Front Desk">Front Desk</option>
+            <option value="Manager">Manager</option>
+            <option value="Concierge">Concierge</option>
+            <option value="Housekeeping">Housekeeping</option>
+            <option value="Security">Security</option>
+            <option value="Chef">Chef</option>
+            <option value="ADMIN">Admin</option>
+            <option value="STAFF">Staff</option>
           </select>
         </div>
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
-          <select [(ngModel)]="editingStaff.status" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+          <select [(ngModel)]="editingStaff.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
           </select>
         </div>
       </div>
+
+      <!-- Row 4: Since -->
       <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Assigned Hotel</label>
-        <input [(ngModel)]="editingStaff.hotel" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Hotel name" />
-      </div>
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Phone</label>
-        <input [(ngModel)]="editingStaff.phone" type="tel" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="+1 000 000 0000" />
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Since (Year)</label>
+        <input [(ngModel)]="editingStaff.since" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="2025" />
       </div>
     </div>
+
     <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
       <button (click)="showStaffModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
       <button (click)="saveStaff()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingStaff.id ? 'Save Changes' : 'Add Staff'}}</button>
     </div>
   </div>
 </div>
-
 
 <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showDeleteConfirm=false"></div>
