@@ -1,5 +1,6 @@
 <div class="min-h-screen bg-[#FAF8F5]">
 
+  <!-- Top Bar -->
   <div class="bg-white border-b border-gray-100 px-8 h-16 flex items-center justify-between shadow-[0_1px_8px_rgb(0,0,0,0.03)]">
     <div class="flex items-center gap-2">
       <span class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase">Staff</span>
@@ -21,13 +22,14 @@
 
   <div class="p-8">
 
+    <!-- Page Header -->
     <div class="mb-8 flex items-end justify-between">
       <div>
         <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">Management</div>
         <h1 class="text-4xl font-serif text-gray-900 mb-2">Customers & Reservations</h1>
         <p class="text-gray-500 text-sm font-light">View all customers and their current/upcoming reservations.</p>
       </div>
-
+      <!-- Stats -->
       <div class="flex items-center gap-4">
         <div class="text-right">
           <div class="text-xs text-gray-400">Active Bookings</div>
@@ -40,6 +42,7 @@
       </div>
     </div>
 
+    <!-- Search -->
     <div class="flex items-center gap-4 mb-6">
       <input [(ngModel)]="searchQuery" type="text" placeholder="Search customers by name, email, city or phone…"
              class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors shadow-sm" />
@@ -49,6 +52,7 @@
       </button>
     </div>
 
+    <!-- Customers Table -->
     <div class="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.03)]">
       <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase bg-[#FAF8F5]">
         <div class="col-span-2">Customer</div>
@@ -61,20 +65,24 @@
 
       <div *ngFor="let c of filteredCustomers; let last = last" [class.border-b]="!last" class="border-gray-100">
         <div class="grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-[#FAF8F5] transition-colors group">
+          <!-- Customer Info -->
           <div class="col-span-2 flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#D9BE84]/40 to-[#BCA47B]/40 flex items-center justify-center shrink-0 border border-[#D9BE84]/20">
-              <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.name.charAt(0)}}</span>
+              <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.name?.charAt(0) || c.firstName?.charAt(0) || '?'}}</span>
             </div>
             <div>
-              <div class="text-gray-900 text-sm font-medium">{{c.name}}</div>
-              <div class="text-gray-400 text-xs font-light">{{c.city}}</div>
+              <div class="text-gray-900 text-sm font-medium">{{c.name || c.firstName + ' ' + c.lastName}}</div>
+              <div class="text-gray-400 text-xs font-light">{{c.city || 'N/A'}}</div>
             </div>
           </div>
 
+          <!-- Contact -->
           <div class="col-span-2">
             <div class="text-gray-600 text-xs">{{c.email}}</div>
+            <div class="text-gray-400 text-xs font-light">{{c.phone || 'No phone'}}</div>
           </div>
 
+          <!-- Reservation -->
           <div class="col-span-3">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0; else noReservation">
               <div *ngFor="let r of getCustomerReservations(c.id)" class="mb-1 last:mb-0">
@@ -89,6 +97,7 @@
             </ng-template>
           </div>
 
+          <!-- Stay Details -->
           <div class="col-span-2">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0">
               <div *ngFor="let r of getCustomerReservations(c.id)" class="mb-1 last:mb-0">
@@ -98,6 +107,7 @@
             </ng-container>
           </div>
 
+          <!-- Status -->
           <div class="col-span-1">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0">
               <span *ngFor="let r of getCustomerReservations(c.id)"
@@ -109,6 +119,7 @@
             </ng-container>
           </div>
 
+          <!-- Actions -->
           <div class="col-span-2 flex items-center justify-end gap-2">
             <button (click)="openAddReservation(c.id)" class="bg-[#FAF5EF] hover:bg-[#E8E3DB] text-[#BCA47B] px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
               Book
@@ -144,7 +155,7 @@
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Customer</label>
         <select [(ngModel)]="editingReservation.customerId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
           <option value="" disabled>Select a customer</option>
-          <option *ngFor="let c of customers" [value]="c.id">{{c.name}} - {{c.email}}</option>
+          <option *ngFor="let c of customers" [value]="c.id">{{c.name || c.firstName + ' ' + c.lastName}} - {{c.email}}</option>
         </select>
       </div>
       <div>
@@ -185,31 +196,54 @@
 <div *ngIf="showCustomerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showCustomerModal=false"></div>
   <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
-    <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">Edit Customer</div>
-    <h2 class="text-2xl font-serif text-gray-900 mb-1">Edit Customer</h2>
-    <p class="text-gray-500 text-sm font-light mb-8">Update customer information.</p>
+    <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingCustomer.id ? 'Edit' : 'New Customer'}}</div>
+    <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingCustomer.id ? 'Edit Customer' : 'Add Customer'}}</h2>
+    <p class="text-gray-500 text-sm font-light mb-8">Customer identity record.</p>
 
     <div class="space-y-5">
+      <!-- Row 1: First Name + Last Name -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Full Name</label>
-          <input [(ngModel)]="editingCustomer.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">First Name</label>
+          <input [(ngModel)]="editingCustomer.firstName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Jane" />
         </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Last Name</label>
+          <input [(ngModel)]="editingCustomer.lastName" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Doe" />
+        </div>
+      </div>
+
+      <!-- Row 2: Email + Phone -->
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
-          <input [(ngModel)]="editingCustomer.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <input [(ngModel)]="editingCustomer.email" type="email" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="email@example.com" />
         </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Phone</label>
-          <input [(ngModel)]="editingCustomer.phone" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
-        </div>
-        <div>
-          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
-          <input [(ngModel)]="editingCustomer.city" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <input [(ngModel)]="editingCustomer.phone" type="tel" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="+1 000 000 0000" />
         </div>
       </div>
+
+      <!-- Row 3: Address -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Address</label>
+        <input [(ngModel)]="editingCustomer.address" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="123 Main Street, Toronto, ON" />
+      </div>
+
+      <!-- Row 4: Date of Birth + Member Since -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Date of Birth</label>
+          <input [(ngModel)]="editingCustomer.dob" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Member Since</label>
+          <input [(ngModel)]="editingCustomer.memberSince" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="2025" />
+        </div>
+      </div>
+
+      <!-- Row 5: ID Type + ID Number -->
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">ID Type</label>
@@ -221,28 +255,35 @@
         </div>
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">ID Number</label>
-          <input [(ngModel)]="editingCustomer.idNumber" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <input [(ngModel)]="editingCustomer.idNumber" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Document number" />
         </div>
       </div>
+
+      <!-- Row 6: Status -->
       <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Date of Birth</label>
-        <input [(ngModel)]="editingCustomer.dob" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+        <select [(ngModel)]="editingCustomer.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option [value]="true">Active</option>
+          <option [value]="false">Inactive</option>
+        </select>
       </div>
     </div>
 
     <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
       <button (click)="showCustomerModal=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
-      <button (click)="saveCustomer()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">Save Changes</button>
+      <button (click)="saveCustomer()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">{{editingCustomer.id ? 'Save Changes' : 'Add Customer'}}</button>
     </div>
   </div>
 </div>
 
-
+<!-- ===== DELETE CONFIRM ===== -->
 <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showDeleteConfirm=false"></div>
   <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-sm shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 text-center">
     <div class="w-14 h-14 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-      <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+      <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+      </svg>
     </div>
     <h3 class="text-xl font-serif text-gray-900 mb-3">Are you sure?</h3>
     <p class="text-gray-500 text-sm font-light mb-8">This will permanently {{deleteTarget?.type === 'customer' ? 'remove the customer and their reservations' : 'cancel the reservation'}}.</p>
