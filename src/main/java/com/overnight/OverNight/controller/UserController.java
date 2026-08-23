@@ -72,8 +72,7 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updatePassword(
             @RequestAttribute("userId") Long userId,
-            @RequestBody Map<String, String> request,
-            HttpServletRequest httpRequest) {
+            @RequestBody Map<String, String> request) {
         userService.updatePassword(userId, request.get("newPassword"));
         Map<String, String> response = new HashMap<>();
         response.put("message", "Password updated successfully");
@@ -126,8 +125,7 @@ public class UserController {
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> activateUser(
-            @PathVariable Long id,
-            HttpServletRequest request) {
+            @PathVariable Long id) {
         userService.activateUser(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User activated successfully");
@@ -137,8 +135,7 @@ public class UserController {
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deactivateUser(
-            @PathVariable Long id,
-            HttpServletRequest request) {
+            @PathVariable Long id) {
         userService.deactivateUser(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User deactivated successfully");

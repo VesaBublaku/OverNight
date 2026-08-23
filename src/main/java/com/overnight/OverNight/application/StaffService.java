@@ -3,6 +3,7 @@ package com.overnight.OverNight.application;
 import com.overnight.OverNight.config.JwtUtil;
 import com.overnight.OverNight.domain.Staff;
 import com.overnight.OverNight.infrastructure.StaffRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,9 @@ public class StaffService {
     private final StaffRepo staffRepo;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final ActivityLogService activityLogService;
 
-    public Map<String, Object> login(String email, String password) {
+    public Map<String, Object> login(String email, String password, HttpServletRequest request) {
         System.out.println("=== STAFF LOGIN ATTEMPT ===");
         System.out.println("Email: " + email);
 
@@ -50,11 +52,13 @@ public class StaffService {
         response.put("token", token);
         response.put("staff", staff);
 
+        activityLogService.logLogin(staff, request);
+
         return response;
     }
 
     @Transactional
-    public Map<String, Object> register(Staff staff) {
+    public Map<String, Object> register(Staff staff,HttpServletRequest request) {
         System.out.println("=== STAFF REGISTER ===");
         System.out.println("Email: " + staff.getEmail());
 
@@ -78,7 +82,14 @@ public class StaffService {
         response.put("token", token);
         response.put("staff", savedStaff);
 
+        activityLogService.logWithIp("CREATE", "STAFF", savedStaff.getId(),
+                "Staff registered: " + savedStaff.getEmail(), request);
+
         return response;
+    }
+
+    public void logout(Staff staff) {
+        activityLogService.logLogout(staff);
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +98,7 @@ public class StaffService {
     }
 
     @Transactional
-    public Staff updateStaff(Long staffId, Staff updatedStaff) {
+    public Staff updateStaff(Long staffId, Staff updatedStaff,HttpServletRequest request) {
         Staff staff = findById(staffId);
 
         if (updatedStaff.getFirstName() != null) staff.setFirstName(updatedStaff.getFirstName());
@@ -96,15 +107,23 @@ public class StaffService {
         if (updatedStaff.getEmail() != null) staff.setEmail(updatedStaff.getEmail());
         if (updatedStaff.getRole() != null) staff.setRole(updatedStaff.getRole());
 
-        return staffRepo.save(staff);
+        Staff savedStaff = staffRepo.save(staff);
+
+        activityLogService.logWithIp("UPDATE", "STAFF", staffId,
+                "Staff updated: " + savedStaff.getEmail(), request);
+
+        return savedStaff;
     }
 
     @Transactional
-    public void deleteStaff(Long staffId) {
+    public void deleteStaff(Long staffId,HttpServletRequest request) {
         Staff staff = findById(staffId);
         staff.setDeletedAt(LocalDateTime.now());
         staff.setIsActive(false);
         staffRepo.save(staff);
+
+        activityLogService.logWithIp("DELETE", "STAFF", staffId,
+                "Staff deleted: " + staff.getEmail(), request);
     }
 
     @Transactional(readOnly = true)

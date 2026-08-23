@@ -2,6 +2,7 @@ package com.overnight.OverNight.controller;
 
 import com.overnight.OverNight.application.StaffService;
 import com.overnight.OverNight.domain.Staff;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,20 +21,21 @@ public class StaffController {
     private final StaffService staffService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Staff loginRequest) {
-        System.out.println("📥 Staff login attempt for: " + loginRequest.getEmail());
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Staff loginRequest, HttpServletRequest request) {
+        System.out.println(" Staff login attempt for: " + loginRequest.getEmail());
         Map<String, Object> response = staffService.login(
                 loginRequest.getEmail(),
-                loginRequest.getPasswordHash()
+                loginRequest.getPasswordHash(),
+                request
         );
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody Staff staff) {
-        System.out.println("📥 Staff registration for: " + staff.getEmail());
-        Map<String, Object> response = staffService.register(staff);
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Staff staff, HttpServletRequest request) {
+        System.out.println(" Staff registration for: " + staff.getEmail());
+        Map<String, Object> response = staffService.register(staff, request);
         return ResponseEntity.ok(response);
     }
 
@@ -47,14 +49,18 @@ public class StaffController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Staff> updateCurrentStaff(
             @RequestAttribute("userId") Long staffId,
-            @RequestBody Staff updatedStaff) {
-        return ResponseEntity.ok(staffService.updateStaff(staffId, updatedStaff));
+            @RequestBody Staff updatedStaff,
+            HttpServletRequest request) {
+        Staff staff = staffService.updateStaff(staffId, updatedStaff, request);
+        return ResponseEntity.ok(staff);
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, String>> deleteCurrentStaff(@RequestAttribute("userId") Long staffId) {
-        staffService.deleteStaff(staffId);
+    public ResponseEntity<Map<String, String>> deleteCurrentStaff(
+            @RequestAttribute("userId") Long staffId,
+            HttpServletRequest request) {
+        staffService.deleteStaff(staffId, request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Staff account deleted successfully");
         return ResponseEntity.ok(response);
@@ -64,10 +70,21 @@ public class StaffController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updatePassword(
             @RequestAttribute("userId") Long staffId,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
         staffService.updatePassword(staffId, request.get("newPassword"));
         Map<String, String> response = new HashMap<>();
         response.put("message", "Password updated successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> logout(@RequestAttribute("userId") Long staffId) {
+        Staff staff = staffService.findById(staffId);
+        staffService.logout(staff);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Logged out successfully");
         return ResponseEntity.ok(response);
     }
 
@@ -87,14 +104,18 @@ public class StaffController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Staff> updateStaff(
             @PathVariable Long id,
-            @RequestBody Staff updatedStaff) {
-        return ResponseEntity.ok(staffService.updateStaff(id, updatedStaff));
+            @RequestBody Staff updatedStaff,
+            HttpServletRequest request) {
+        Staff staff = staffService.updateStaff(id, updatedStaff, request);
+        return ResponseEntity.ok(staff);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteStaff(@PathVariable Long id) {
-        staffService.deleteStaff(id);
+    public ResponseEntity<Map<String, String>> deleteStaff(
+            @PathVariable Long id,
+            HttpServletRequest request) {
+        staffService.deleteStaff(id, request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Staff deleted successfully");
         return ResponseEntity.ok(response);
@@ -102,7 +123,8 @@ public class StaffController {
 
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> activateStaff(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> activateStaff(
+            @PathVariable Long id) {
         staffService.activateStaff(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Staff activated successfully");
@@ -111,7 +133,8 @@ public class StaffController {
 
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deactivateStaff(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> deactivateStaff(
+            @PathVariable Long id) {
         staffService.deactivateStaff(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Staff deactivated successfully");
