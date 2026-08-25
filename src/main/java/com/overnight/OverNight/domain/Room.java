@@ -1,6 +1,7 @@
 package com.overnight.OverNight.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -62,10 +63,19 @@ public class Room {
     )
     private List<RoomAmenity> roomAmenities = new ArrayList<>();
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id")
+    @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
+
+    @JsonProperty("hotelId")
+    public void setHotelId(Long hotelId) {
+        if (hotelId != null) {
+            Hotel h = new Hotel();
+            h.setId(hotelId);
+            this.hotel = h;
+        }
+    }
 
     @PrePersist
     protected void onCreate() {

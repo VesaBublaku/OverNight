@@ -1,72 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Hotel {
-  id: number;
-  name: string;
-  city: string;
-  cityId?: number;
-  cityName?: string;
-  chain: string;
-  rating: number;
-  address: string;
-  email: string;
-  imageUrl?: string;
-  description?: string;
-  checkIn?: string;
-  checkOut?: string;
-  hotelChainId?: number;
-  hotelChainName?: string;
-  isActive?: boolean;
-  rooms: Room[];
-}
-
-interface Room {
-  id: number;
-  roomNumber: string;
-  price: number;
-  capacity: number;
-  isExtendable: boolean;
-  conditionNote: string;
-  imageUrl?: string;
-  isActive?: boolean;
-  roomTypeId?: number;
-  roomAmenityIds?: number[];
-  roomTypeName?: string;
-  amenities?: string;  // For display
-  extendable?: boolean; // For backward compatibility
-  condition?: string;   // For backward compatibility
-  number?: string;      // For backward compatibility
-}
-
-interface City {
-  id: number;
-  name: string;
-  country?: string;
-}
-
-interface HotelChain {
-  id: number;
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  hotelCount?: number;
-}
-
-interface RoomType {
-  id: number;
-  name: string;
-  description?: string;
-  basePrice: number;
-  maxOccupancy: number;
-}
-
-interface RoomAmenity {
-  id: number;
-  name: string;
-  description?: string;
-}
+import { HotelService, Hotel } from '../services/hotel.service';
+import { RoomService, Room } from '../services/room.service';
+import { HotelChainService, HotelChain } from '../services/hotel-chain.service';
+import { CityService, City } from '../services/city.service';
+import { RoomTypeService, RoomType } from '../services/room-type.service';
+import { RoomAmenityService, RoomAmenity } from '../services/room-amenity.service';
 
 @Component({
   selector: 'app-admin-hotels',
@@ -89,94 +29,140 @@ export class AdminHotelsComponent implements OnInit {
   hotelSearch = '';
   roomSearch = '';
 
-  cities: City[] = [];
+  hotels: Hotel[] = [];
   hotelChains: HotelChain[] = [];
+  cities: City[] = [];
   roomTypes: RoomType[] = [];
   roomAmenities: RoomAmenity[] = [];
 
-  hotels: Hotel[] = [
-    {
-      id: 1, name: 'Marriott St Johns East', city: 'St Johns', chain: 'Marriott',
-      rating: 4, address: '200 Coventry Rd, St Johns, NL', email: 'stjohns@marriott.com',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
-      description: 'A refined boutique stay with calm interiors, thoughtful details, and a smooth booking experience.',
-      checkIn: '15:00',
-      checkOut: '11:00',
-      rooms: [
-        {
-          id: 1, roomNumber: '217', price: 300.86, capacity: 4, isExtendable: true,
-          conditionNote: 'Good', imageUrl: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80',
-          amenities: 'WiFi, AC, Smart TV, Work Desk'
-        },
-        {
-          id: 2, roomNumber: '218', price: 260.00, capacity: 2, isExtendable: false,
-          conditionNote: 'Good',
-          amenities: 'WiFi, AC'
-        },
-      ]
-    },
-  ];
+  isLoading = false;
+  errorMessage = '';
 
-  nextHotelId = 4;
-  nextRoomId = 6;
-
-  constructor() {}
+  constructor(
+    private hotelService: HotelService,
+    private roomService: RoomService,
+    private hotelChainService: HotelChainService,
+    private cityService: CityService,
+    private roomTypeService: RoomTypeService,
+    private roomAmenityService: RoomAmenityService
+  ) {}
 
   ngOnInit(): void {
-    this.loadCities();
+    this.loadHotels();
     this.loadHotelChains();
+    this.loadCities();
     this.loadRoomTypes();
     this.loadRoomAmenities();
   }
 
-  loadCities(): void {
-    this.cities = [
-      { id: 1, name: 'St Johns', country: 'Canada' },
-      { id: 2, name: 'Ottawa', country: 'Canada' },
-      { id: 3, name: 'Montreal', country: 'Canada' },
-      { id: 4, name: 'Toronto', country: 'Canada' },
-      { id: 5, name: 'Vancouver', country: 'Canada' },
-    ];
+  loadHotels(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.hotelService.getAllHotels().subscribe({
+      next: (data) => {
+        this.hotels = data || [];
+        // Load rooms for each hotel
+        this.hotels.forEach(hotel => {
+          if (hotel.id) {
+            this.loadRoomsForHotel(hotel.id);
+          }
+        });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading hotels:', err);
+        this.errorMessage = 'Failed to load hotels. Please check if backend is running.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadRoomsForHotel(hotelId: number): void {
+    this.roomService.getRoomsByHotel(hotelId).subscribe({
+      next: (rooms) => {
+        const hotel = this.hotels.find(h => h.id === hotelId);
+        if (hotel) {
+          hotel.rooms = rooms || [];
+        }
+      },
+      error: (err) => console.error(`Error loading rooms for hotel ${hotelId}:`, err)
+    });
   }
 
   loadHotelChains(): void {
-    this.hotelChains = [
-      { id: 1, name: 'Marriott' },
-      { id: 2, name: 'Hilton' },
-      { id: 3, name: 'Hyatt' },
-      { id: 4, name: 'Westin' },
-      { id: 5, name: 'Delta' },
-    ];
+    this.hotelChainService.getAllHotelChains().subscribe({
+      next: (data) => {
+        this.hotelChains = data || [];
+      },
+      error: (err) => console.error('Error loading hotel chains:', err)
+    });
+  }
+
+  loadCities(): void {
+    this.cityService.getAllCities().subscribe({
+      next: (data) => {
+        this.cities = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading cities:', err);
+        // Fallback mock data if API fails
+        this.cities = [
+          { id: 1, name: 'St Johns', country: 'Canada' },
+          { id: 2, name: 'Ottawa', country: 'Canada' },
+          { id: 3, name: 'Montreal', country: 'Canada' },
+          { id: 4, name: 'Toronto', country: 'Canada' },
+          { id: 5, name: 'Vancouver', country: 'Canada' },
+        ];
+      }
+    });
   }
 
   loadRoomTypes(): void {
-    this.roomTypes = [
-      { id: 1, name: 'Standard', basePrice: 150, maxOccupancy: 2 },
-      { id: 2, name: 'Deluxe', basePrice: 250, maxOccupancy: 4 },
-      { id: 3, name: 'Suite', basePrice: 400, maxOccupancy: 6 },
-      { id: 4, name: 'Penthouse', basePrice: 600, maxOccupancy: 8 },
-    ];
+    this.roomTypeService.getAllRoomTypes().subscribe({
+      next: (data) => {
+        this.roomTypes = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading room types:', err);
+        // Fallback mock data if API fails
+        this.roomTypes = [
+          { id: 1, name: 'Standard', basePrice: 150, maxOccupancy: 2 },
+          { id: 2, name: 'Deluxe', basePrice: 250, maxOccupancy: 4 },
+          { id: 3, name: 'Suite', basePrice: 400, maxOccupancy: 6 },
+          { id: 4, name: 'Penthouse', basePrice: 600, maxOccupancy: 8 },
+        ];
+      }
+    });
   }
 
   loadRoomAmenities(): void {
-    this.roomAmenities = [
-      { id: 1, name: 'Free WiFi' },
-      { id: 2, name: 'Air Conditioning' },
-      { id: 3, name: 'Smart TV' },
-      { id: 4, name: 'Mini Bar' },
-      { id: 5, name: 'Work Desk' },
-      { id: 6, name: 'Premium Bedding' },
-      { id: 7, name: 'Balcony' },
-      { id: 8, name: 'Room Service' },
-    ];
+    this.roomAmenityService.getAllRoomAmenities().subscribe({
+      next: (data) => {
+        this.roomAmenities = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading room amenities:', err);
+        // Fallback mock data if API fails
+        this.roomAmenities = [
+          { id: 1, name: 'Free WiFi' },
+          { id: 2, name: 'Air Conditioning' },
+          { id: 3, name: 'Smart TV' },
+          { id: 4, name: 'Mini Bar' },
+          { id: 5, name: 'Work Desk' },
+          { id: 6, name: 'Premium Bedding' },
+          { id: 7, name: 'Balcony' },
+          { id: 8, name: 'Room Service' },
+        ];
+      }
+    });
   }
 
   get filteredHotels() {
     const q = this.hotelSearch.toLowerCase();
     return this.hotels.filter(h =>
-      h.name.toLowerCase().includes(q) ||
-      h.city.toLowerCase().includes(q) ||
-      h.chain.toLowerCase().includes(q)
+      (h.name || '').toLowerCase().includes(q) ||
+      (h.city || '').toLowerCase().includes(q) ||
+      (h.chain || '').toLowerCase().includes(q)
     );
   }
 
@@ -187,15 +173,19 @@ export class AdminHotelsComponent implements OnInit {
   get filteredRooms(): Room[] {
     if (!this.selectedHotel) return [];
     const q = this.roomSearch.toLowerCase();
-    return this.selectedHotel.rooms.filter(r =>
-      r.roomNumber.includes(q) ||
-      (r.amenities && r.amenities.toLowerCase().includes(q))
+    const rooms = this.selectedHotel.rooms || [];
+    return rooms.filter(r =>
+      (r.roomNumber || '').toLowerCase().includes(q) ||
+      (r.conditionNote || '').toLowerCase().includes(q)
     );
   }
 
-  get totalRooms() { return this.hotels.reduce((s, h) => s + h.rooms.length, 0); }
+  get totalRooms() {
+    return this.hotels.reduce((sum, h) => sum + (h.rooms?.length || 0), 0);
+  }
 
   openAddHotel() {
+    this.errorMessage = '';
     this.editingHotel = {
       name: '',
       cityId: undefined,
@@ -220,94 +210,141 @@ export class AdminHotelsComponent implements OnInit {
   }
 
   saveHotel() {
-    if (this.editingHotel.id) {
-      const idx = this.hotels.findIndex(h => h.id === this.editingHotel.id);
-      if (idx > -1) {
-        if (this.editingHotel.cityId) {
-          const city = this.cities.find(c => c.id === this.editingHotel.cityId);
-          this.editingHotel.city = city ? city.name : '';
-        }
-        if (this.editingHotel.hotelChainId) {
-          const chain = this.hotelChains.find(c => c.id === this.editingHotel.hotelChainId);
-          this.editingHotel.chain = chain ? chain.name : '';
-        }
-        this.hotels[idx] = { ...this.hotels[idx], ...this.editingHotel } as Hotel;
-      }
-    } else {
-      if (this.editingHotel.cityId) {
-        const city = this.cities.find(c => c.id === this.editingHotel.cityId);
-        this.editingHotel.city = city ? city.name : '';
-      }
-      if (this.editingHotel.hotelChainId) {
-        const chain = this.hotelChains.find(c => c.id === this.editingHotel.hotelChainId);
-        this.editingHotel.chain = chain ? chain.name : '';
-      }
-      this.hotels.push({
-        ...this.editingHotel,
-        id: this.nextHotelId++,
-        rooms: []
-      } as Hotel);
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const hotelData: any = { ...this.editingHotel };
+
+    if (hotelData.cityId) {
+      hotelData.city = { id: Number(hotelData.cityId) };
     }
-    this.showHotelModal = false;
+    delete hotelData.cityId;
+    delete hotelData.rooms;
+
+    if (this.editingHotel.id) {
+      this.hotelService.updateHotel(this.editingHotel.id, hotelData as Hotel).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showHotelModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error updating hotel:', err);
+          this.errorMessage = err.error?.message || `Failed to update hotel (${err.status}). Please try again.`;
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.hotelService.createHotel(hotelData as Hotel).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showHotelModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error creating hotel:', err);
+          this.errorMessage = err.error?.message || `Failed to create hotel (${err.status}). Please try again.`;
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   openAddRoom() {
+    this.errorMessage = '';
     this.editingRoom = {
       roomNumber: '',
-      price: 0,
+      price: undefined,
       capacity: 2,
       isExtendable: false,
       conditionNote: 'Good',
-      imageUrl: '',
+      hotelId: this.selectedHotelId ?? undefined,
       roomTypeId: undefined,
       roomAmenityIds: [],
+      imageUrl: '',
       isActive: true
     };
     this.showRoomModal = true;
   }
 
   openEditRoom(r: Room) {
-    this.editingRoom = { ...r };
+    this.errorMessage = '';
+    const room = r as Room & { roomType?: { id?: number } };
+    this.editingRoom = {
+      ...room,
+      roomTypeId: room.roomTypeId ?? room.roomType?.id,
+    };
     this.showRoomModal = true;
   }
 
   saveRoom() {
-    const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
-    if (!hotel) return;
+    this.errorMessage = '';
+
+    if (!this.editingRoom.roomNumber?.trim()) {
+      this.errorMessage = 'Room number is required.';
+      return;
+    }
+    if (!this.editingRoom.price || this.editingRoom.price <= 0) {
+      this.errorMessage = 'Price must be greater than 0.';
+      return;
+    }
+    if (!this.selectedHotelId) {
+      this.errorMessage = 'Select a hotel before adding a room.';
+      return;
+    }
+
+    this.isLoading = true;
+
+    const roomData: any = { ...this.editingRoom };
+
+    roomData.hotelId = Number(this.selectedHotelId);
+    if (roomData.roomTypeId) {
+      roomData.roomType = { id: Number(roomData.roomTypeId) };
+    }
+    if (roomData.roomAmenityIds?.length) {
+      roomData.roomAmenities = roomData.roomAmenityIds.map((id: number | string) => ({
+        id: Number(id)
+      }));
+    }
+
+    delete roomData.roomTypeId;
+    delete roomData.roomAmenityIds;
+    delete roomData.number;
+    delete roomData.extendable;
+    delete roomData.amenities;
+    delete roomData.roomTypeName;
 
     if (this.editingRoom.id) {
-      const idx = hotel.rooms.findIndex(r => r.id === this.editingRoom.id);
-      if (idx > -1) {
-        // Get room type name if selected
-        if (this.editingRoom.roomTypeId) {
-          const type = this.roomTypes.find(t => t.id === this.editingRoom.roomTypeId);
-          this.editingRoom.roomTypeName = type ? type.name : '';
+      this.roomService.updateRoom(this.editingRoom.id, roomData as Room).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showRoomModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error updating room:', err);
+          this.errorMessage = err.error?.message || `Failed to update room (${err.status}). Please try again.`;
+          this.isLoading = false;
         }
-        if (this.editingRoom.roomAmenityIds && this.editingRoom.roomAmenityIds.length > 0) {
-          const amenityNames = this.roomAmenities
-            .filter(a => this.editingRoom.roomAmenityIds?.includes(a.id))
-            .map(a => a.name);
-          this.editingRoom.amenities = amenityNames.join(', ');
-        }
-        hotel.rooms[idx] = { ...hotel.rooms[idx], ...this.editingRoom } as Room;
-      }
+      });
     } else {
-      if (this.editingRoom.roomTypeId) {
-        const type = this.roomTypes.find(t => t.id === this.editingRoom.roomTypeId);
-        this.editingRoom.roomTypeName = type ? type.name : '';
-      }
-      if (this.editingRoom.roomAmenityIds && this.editingRoom.roomAmenityIds.length > 0) {
-        const amenityNames = this.roomAmenities
-          .filter(a => this.editingRoom.roomAmenityIds?.includes(a.id))
-          .map(a => a.name);
-        this.editingRoom.amenities = amenityNames.join(', ');
-      }
-      hotel.rooms.push({
-        ...this.editingRoom,
-        id: this.nextRoomId++
-      } as Room);
+      this.roomService.createRoom(roomData as Room).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showRoomModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error creating room:', err);
+          if (err.status === 403) {
+            this.errorMessage = 'Access denied (403). Log out, log back in as admin, then try again.';
+          } else {
+            this.errorMessage = err.error?.message || `Failed to create room (${err.status}). Please try again.`;
+          }
+          this.isLoading = false;
+        }
+      });
     }
-    this.showRoomModal = false;
   }
 
   confirmDelete(type: 'hotel' | 'room', id: number) {
@@ -317,21 +354,46 @@ export class AdminHotelsComponent implements OnInit {
 
   executeDelete() {
     if (!this.deleteTarget) return;
+    this.isLoading = true;
+
     if (this.deleteTarget.type === 'hotel') {
-      this.hotels = this.hotels.filter(h => h.id !== this.deleteTarget!.id);
-      if (this.selectedHotelId === this.deleteTarget.id) this.selectedHotelId = null;
+      this.hotelService.deleteHotel(this.deleteTarget.id).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showDeleteConfirm = false;
+          this.deleteTarget = null;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error deleting hotel:', err);
+          this.errorMessage = err.error?.message || `Failed to delete hotel (${err.status}). Please try again.`;
+          this.isLoading = false;
+        }
+      });
     } else {
-      const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
-      if (hotel) hotel.rooms = hotel.rooms.filter(r => r.id !== this.deleteTarget!.id);
+      this.roomService.deleteRoom(this.deleteTarget.id).subscribe({
+        next: () => {
+          this.loadHotels();
+          this.showDeleteConfirm = false;
+          this.deleteTarget = null;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error deleting room:', err);
+          this.errorMessage = err.error?.message || `Failed to delete room (${err.status}). Please try again.`;
+          this.isLoading = false;
+        }
+      });
     }
-    this.showDeleteConfirm = false;
-    this.deleteTarget = null;
   }
 
   selectHotel(id: number) {
     this.selectedHotelId = id;
     this.activeTab = 'rooms';
+    this.loadRoomsForHotel(id);
   }
 
-  starsArray(n: number) { return Array(5).fill(0).map((_, i) => i < n); }
+  starsArray(n: number) {
+    return Array(5).fill(0).map((_, i) => i < n);
+  }
 }

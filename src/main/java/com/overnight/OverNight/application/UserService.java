@@ -49,7 +49,7 @@ public class UserService {
             throw new RuntimeException("Account is deactivated");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(),"USER");
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
@@ -75,7 +75,7 @@ public class UserService {
 
         User savedUser = userRepo.save(user);
 
-        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId());
+        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(),"USER");
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);

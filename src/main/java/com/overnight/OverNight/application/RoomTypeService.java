@@ -76,9 +76,6 @@ public class RoomTypeService {
         if (updatedRoomType.getMaxOccupancy() != null) {
             roomType.setMaxOccupancy(updatedRoomType.getMaxOccupancy());
         }
-        if (updatedRoomType.getIcon() != null) {
-            roomType.setIcon(updatedRoomType.getIcon());
-        }
         if (updatedRoomType.getHotel() != null && updatedRoomType.getHotel().getId() != null) {
             Hotel hotel = hotelRepo.findByIdAndDeletedAtIsNull(updatedRoomType.getHotel().getId())
                     .orElseThrow(() -> new RuntimeException("Hotel not found"));

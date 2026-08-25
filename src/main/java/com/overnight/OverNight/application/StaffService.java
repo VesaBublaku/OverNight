@@ -46,7 +46,8 @@ public class StaffService {
             throw new RuntimeException("Account is deactivated");
         }
 
-        String token = jwtUtil.generateToken(staff.getEmail(), staff.getId());
+        String role = staff.getRole() != null ? staff.getRole() : "STAFF";
+        String token = jwtUtil.generateToken(staff.getEmail(), staff.getId(),role);
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
@@ -76,7 +77,8 @@ public class StaffService {
         Staff savedStaff = staffRepo.save(staff);
         System.out.println("Staff saved with ID: " + savedStaff.getId());
 
-        String token = jwtUtil.generateToken(savedStaff.getEmail(), savedStaff.getId());
+        String role = staff.getRole() != null ? staff.getRole() : "STAFF";
+        String token = jwtUtil.generateToken(savedStaff.getEmail(), savedStaff.getId(),role);
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);

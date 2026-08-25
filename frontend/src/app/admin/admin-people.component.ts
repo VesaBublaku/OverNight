@@ -1,37 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { UserService, User as Customer } from '../services/user.service';
+import { StaffService, Staff } from '../services/staff.service';
 
-interface Customer {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  dob: string;
-  memberSince: string;
-  idType: string;
-  idNumber: string;
-  isActive: boolean;
-  name: string;
+interface CustomerDisplay extends Customer {
+  name?: string;
   city?: string;
+  idType?: string;
+  idNumber?: string;
   joined?: string;
   reservations?: number;
+  dob?: string;
 }
 
-interface Staff {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  role: string;
-  isActive: boolean;
-  since: string;
-  name: string;
+interface StaffDisplay extends Staff {
+  name?: string;
   hotel?: string;
   status?: 'active' | 'inactive';
+  since?: string;
 }
 
 @Component({
@@ -40,171 +27,139 @@ interface Staff {
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-people.component.html',
 })
-export class AdminPeopleComponent {
+export class AdminPeopleComponent implements OnInit {
   activeTab: 'customers' | 'staff' = 'customers';
 
   showCustomerModal = false;
-  showStaffModal    = false;
+  showStaffModal = false;
   showDeleteConfirm = false;
   deleteTarget: { type: 'customer' | 'staff'; id: number } | null = null;
 
-  editingCustomer: Partial<Customer> = {};
-  editingStaff:    Partial<Staff>    = {};
+  editingCustomer: Partial<CustomerDisplay> = {};
+  editingStaff: Partial<StaffDisplay> = {};
 
   customerSearch = '';
-  staffSearch    = '';
+  staffSearch = '';
 
-  customers: Customer[] = [
-    {
-      id: 1,
-      firstName: 'Jane',
-      lastName: 'Doe',
-      email: 'jane.doe@example.com',
-      phone: '+1 416-555-0101',
-      address: '123 Main St, Toronto, ON',
-      dob: '1990-04-12',
-      memberSince: '2025',
-      idType: 'Passport',
-      idNumber: 'CA982341',
-      isActive: true,
-      name: 'Jane Doe',
-      city: 'Toronto',
-      joined: 'Jan 2025',
-      reservations: 3
-    },
-    {
-      id: 2,
-      firstName: 'Marcus',
-      lastName: 'Trent',
-      email: 'marcus@mail.ca',
-      phone: '+1 613-555-0202',
-      address: '456 Queen St, Ottawa, ON',
-      dob: '1985-11-30',
-      memberSince: '2025',
-      idType: "Driver's Lic",
-      idNumber: 'ON12345678',
-      isActive: true,
-      name: 'Marcus Trent',
-      city: 'Ottawa',
-      joined: 'Mar 2025',
-      reservations: 1
-    },
-    {
-      id: 3,
-      firstName: 'Sophie',
-      lastName: 'Laurent',
-      email: 'sophie.l@outlook.com',
-      phone: '+1 514-555-0303',
-      address: '789 St Catherine, Montreal, QC',
-      dob: '1995-07-21',
-      memberSince: '2024',
-      idType: 'Passport',
-      idNumber: 'FR456219',
-      isActive: true,
-      name: 'Sophie Laurent',
-      city: 'Montreal',
-      joined: 'Nov 2024',
-      reservations: 5
-    },
-    {
-      id: 4,
-      firstName: 'David',
-      lastName: 'Kim',
-      email: 'dkim@gmail.com',
-      phone: '+1 403-555-0404',
-      address: '321 4th St, Calgary, AB',
-      dob: '2000-02-14',
-      memberSince: '2025',
-      idType: 'National ID',
-      idNumber: 'KR889012',
-      isActive: true,
-      name: 'David Kim',
-      city: 'Calgary',
-      joined: 'Jun 2025',
-      reservations: 2
-    },
-  ];
+  customers: CustomerDisplay[] = [];
+  staff: StaffDisplay[] = [];
+  isLoading = false;
+  errorMessage = '';
 
-  staff: Staff[] = [
-    {
-      id: 1,
-      firstName: 'Robert',
-      lastName: 'Haines',
-      email: 'r.haines@overnight.ca',
-      phone: '+1 709 555 0101',
-      role: 'Front Desk',
-      isActive: true,
-      since: '2023',
-      name: 'Robert Haines',
-      hotel: 'Marriott St Johns East',
-      status: 'active'
-    },
-    {
-      id: 2,
-      firstName: 'Amina',
-      lastName: 'Diallo',
-      email: 'a.diallo@overnight.ca',
-      phone: '+1 613 555 0202',
-      role: 'Manager',
-      isActive: true,
-      since: '2022',
-      name: 'Amina Diallo',
-      hotel: 'Delta Coventry Suites',
-      status: 'active'
-    },
-    {
-      id: 3,
-      firstName: 'Pierre',
-      lastName: 'Lemay',
-      email: 'p.lemay@overnight.ca',
-      phone: '+1 514 555 0303',
-      role: 'Concierge',
-      isActive: true,
-      since: '2024',
-      name: 'Pierre Lemay',
-      hotel: 'Westin Montreal Notre-Dame',
-      status: 'active'
-    },
-    {
-      id: 4,
-      firstName: 'Grace',
-      lastName: 'Okonkwo',
-      email: 'g.okonkwo@overnight.ca',
-      phone: '+1 613 555 0404',
-      role: 'Housekeeping',
-      isActive: false,
-      since: '2024',
-      name: 'Grace Okonkwo',
-      hotel: 'Delta Coventry Suites',
-      status: 'inactive'
-    },
-  ];
+  constructor(
+    private userService: UserService,
+    private staffService: StaffService
+  ) {}
 
-  nextCustomerId = 5;
-  nextStaffId    = 5;
+  ngOnInit(): void {
+    this.loadCustomers();
+    this.loadStaff();
+  }
+
+  loadCustomers(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.userService.getAllUsers().subscribe({
+      next: (data) => {
+        this.customers = (data || []).map((user: any) => ({
+          ...user,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          city: user.address ? user.address.split(',')[1]?.trim() || 'N/A' : 'N/A',
+          idType: 'Passport',
+          idNumber: 'N/A',
+          joined: user.memberSince || new Date().getFullYear().toString(),
+          reservations: 0
+        }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching customers:', err);
+        this.errorMessage = 'Failed to load customers. Please try again.';
+        this.isLoading = false;
+        this.customers = [
+          {
+            id: 1,
+            firstName: 'John',
+            lastName: 'Doe',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+1 416-555-0123',
+            address: '123 Main St, Toronto, ON',
+            city: 'Toronto',
+            idType: 'Passport',
+            idNumber: 'AB123456',
+            joined: '2025',
+            reservations: 0,
+            isActive: true
+          }
+        ];
+      }
+    });
+  }
+
+  loadStaff(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.staffService.getAllStaff().subscribe({
+      next: (data) => {
+        this.staff = (data || []).map((s: any) => ({
+          ...s,
+          name: `${s.firstName || ''} ${s.lastName || ''}`.trim() || s.email,
+          hotel: 'LuxStay Hotel',
+          status: s.isActive ? 'active' : 'inactive',
+          since: s.createdAt ? new Date(s.createdAt).getFullYear().toString() : '2025'
+        }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching staff:', err);
+        this.errorMessage = 'Failed to load staff. Please try again.';
+        this.isLoading = false;
+        // Fallback with mock data
+        this.staff = [
+          {
+            id: 1,
+            firstName: 'Admin',
+            lastName: 'User',
+            name: 'Admin User',
+            email: 'admin@luxstay.com',
+            phone: '+1 555-000-0000',
+            role: 'ADMIN',
+            hotel: 'LuxStay Hotel',
+            status: 'active',
+            since: '2025',
+            isActive: true
+          }
+        ];
+      }
+    });
+  }
 
   get filteredCustomers() {
     const q = this.customerSearch.toLowerCase();
     return this.customers.filter(c =>
-      c.firstName.toLowerCase().includes(q) ||
-      c.lastName.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      (c.name && c.name.toLowerCase().includes(q))
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.city || '').toLowerCase().includes(q)
     );
   }
 
   get filteredStaff() {
     const q = this.staffSearch.toLowerCase();
     return this.staff.filter(s =>
-      s.firstName.toLowerCase().includes(q) ||
-      s.lastName.toLowerCase().includes(q) ||
-      s.role.toLowerCase().includes(q) ||
-      (s.name && s.name.toLowerCase().includes(q))
+      (s.name || '').toLowerCase().includes(q) ||
+      (s.role || '').toLowerCase().includes(q) ||
+      (s.hotel || '').toLowerCase().includes(q)
     );
   }
 
-  get activeStaff()   { return this.staff.filter(s => s.isActive === true).length; }
-  get inactiveStaff() { return this.staff.filter(s => s.isActive === false).length; }
+  get activeStaff() {
+    return this.staff.filter(s => s.isActive === true).length;
+  }
+
+  get inactiveStaff() {
+    return this.staff.filter(s => s.isActive === false).length;
+  }
 
   openAddCustomer() {
     this.editingCustomer = {
@@ -213,39 +168,56 @@ export class AdminPeopleComponent {
       email: '',
       phone: '',
       address: '',
-      dob: '',
-      memberSince: new Date().getFullYear().toString(),
-      idType: 'Passport',
-      idNumber: '',
       isActive: true
     };
     this.showCustomerModal = true;
   }
 
-  openEditCustomer(c: Customer) {
+  openEditCustomer(c: CustomerDisplay) {
     this.editingCustomer = { ...c };
     this.showCustomerModal = true;
   }
 
   saveCustomer() {
+    this.isLoading = true;
+    this.errorMessage = '';
+
     if (this.editingCustomer.id) {
-      const idx = this.customers.findIndex(c => c.id === this.editingCustomer.id);
-      if (idx > -1) {
-        this.editingCustomer.name = `${this.editingCustomer.firstName} ${this.editingCustomer.lastName}`;
-        this.customers[idx] = { ...this.customers[idx], ...this.editingCustomer } as Customer;
-      }
+      this.userService.updateUser(this.editingCustomer.id, this.editingCustomer as Customer).subscribe({
+        next: () => {
+          this.loadCustomers();
+          this.showCustomerModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error updating customer:', err);
+          this.errorMessage = 'Failed to update customer. Please try again.';
+          this.isLoading = false;
+        }
+      });
     } else {
       const newCustomer = {
-        ...this.editingCustomer,
-        id: this.nextCustomerId++,
-        name: `${this.editingCustomer.firstName} ${this.editingCustomer.lastName}`,
-        city: 'City',
-        joined: new Date().getFullYear().toString(),
-        reservations: 0
-      } as Customer;
-      this.customers.push(newCustomer);
+        email: this.editingCustomer.email || '',
+        password: 'temp123',
+        firstName: this.editingCustomer.firstName || '',
+        lastName: this.editingCustomer.lastName || '',
+        phone: this.editingCustomer.phone || '',
+        address: this.editingCustomer.address || '',
+        isActive: true
+      };
+      this.userService.register(newCustomer as any).subscribe({
+        next: () => {
+          this.loadCustomers();
+          this.showCustomerModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error creating customer:', err);
+          this.errorMessage = 'Failed to create customer. Please try again.';
+          this.isLoading = false;
+        }
+      });
     }
-    this.showCustomerModal = false;
   }
 
   openAddStaff() {
@@ -255,36 +227,56 @@ export class AdminPeopleComponent {
       email: '',
       phone: '',
       role: 'Front Desk',
-      isActive: true,
-      since: new Date().getFullYear().toString()
+      isActive: true
     };
     this.showStaffModal = true;
   }
 
-  openEditStaff(s: Staff) {
+  openEditStaff(s: StaffDisplay) {
     this.editingStaff = { ...s };
     this.showStaffModal = true;
   }
 
   saveStaff() {
+    this.isLoading = true;
+    this.errorMessage = '';
+
     if (this.editingStaff.id) {
-      const idx = this.staff.findIndex(s => s.id === this.editingStaff.id);
-      if (idx > -1) {
-        this.editingStaff.name = `${this.editingStaff.firstName} ${this.editingStaff.lastName}`;
-        this.editingStaff.status = this.editingStaff.isActive ? 'active' : 'inactive';
-        this.staff[idx] = { ...this.staff[idx], ...this.editingStaff } as Staff;
-      }
+      this.staffService.updateStaff(this.editingStaff.id, this.editingStaff as Staff).subscribe({
+        next: () => {
+          this.loadStaff();
+          this.showStaffModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error updating staff:', err);
+          this.errorMessage = 'Failed to update staff. Please try again.';
+          this.isLoading = false;
+        }
+      });
     } else {
       const newStaff = {
-        ...this.editingStaff,
-        id: this.nextStaffId++,
-        name: `${this.editingStaff.firstName} ${this.editingStaff.lastName}`,
-        hotel: 'LuxStay Hotel',
-        status: this.editingStaff.isActive ? 'active' : 'inactive'
-      } as Staff;
-      this.staff.push(newStaff);
+        email: this.editingStaff.email || '',
+        password: 'staff123', // Default password
+        firstName: this.editingStaff.firstName || '',
+        lastName: this.editingStaff.lastName || '',
+        phone: this.editingStaff.phone || '',
+        role: this.editingStaff.role || 'Front Desk',
+        isActive: true
+      };
+      this.staffService.register(newStaff as Staff).subscribe({
+        next: () => {
+          this.loadStaff();
+          this.showStaffModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error creating staff:', err);
+          this.errorMessage = 'Failed to create staff. Please try again.';
+          this.isLoading = false;
+        }
+      });
     }
-    this.showStaffModal = false;
   }
 
   confirmDelete(type: 'customer' | 'staff', id: number) {
@@ -294,12 +286,37 @@ export class AdminPeopleComponent {
 
   executeDelete() {
     if (!this.deleteTarget) return;
+    this.isLoading = true;
+    this.errorMessage = '';
+
     if (this.deleteTarget.type === 'customer') {
-      this.customers = this.customers.filter(c => c.id !== this.deleteTarget!.id);
+      this.userService.deleteUser(this.deleteTarget.id).subscribe({
+        next: () => {
+          this.loadCustomers();
+          this.showDeleteConfirm = false;
+          this.deleteTarget = null;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error deleting customer:', err);
+          this.errorMessage = 'Failed to delete customer. Please try again.';
+          this.isLoading = false;
+        }
+      });
     } else {
-      this.staff = this.staff.filter(s => s.id !== this.deleteTarget!.id);
+      this.staffService.deleteStaff(this.deleteTarget.id).subscribe({
+        next: () => {
+          this.loadStaff();
+          this.showDeleteConfirm = false;
+          this.deleteTarget = null;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error deleting staff:', err);
+          this.errorMessage = 'Failed to delete staff. Please try again.';
+          this.isLoading = false;
+        }
+      });
     }
-    this.showDeleteConfirm = false;
-    this.deleteTarget = null;
   }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,11 +24,13 @@ public class RoomService {
 
     @Transactional
     public Room createRoom(Room room) {
-        if (room.getHotel() != null && room.getHotel().getId() != null) {
-            Hotel hotel = hotelRepo.findByIdAndDeletedAtIsNull(room.getHotel().getId())
-                    .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + room.getHotel().getId()));
-            room.setHotel(hotel);
+        if (room.getHotel() == null || room.getHotel().getId() == null) {
+            throw new RuntimeException("Hotel is required");
         }
+
+        Hotel hotel = hotelRepo.findByIdAndDeletedAtIsNull(room.getHotel().getId())
+                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + room.getHotel().getId()));
+        room.setHotel(hotel);
 
         if (room.getRoomType() != null && room.getRoomType().getId() != null) {
             RoomType roomType = roomTypeRepo.findByIdAndDeletedAtIsNull(room.getRoomType().getId())
@@ -35,7 +38,21 @@ public class RoomService {
             room.setRoomType(roomType);
         }
 
-        room.setIsActive(true);
+        if (room.getRoomAmenities() != null && !room.getRoomAmenities().isEmpty()) {
+            List<RoomAmenity> resolvedAmenities = new ArrayList<>();
+            for (RoomAmenity amenity : room.getRoomAmenities()) {
+                if (amenity.getId() != null) {
+                    RoomAmenity resolved = roomAmenityRepo.findByIdAndDeletedAtIsNull(amenity.getId())
+                            .orElseThrow(() -> new RuntimeException("Room amenity not found with id: " + amenity.getId()));
+                    resolvedAmenities.add(resolved);
+                }
+            }
+            room.setRoomAmenities(resolvedAmenities);
+        }
+
+        if (room.getIsActive() == null) {
+            room.setIsActive(true);
+        }
         return roomRepo.save(room);
     }
 
@@ -92,6 +109,17 @@ public class RoomService {
             Hotel hotel = hotelRepo.findByIdAndDeletedAtIsNull(updatedRoom.getHotel().getId())
                     .orElseThrow(() -> new RuntimeException("Hotel not found"));
             room.setHotel(hotel);
+        }
+        if (updatedRoom.getRoomAmenities() != null) {
+            List<RoomAmenity> resolvedAmenities = new ArrayList<>();
+            for (RoomAmenity amenity : updatedRoom.getRoomAmenities()) {
+                if (amenity.getId() != null) {
+                    RoomAmenity resolved = roomAmenityRepo.findByIdAndDeletedAtIsNull(amenity.getId())
+                            .orElseThrow(() -> new RuntimeException("Room amenity not found with id: " + amenity.getId()));
+                    resolvedAmenities.add(resolved);
+                }
+            }
+            room.setRoomAmenities(resolvedAmenities);
         }
 
         return roomRepo.save(room);

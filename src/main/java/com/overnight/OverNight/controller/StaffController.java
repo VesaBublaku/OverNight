@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/staff")
-@CrossOrigin(origins = {"http://localhost:4300"})
+@CrossOrigin(origins = {"http://localhost:4300", "http://localhost:4200"})
 @RequiredArgsConstructor
 public class StaffController {
 
@@ -22,7 +22,7 @@ public class StaffController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Staff loginRequest, HttpServletRequest request) {
-        System.out.println(" Staff login attempt for: " + loginRequest.getEmail());
+        System.out.println("Staff login attempt for: " + loginRequest.getEmail());
         Map<String, Object> response = staffService.login(
                 loginRequest.getEmail(),
                 loginRequest.getPasswordHash(),
@@ -32,10 +32,17 @@ public class StaffController {
     }
 
     @PostMapping("/register")
-    //@PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Staff staff, HttpServletRequest request) {
-        System.out.println(" Staff registration for: " + staff.getEmail());
+        System.out.println("📥 Staff registration for: " + staff.getEmail());
         Map<String, Object> response = staffService.register(staff, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/exists/{email}")
+    public ResponseEntity<Map<String, Boolean>> existsByEmail(@PathVariable String email) {
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", staffService.existsByEmail(email));
         return ResponseEntity.ok(response);
     }
 
@@ -145,12 +152,5 @@ public class StaffController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Staff>> getStaffByRole(@PathVariable String role) {
         return ResponseEntity.ok(staffService.getStaffByRole(role));
-    }
-
-    @GetMapping("/exists/{email}")
-    public ResponseEntity<Map<String, Boolean>> existsByEmail(@PathVariable String email) {
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("exists", staffService.existsByEmail(email));
-        return ResponseEntity.ok(response);
     }
 }

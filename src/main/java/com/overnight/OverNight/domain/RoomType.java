@@ -32,9 +32,6 @@ public class RoomType {
     @Column(name = "max_occupancy")
     private Integer maxOccupancy;
 
-    @Column(name = "icon")
-    private String icon; // For UI display
-
     @Column(name = "is_active")
     private Boolean isActive = true;
 

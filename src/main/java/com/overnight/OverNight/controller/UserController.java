@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody User loginRequest, HttpServletRequest request) {
-        System.out.println("📥 ===== LOGIN REQUEST =====");
+        System.out.println("===== LOGIN REQUEST =====");
         System.out.println("Email: " + loginRequest.getEmail());
         System.out.println("PasswordHash (from Angular): '" + loginRequest.getPasswordHash() + "'");
         System.out.println("PasswordHash length: " + (loginRequest.getPasswordHash() != null ? loginRequest.getPasswordHash().length() : 0));
