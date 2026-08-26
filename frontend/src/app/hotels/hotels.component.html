@@ -6,11 +6,23 @@
     <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
       <div>
         <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Hotels</div>
-        <h1 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">Explore hotels in style.</h1>
-        <p class="text-gray-500 text-sm font-light max-w-xl">Browse properties by city and brand — then open a hotel to see details and rooms.</p>
+        <h1 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">
+          {{ selectedChainName ? selectedChainName + ' Hotels' : 'Explore hotels in style.' }}
+        </h1>
+        <p class="text-gray-500 text-sm font-light max-w-xl">
+          {{ selectedChainName ? 'Browse all hotels from ' + selectedChainName : 'Browse properties by city and brand — then open a hotel to see details and rooms.' }}
+        </p>
         <p class="text-gray-400 text-xs mt-2" *ngIf="!isLoading">
           {{ filteredHotels.length }} hotels found
         </p>
+
+        <!-- ✅ Chain filter indicator -->
+        <div *ngIf="selectedChainName" class="mt-4 inline-flex items-center gap-2 bg-[#FAF5EF] border border-[#E8E3DB] rounded-full px-4 py-2">
+          <span class="text-xs text-gray-600">Filtering by: <strong>{{ selectedChainName }}</strong></span>
+          <button (click)="clearChainFilter()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors">
+            ✕
+          </button>
+        </div>
       </div>
     </div>
 
@@ -89,7 +101,6 @@
             class="w-full h-full object-cover"
             (error)="hotel.imageUrl = ''"
           />
-          <!-- Gradient Overlay -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
           <!-- Rating Badge -->
@@ -97,7 +108,6 @@
             {{ getStarRating(hotel.rating) }} {{ hotel.rating }}
           </div>
 
-          <!-- Content over image -->
           <div class="absolute bottom-5 left-5 right-5">
             <h3 class="text-xl font-serif text-white mb-1 drop-shadow-md">{{ hotel.name }}</h3>
             <div class="flex items-center gap-3">
@@ -112,7 +122,7 @@
           <p class="text-sm text-gray-500 font-light mb-2">{{ hotel.address || 'Address not available' }}</p>
           <p *ngIf="hotel.description" class="text-sm text-gray-400 font-light line-clamp-2 mb-4">{{ hotel.description }}</p>
 
-          <!-- ✅ FIXED: Amenities preview with safe checks -->
+          <!-- Amenities preview -->
           <div *ngIf="hotel.hotelAmenities && hotel.hotelAmenities.length > 0" class="flex flex-wrap gap-1 mb-4">
             <span *ngFor="let amenity of hotel.hotelAmenities.slice(0, 3)"
                   class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full">

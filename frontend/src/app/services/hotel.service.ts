@@ -19,7 +19,7 @@ export interface Hotel {
   checkOut?: string;
   hotelChainId?: number;
   hotelChainName?: string;
-  isActive?: boolean;  // ✅ Remove the '?', make it required
+  isActive?: boolean;
   rooms?: Room[];
   hotelAmenities?: any[];
 }
@@ -88,4 +88,5 @@ export class HotelService {
   getAllChains(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/chains`);
   }
+
 }

@@ -63,12 +63,25 @@ public class Room {
     )
     private List<RoomAmenity> roomAmenities = new ArrayList<>();
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
     @JsonProperty("hotelId")
+    public Long getHotelId() {
+        return hotel != null ? hotel.getId() : null;
+    }
+
+    @JsonProperty("hotelName")
+    public String getHotelName() {
+        return hotel != null ? hotel.getName() : null;
+    }
+
+    @JsonProperty("hotelCity")
+    public String getHotelCity() {
+        return hotel != null ? hotel.getCityName() : null;
+    }
+
     public void setHotelId(Long hotelId) {
         if (hotelId != null) {
             Hotel h = new Hotel();
@@ -86,10 +99,6 @@ public class Room {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    public String getHotelName() {
-        return hotel != null ? hotel.getName() : null;
     }
 
     public String getRoomTitle() {

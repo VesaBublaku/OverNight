@@ -1,6 +1,7 @@
 package com.overnight.OverNight.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -60,7 +61,6 @@ public class Hotel {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_chain_id")
     private HotelChain hotelChain;
@@ -108,5 +108,13 @@ public class Hotel {
 
     public String getCityName() {
         return city != null ? city.getName() : null;
+    }
+
+    public Long getHotelChainId() {
+        return hotelChain != null ? hotelChain.getId() : null;
+    }
+
+    public String getHotelChainName() {
+        return hotelChain != null ? hotelChain.getName() : null;
     }
 }

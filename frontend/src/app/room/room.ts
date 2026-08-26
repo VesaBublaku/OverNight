@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { RoomService, Room } from '../services/room.service';
 import { HotelService, Hotel } from '../services/hotel.service';
 
@@ -27,6 +27,8 @@ export class RoomComponent implements OnInit {
 
   searchQuery: string = '';
   selectedCity: string = '';
+  selectedHotelId: number | null = null;
+  selectedHotelName: string = '';
   minGuests: number = 1;
   maxPrice: number = 1000;
   amenityFilter: string = '';
@@ -40,13 +42,23 @@ export class RoomComponent implements OnInit {
   constructor(
     private roomService: RoomService,
     private hotelService: HotelService,
-    private cdr: ChangeDetectorRef  // ✅ Add ChangeDetectorRef
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     console.log('RoomComponent initialized!');
-    this.loadRooms();
-    this.loadHotels();
+
+    this.route.queryParams.subscribe(params => {
+      const hotelId = params['hotel'];
+      if (hotelId) {
+        this.selectedHotelId = parseInt(hotelId);
+        console.log('Filtering by hotel ID:', this.selectedHotelId);
+      }
+      this.loadRooms();
+      this.loadHotels();
+    });
   }
 
   loadRooms(): void {
@@ -66,10 +78,22 @@ export class RoomComponent implements OnInit {
           roomNumber: room.roomNumber || room.number || 'N/A',
           isActive: room.isActive === true
         }));
-        this.filteredRooms = this.rooms;
+
+        if (this.selectedHotelId) {
+          this.filteredRooms = this.rooms.filter(room =>
+            room.hotelId === this.selectedHotelId
+          );
+
+          const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
+          if (hotel) {
+            this.selectedHotelName = hotel.name || 'Hotel';
+          }
+        } else {
+          this.filteredRooms = this.rooms;
+        }
+
         this.extractCities();
         this.isLoading = false;
-
         this.cdr.detectChanges();
 
       },
@@ -77,7 +101,6 @@ export class RoomComponent implements OnInit {
         console.error('Error loading rooms:', err);
         this.errorMessage = 'Failed to load rooms. Please try again.';
         this.isLoading = false;
-
         this.cdr.detectChanges();
       }
     });
@@ -91,6 +114,13 @@ export class RoomComponent implements OnInit {
           isActive: hotel.isActive === true
         }));
         console.log('Hotels loaded for room lookup:', this.hotels.length);
+
+        if (this.selectedHotelId) {
+          const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
+          if (hotel) {
+            this.selectedHotelName = hotel.name || 'Hotel';
+          }
+        }
 
         this.cdr.detectChanges();
       },
@@ -114,7 +144,6 @@ export class RoomComponent implements OnInit {
     });
     this.cities = Array.from(citySet).sort();
     console.log('📊 Cities extracted:', this.cities);
-
     this.cdr.detectChanges();
   }
 
@@ -134,6 +163,14 @@ export class RoomComponent implements OnInit {
     if (!hotelId) return '';
     const hotel = this.hotels.find(h => h.id === hotelId);
     return hotel?.imageUrl || '';
+  }
+
+  clearHotelFilter(): void {
+    this.selectedHotelId = null;
+    this.selectedHotelName = '';
+    this.router.navigate(['/room']);
+    this.filteredRooms = this.rooms;
+    this.cdr.detectChanges();
   }
 
   applyFilters(): void {
@@ -163,6 +200,10 @@ export class RoomComponent implements OnInit {
         matches = matches && (hotelCity === this.selectedCity);
       }
 
+      if (this.selectedHotelId) {
+        matches = matches && (room.hotelId === this.selectedHotelId);
+      }
+
       if (this.minGuests > 1) {
         const roomCapacity = room.capacity || 0;
         matches = matches && (roomCapacity >= this.minGuests);
@@ -182,9 +223,7 @@ export class RoomComponent implements OnInit {
     });
 
     this.sortRooms();
-
     this.cdr.detectChanges();
-
     console.log('📊 Filtered rooms:', this.filteredRooms.length);
   }
 
@@ -196,25 +235,25 @@ export class RoomComponent implements OnInit {
       case 'price-high':
         this.filteredRooms.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
-      default: // featured
+      default:
         break;
     }
-
     this.cdr.detectChanges();
   }
 
   resetFilters(): void {
     this.searchQuery = '';
     this.selectedCity = '';
+    this.selectedHotelId = null;
+    this.selectedHotelName = '';
     this.minGuests = 1;
     this.maxPrice = 1000;
     this.amenityFilter = '';
     this.extendableOnly = false;
     this.sortBy = 'featured';
     this.filteredRooms = this.rooms;
-
+    this.router.navigate(['/room']);
     this.cdr.detectChanges();
-
     console.log('Filters reset');
   }
 

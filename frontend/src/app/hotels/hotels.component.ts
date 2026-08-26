@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HotelService, Hotel } from '../services/hotel.service';
 
 interface DisplayHotel extends Hotel {
@@ -23,22 +23,35 @@ export class HotelsComponent implements OnInit {
   filteredHotels: DisplayHotel[] = [];
   searchQuery: string = '';
   selectedCity: string = '';
+  selectedChainId: number | null = null;
+  selectedChainName: string = '';
   cities: string[] = [];
+  chains: string[] = [];
   isLoading: boolean = true;
   errorMessage: string = '';
 
   constructor(
     private hotelService: HotelService,
-    private cdr: ChangeDetectorRef ,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     console.log('HotelsComponent initialized!');
-    this.loadHotels();
+
+    this.route.queryParams.subscribe(params => {
+      const chainId = params['chain'];
+      if (chainId) {
+        this.selectedChainId = parseInt(chainId);
+        console.log('Filtering by chain ID:', this.selectedChainId);
+      }
+      this.loadHotels();
+    });
   }
 
   loadHotels(): void {
-    console.log('🔄 Loading hotels...');
+    console.log('Loading hotels...');
     this.isLoading = true;
     this.errorMessage = '';
 
@@ -61,15 +74,25 @@ export class HotelsComponent implements OnInit {
           hotelAmenities: hotel.hotelAmenities || []
         }));
 
-        this.filteredHotels = this.hotels;
-        this.extractCities();
-        this.isLoading = false;
+        if (this.selectedChainId) {
+          this.filteredHotels = this.hotels.filter(hotel =>
+            hotel.hotelChainId === this.selectedChainId
+          );
+          if (this.filteredHotels.length > 0) {
+            this.selectedChainName = this.filteredHotels[0].chain || 'Chain';
+          }
+        } else {
+          this.filteredHotels = this.hotels;
+        }
 
+        this.extractCities();
+        this.extractChains();
+        this.isLoading = false;
         this.cdr.detectChanges();
 
       },
       error: (err) => {
-        console.error(' Error loading hotels:', err);
+        console.error('Error loading hotels:', err);
         this.errorMessage = 'Failed to load hotels. Please try again.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -87,11 +110,22 @@ export class HotelsComponent implements OnInit {
       }
     });
     this.cities = Array.from(citySet).sort();
-    console.log('Cities extracted:', this.cities);
+    console.log('📊 Cities extracted:', this.cities);
+  }
+
+  extractChains(): void {
+    const chainSet = new Set<string>();
+    this.hotels.forEach(hotel => {
+      if (hotel.chain) {
+        chainSet.add(hotel.chain);
+      }
+    });
+    this.chains = Array.from(chainSet).sort();
+    console.log('📊 Chains extracted:', this.chains);
   }
 
   searchHotels(): void {
-    if (!this.searchQuery.trim() && !this.selectedCity) {
+    if (!this.searchQuery.trim() && !this.selectedCity && !this.selectedChainId) {
       this.filteredHotels = this.hotels;
       return;
     }
@@ -117,8 +151,20 @@ export class HotelsComponent implements OnInit {
         );
       }
 
+      if (this.selectedChainId) {
+        matches = matches && (hotel.hotelChainId === this.selectedChainId);
+      }
+
       return matches;
     });
+  }
+
+  clearChainFilter(): void {
+    this.selectedChainId = null;
+    this.selectedChainName = '';
+    this.router.navigate(['/hotels']);
+    this.filteredHotels = this.hotels;
+    this.cdr.detectChanges();
   }
 
   onCityChange(): void {
@@ -128,7 +174,11 @@ export class HotelsComponent implements OnInit {
   clearFilters(): void {
     this.searchQuery = '';
     this.selectedCity = '';
+    this.selectedChainId = null;
+    this.selectedChainName = '';
+    this.router.navigate(['/hotels']);
     this.filteredHotels = this.hotels;
+    this.cdr.detectChanges();
   }
 
   getImageUrl(hotel: DisplayHotel): string {
@@ -157,13 +207,17 @@ export class HotelsComponent implements OnInit {
 
   viewHotelDetails(hotelId?: number): void {
     if (hotelId) {
-      console.log('View hotel details for:', hotelId);
+      console.log('Viewing hotel details for:', hotelId);
+      this.router.navigateByUrl(`/hotel-details?id=${hotelId}`);
     }
   }
 
   viewRooms(hotelId?: number): void {
     if (hotelId) {
-      console.log('View rooms for hotel:', hotelId);
+      console.log('Viewing rooms for hotel:', hotelId);
+      this.router.navigate(['/room'], {
+        queryParams: { hotel: hotelId }
+      });
     }
   }
 }

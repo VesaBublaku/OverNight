@@ -1,15 +1,15 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';  // ✅ Add ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
+import { Header } from '../header/header';
+import { Footer } from '../footer/footer';
 import { HotelChainService, HotelChain } from '../services/hotel-chain.service';
-import {Header} from '../header/header';
-import {Footer} from '../footer/footer';
 
 @Component({
   selector: 'app-chain',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, Header, Footer],
+  imports: [CommonModule, FormsModule, Header, Footer],
   templateUrl: './chain.component.html',
   styleUrls: ['./chain.component.css']
 })
@@ -22,35 +22,39 @@ export class ChainComponent implements OnInit {
 
   constructor(
     private hotelChainService: HotelChainService,
-    private cdr: ChangeDetectorRef
+    private router: Router,
+    private cdr: ChangeDetectorRef  // ✅ Add ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    console.log('ChainComponent initialized!');
+    console.log('🚀 ChainComponent initialized!');
     this.loadChains();
   }
 
   loadChains(): void {
-    console.log('Loading chains...');
+    console.log('🔄 Loading chains...');
     this.isLoading = true;
     this.errorMessage = '';
 
     this.hotelChainService.getActiveHotelChains().subscribe({
       next: (data) => {
-        console.log('Chains loaded:', data);
-        console.log('Number of chains:', data?.length);
-
+        console.log('✅ Hotel chains loaded:', data);
         this.chains = data || [];
         this.filteredChains = data || [];
         this.isLoading = false;
 
+        // ✅ Force change detection
         this.cdr.detectChanges();
 
+        console.log('📊 Number of chains:', this.chains.length);
+        console.log('📊 isLoading set to:', this.isLoading);
       },
       error: (err) => {
-        console.error('Error loading chains:', err);
-        this.errorMessage = 'Failed to load hotel chains.';
+        console.error('❌ Error loading hotel chains:', err);
+        this.errorMessage = 'Failed to load hotel chains. Please try again.';
         this.isLoading = false;
+
+        // ✅ Force change detection on error too
         this.cdr.detectChanges();
       }
     });
@@ -59,26 +63,21 @@ export class ChainComponent implements OnInit {
   searchChains(): void {
     if (!this.searchQuery.trim()) {
       this.filteredChains = this.chains;
+      // ✅ Force change detection after reset
+      this.cdr.detectChanges();
       return;
     }
 
     this.hotelChainService.searchHotelChains(this.searchQuery).subscribe({
       next: (data) => {
         this.filteredChains = data || [];
+        // ✅ Force change detection after search
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error searching chains:', err);
       }
     });
-  }
-
-  getLogoText(name: string): string {
-    if (!name) return '?';
-    const words = name.split(' ');
-    if (words.length > 1) {
-      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-    }
-    return name.charAt(0).toUpperCase();
   }
 
   getImageUrl(chain: HotelChain): string {
@@ -90,7 +89,10 @@ export class ChainComponent implements OnInit {
 
   viewChainHotels(chainId?: number): void {
     if (chainId) {
-      console.log('View hotels for chain:', chainId);
+      console.log('Viewing hotels for chain:', chainId);
+      this.router.navigate(['/hotels'], {
+        queryParams: { chain: chainId }
+      });
     }
   }
 }
