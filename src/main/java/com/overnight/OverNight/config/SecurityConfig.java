@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -59,6 +60,7 @@ public class SecurityConfig {
                                 "/api/staff/exists/**",
                                 "/api/staff/register"
                         ).permitAll()
+                        // Public GET endpoints (no authentication required)
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
@@ -71,18 +73,21 @@ public class SecurityConfig {
                                 "/api/room-amenities/**",
                                 "/api/hotel-amenities/**",
                                 "/api/services/**",
-                                "/api/room-policies/**",
-                                "/api/payments/**",
-                                "/api/reservations/**",
-                                "/api/receipts/**",
-                                "/api/invoices/**"
+                                "/api/room-policies/**"
                         ).permitAll()
+                        // Admin only endpoints
                         .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/hotels/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
+                        // Staff and Admin endpoints
+                        .requestMatchers("/api/users", "/api/users/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/receipts", "/api/receipts/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/staff", "/api/staff/**").hasAnyRole("STAFF", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -21,7 +21,6 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<Payment>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
     }
@@ -47,13 +46,11 @@ public class PaymentController {
     }
 
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<Payment>> getPaymentsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(paymentService.getPaymentsByStatus(status));
     }
 
     @GetMapping("/method/{method}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<Payment>> getPaymentsByMethod(@PathVariable String method) {
         return ResponseEntity.ok(paymentService.getPaymentsByMethod(method));
     }
@@ -69,14 +66,12 @@ public class PaymentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
         Payment created = paymentService.createPayment(payment);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Payment> updatePayment(
             @PathVariable Long id,
             @RequestBody Payment payment) {
@@ -85,28 +80,24 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}/complete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Payment> completePayment(@PathVariable Long id) {
         Payment completed = paymentService.completePayment(id);
         return ResponseEntity.ok(completed);
     }
 
     @PutMapping("/{id}/fail")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Payment> failPayment(@PathVariable Long id) {
         Payment failed = paymentService.failPayment(id);
         return ResponseEntity.ok(failed);
     }
 
     @PutMapping("/{id}/refund")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Payment> refundPayment(@PathVariable Long id) {
         Payment refunded = paymentService.refundPayment(id);
         return ResponseEntity.ok(refunded);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deletePayment(@PathVariable Long id) {
         paymentService.deletePayment(id);
         Map<String, String> response = new HashMap<>();

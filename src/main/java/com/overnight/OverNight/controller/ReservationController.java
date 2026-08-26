@@ -71,14 +71,12 @@ public class ReservationController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
         Reservation created = reservationService.createReservation(reservation);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Reservation> updateReservation(
             @PathVariable Long id,
             @RequestBody Reservation reservation) {
@@ -87,7 +85,6 @@ public class ReservationController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteReservation(@PathVariable Long id) {
         reservationService.deleteReservation(id);
         Map<String, String> response = new HashMap<>();
@@ -102,21 +99,18 @@ public class ReservationController {
     }
 
     @PutMapping("/{id}/check-in")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Reservation> checkIn(@PathVariable Long id) {
         Reservation checkedIn = reservationService.checkIn(id);
         return ResponseEntity.ok(checkedIn);
     }
 
     @PutMapping("/{id}/check-out")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Reservation> checkOut(@PathVariable Long id) {
         Reservation checkedOut = reservationService.checkOut(id);
         return ResponseEntity.ok(checkedOut);
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<Reservation> updateStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> request) {

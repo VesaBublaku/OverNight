@@ -1,46 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { UserService, User } from '../services/user.service';
+import { ReservationService, Reservation } from '../services/reservation.service';
+import { RoomService, Room } from '../services/room.service';
+import { HotelService, Hotel } from '../services/hotel.service';
 
-interface Customer {
-  id: number;
-  firstName: string;
-  lastName: string;
-  name?: string;
-  email: string;
-  phone?: string;
-  address?: string;
+interface ExtendedUser extends User {
   dob?: string;
-  memberSince?: string;
   idType?: string;
   idNumber?: string;
-  isActive?: boolean;
-  city?: string;
-}
-
-interface Reservation {
-  id: number;
-  customerId: number;
-  customerName?: string;
-  customerEmail?: string;
-  roomId?: number;
-  roomNumber: string;
-  hotel: string;
-  checkIn: string;
-  checkOut: string;
-  total: number;
-  status: string;
-  nights?: number;
-  guests?: number;
-  requests?: string;
-}
-
-interface Room {
-  id: number;
-  number: string;
-  price: number;
-  hotel: string;
 }
 
 @Component({
@@ -49,245 +19,270 @@ interface Room {
   imports: [CommonModule, FormsModule],
   templateUrl: './staff.html',
 })
-export class StaffDashboardComponent {
+export class StaffDashboardComponent implements OnInit {
   showReservationModal = false;
   showCustomerModal = false;
   showDeleteConfirm = false;
 
   deleteTarget: { type: 'customer' | 'reservation'; id: number } | null = null;
 
-  editingReservation: Partial<Reservation> = {};
-  editingCustomer: Partial<Customer> = {};
+  editingReservation: any = {};
+  editingCustomer: Partial<ExtendedUser> = {};
 
   searchQuery = '';
 
-  customers: Customer[] = [
-    {
-      id: 1,
-      firstName: 'John',
-      lastName: 'Doe',
-      name: 'John Doe',
-      email: 'john.doe@email.com',
-      phone: '+1 416-555-0123',
-      address: '123 Main St, Toronto, ON',
-      dob: '1985-05-15',
-      memberSince: '2025',
-      idType: 'Passport',
-      idNumber: 'AB123456',
-      isActive: true,
-      city: 'Toronto'
-    },
-    {
-      id: 2,
-      firstName: 'Jane',
-      lastName: 'Smith',
-      name: 'Jane Smith',
-      email: 'jane.smith@email.com',
-      phone: '+1 604-555-0456',
-      address: '456 Oak Ave, Vancouver, BC',
-      dob: '1990-08-22',
-      memberSince: '2025',
-      idType: "Driver's Lic",
-      idNumber: 'DL789012',
-      isActive: true,
-      city: 'Vancouver'
-    },
-    {
-      id: 3,
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      name: 'Robert Johnson',
-      email: 'robert.j@email.com',
-      phone: '+1 514-555-0789',
-      address: '789 Pine St, Montreal, QC',
-      dob: '1978-12-03',
-      memberSince: '2024',
-      idType: 'National ID',
-      idNumber: 'NI345678',
-      isActive: true,
-      city: 'Montreal'
-    },
-  ];
+  customers: ExtendedUser[] = [];
+  reservations: Reservation[] = [];
+  availableRooms: Room[] = [];
+  hotels: Hotel[] = [];
+  isLoading = false;
+  errorMessage = '';
 
-  reservations: Reservation[] = [
-    {
-      id: 1,
-      customerId: 1,
-      customerName: 'John Doe',
-      customerEmail: 'john.doe@email.com',
-      roomId: 1,
-      roomNumber: '217',
-      hotel: 'Marriott St Johns East',
-      checkIn: '2026-08-20',
-      checkOut: '2026-08-25',
-      total: 1504.30,
-      status: 'active',
-      nights: 5,
-      guests: 2
-    },
-    {
-      id: 2,
-      customerId: 2,
-      customerName: 'Jane Smith',
-      customerEmail: 'jane.smith@email.com',
-      roomId: 4,
-      roomNumber: '122',
-      hotel: 'Delta Coventry Suites',
-      checkIn: '2026-09-01',
-      checkOut: '2026-09-05',
-      total: 1652.84,
-      status: 'upcoming',
-      nights: 4,
-      guests: 3
-    },
-  ];
+  constructor(
+    private userService: UserService,
+    private reservationService: ReservationService,
+    private roomService: RoomService,
+    private hotelService: HotelService,
+    private router: Router
+  ) {}
 
-  private nextReservationId = 3;
+  ngOnInit(): void {
+    this.loadCustomers();
+    this.loadReservations();
+    this.loadAvailableRooms();
+    this.loadHotels();
+  }
 
-  constructor(private router: Router) {}
+  loadCustomers(): void {
+    this.isLoading = true;
+    this.userService.getAllUsers().subscribe({
+      next: (data) => {
+        this.customers = (data || []).map(user => ({
+          ...user,
+          dob: (user as any).dob || '',
+          idType: (user as any).idType || '',
+          idNumber: (user as any).idNumber || ''
+        }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading customers:', err);
+        this.errorMessage = 'Failed to load customers. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadReservations(): void {
+    this.reservationService.getAllReservations().subscribe({
+      next: (data) => {
+        this.reservations = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading reservations:', err);
+      }
+    });
+  }
+
+  loadAvailableRooms(): void {
+    this.roomService.getActiveRooms().subscribe({
+      next: (data) => {
+        this.availableRooms = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading available rooms:', err);
+      }
+    });
+  }
+
+  loadHotels(): void {
+    this.hotelService.getAllHotels().subscribe({
+      next: (data) => {
+        this.hotels = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading hotels:', err);
+      }
+    });
+  }
 
   get totalCustomers(): number {
     return this.customers.length;
   }
 
   get activeReservations(): number {
-    return this.reservations.filter(r => r.status === 'active').length;
+    return this.reservations.filter(r =>
+      r.status === 'ACTIVE' || r.status === 'active'
+    ).length;
   }
 
   get upcomingReservations(): number {
-    return this.reservations.filter(r => r.status === 'upcoming').length;
+    return this.reservations.filter(r =>
+      r.status === 'UPCOMING' || r.status === 'upcoming'
+    ).length;
   }
 
   get totalRevenue(): string {
-    return this.reservations
-      .filter(r => r.status === 'active' || r.status === 'completed')
-      .reduce((sum, r) => sum + r.total, 0)
-      .toFixed(2);
+    const total = this.reservations
+      .filter(r => r.status === 'ACTIVE' || r.status === 'active' || r.status === 'COMPLETED' || r.status === 'completed')
+      .reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+    return total.toFixed(2);
   }
 
-  get filteredCustomers(): Customer[] {
+  get filteredCustomers(): ExtendedUser[] {
     const q = this.searchQuery.toLowerCase();
     return this.customers.filter(c =>
-      (c.name?.toLowerCase().includes(q) || false) ||
       (c.firstName?.toLowerCase().includes(q) || false) ||
       (c.lastName?.toLowerCase().includes(q) || false) ||
       c.email.toLowerCase().includes(q) ||
       (c.phone?.includes(q) || false) ||
-      (c.city?.toLowerCase().includes(q) || false)
+      (c.address?.toLowerCase().includes(q) || false)
     );
   }
 
-  getCustomerReservations(customerId: number): Reservation[] {
+  getCustomerReservations(customerId: number | undefined): Reservation[] {
+    if (!customerId) return [];
     return this.reservations.filter(r =>
-      r.customerId === customerId &&
-      (r.status === 'active' || r.status === 'upcoming')
+      r.user?.id === customerId &&
+      (r.status === 'ACTIVE' || r.status === 'active' || r.status === 'UPCOMING' || r.status === 'upcoming')
     );
   }
 
-  get availableRooms(): Room[] {
-    return [
-      { id: 1, number: '217', price: 300.86, hotel: 'Marriott St Johns East' },
-      { id: 2, number: '218', price: 260.00, hotel: 'Marriott St Johns East' },
-      { id: 3, number: '219', price: 350.00, hotel: 'Marriott St Johns East' },
-      { id: 4, number: '122', price: 413.21, hotel: 'Delta Coventry Suites' },
-    ];
+  getHotelNameForRoom(room: Room | null | undefined): string {
+    if (!room) return 'Hotel';
+    if (!room.hotelId) return 'Hotel';
+
+    const hotel = this.hotels.find(h => h.id === room.hotelId);
+    return hotel?.name || 'Hotel';
   }
 
-  openEditCustomer(customer: Customer): void {
+  getRoomNumber(room: Room | null | undefined): string {
+    if (!room) return '---';
+    return room.roomNumber || '---';
+  }
+
+  confirmDelete(type: 'customer' | 'reservation', id: number | undefined): void {
+    if (!id) return;
+    this.deleteTarget = { type, id };
+    this.showDeleteConfirm = true;
+  }
+
+  getHotelNameById(hotelId?: number): string {
+    if (!hotelId) return 'Hotel';
+    const hotel = this.hotels.find(h => h.id === hotelId);
+    return hotel?.name || 'Hotel';
+  }
+
+  openEditCustomer(customer: ExtendedUser): void {
     this.editingCustomer = { ...customer };
     this.showCustomerModal = true;
   }
 
   saveCustomer(): void {
-    if (this.editingCustomer.id) {
-      const idx = this.customers.findIndex(c => c.id === this.editingCustomer.id);
-      if (idx > -1) {
-        this.editingCustomer.name = `${this.editingCustomer.firstName} ${this.editingCustomer.lastName}`;
-        this.customers[idx] = { ...this.customers[idx], ...this.editingCustomer } as Customer;
+    if (!this.editingCustomer.id) return;
+
+    this.isLoading = true;
+    this.userService.updateUser(this.editingCustomer.id, this.editingCustomer as User).subscribe({
+      next: () => {
+        this.loadCustomers();
+        this.showCustomerModal = false;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error updating customer:', err);
+        this.errorMessage = 'Failed to update customer.';
+        this.isLoading = false;
       }
-    } else {
-      const newCustomer = {
-        ...this.editingCustomer,
-        id: this.customers.length + 1,
-        name: `${this.editingCustomer.firstName} ${this.editingCustomer.lastName}`,
-        isActive: true
-      } as Customer;
-      this.customers.push(newCustomer);
-    }
-    this.showCustomerModal = false;
-    this.editingCustomer = {};
+    });
   }
 
   openAddReservation(customerId?: number): void {
     this.editingReservation = {
-      customerId: customerId || undefined,
-      roomId: undefined,
-      checkIn: '',
-      checkOut: '',
+      user: customerId ? { id: customerId } : null,
+      room: null,
+      checkInDate: '',
+      checkOutDate: '',
       guests: 1,
-      requests: '',
-      status: 'upcoming'
+      specialRequests: '',
+      status: 'UPCOMING'
     };
     this.showReservationModal = true;
   }
 
-  saveReservation(): void {
-    if (this.editingReservation.id) {
-      const idx = this.reservations.findIndex(r => r.id === this.editingReservation.id);
-      if (idx > -1) {
-        this.reservations[idx] = { ...this.reservations[idx], ...this.editingReservation } as Reservation;
-      }
-    } else {
-      const customer = this.customers.find(c => c.id === this.editingReservation.customerId);
-      const room = this.availableRooms.find(r => r.id === this.editingReservation.roomId);
-
-      const newReservation: Reservation = {
-        id: this.nextReservationId++,
-        customerId: this.editingReservation.customerId || 0,
-        customerName: customer?.name || customer?.firstName + ' ' + customer?.lastName || 'Guest',
-        customerEmail: customer?.email || '',
-        roomId: this.editingReservation.roomId || 0,
-        roomNumber: room?.number || '',
-        hotel: room?.hotel || '',
-        checkIn: this.editingReservation.checkIn || '',
-        checkOut: this.editingReservation.checkOut || '',
-        nights: 0,
-        guests: this.editingReservation.guests || 1,
-        total: 0,
-        status: 'upcoming',
-        requests: this.editingReservation.requests || ''
-      };
-
-      this.reservations.push(newReservation);
-    }
-
-    this.showReservationModal = false;
-    this.editingReservation = {};
+  openEditReservation(reservation: any): void {
+    this.editingReservation = { ...reservation };
+    this.showReservationModal = true;
   }
 
-  confirmDelete(type: 'customer' | 'reservation', id: number): void {
-    this.deleteTarget = { type, id };
-    this.showDeleteConfirm = true;
+  saveReservation(): void {
+    this.isLoading = true;
+
+    const reservationData = {
+      user: this.editingReservation.user ? { id: this.editingReservation.user.id } : null,
+      room: this.editingReservation.room ? { id: this.editingReservation.room.id } : null,
+      checkInDate: this.editingReservation.checkInDate,
+      checkOutDate: this.editingReservation.checkOutDate,
+      guests: this.editingReservation.guests || 1,
+      specialRequests: this.editingReservation.specialRequests || '',
+      status: this.editingReservation.status || 'UPCOMING'
+    };
+
+    if (this.editingReservation.id) {
+      this.reservationService.updateReservation(this.editingReservation.id, reservationData).subscribe({
+        next: () => {
+          this.loadReservations();
+          this.showReservationModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error updating reservation:', err);
+          this.errorMessage = 'Failed to update reservation.';
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.reservationService.createReservation(reservationData).subscribe({
+        next: () => {
+          this.loadReservations();
+          this.showReservationModal = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error creating reservation:', err);
+          this.errorMessage = 'Failed to create reservation.';
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   executeDelete(): void {
     if (!this.deleteTarget) return;
 
-    if (this.deleteTarget.type === 'customer') {
+    if (this.deleteTarget.type === 'reservation') {
+      this.reservationService.cancelReservation(this.deleteTarget.id).subscribe({
+        next: () => {
+          this.loadReservations();
+          this.showDeleteConfirm = false;
+          this.deleteTarget = null;
+        },
+        error: (err) => {
+          console.error('Error cancelling reservation:', err);
+        }
+      });
+    } else {
       this.customers = this.customers.filter(c => c.id !== this.deleteTarget!.id);
-      this.reservations = this.reservations.filter(r => r.customerId !== this.deleteTarget!.id);
-    } else if (this.deleteTarget.type === 'reservation') {
-      const reservation = this.reservations.find(r => r.id === this.deleteTarget!.id);
-      if (reservation) {
-        reservation.status = 'cancelled';
-      }
+      this.showDeleteConfirm = false;
+      this.deleteTarget = null;
     }
-
-    this.showDeleteConfirm = false;
-    this.deleteTarget = null;
   }
 
   goToPayments(): void {
     this.router.navigate(['/staff/payments']);
+  }
+
+  getCustomerName(user: any): string {
+    if (!user) return 'Guest';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Guest';
   }
 }

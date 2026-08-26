@@ -96,19 +96,16 @@ public class StaffController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Staff>> getAllStaff() {
         return ResponseEntity.ok(staffService.getAllStaff());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Staff> getStaffById(@PathVariable Long id) {
         return ResponseEntity.ok(staffService.getStaffById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Staff> updateStaff(
             @PathVariable Long id,
             @RequestBody Staff updatedStaff,
@@ -118,7 +115,6 @@ public class StaffController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteStaff(
             @PathVariable Long id,
             HttpServletRequest request) {
@@ -129,7 +125,6 @@ public class StaffController {
     }
 
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> activateStaff(
             @PathVariable Long id) {
         staffService.activateStaff(id);
@@ -139,7 +134,6 @@ public class StaffController {
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deactivateStaff(
             @PathVariable Long id) {
         staffService.deactivateStaff(id);
@@ -149,7 +143,6 @@ public class StaffController {
     }
 
     @GetMapping("/role/{role}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Staff>> getStaffByRole(@PathVariable String role) {
         return ResponseEntity.ok(staffService.getStaffByRole(role));
     }

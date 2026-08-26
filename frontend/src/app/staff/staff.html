@@ -68,11 +68,12 @@
           <!-- Customer Info -->
           <div class="col-span-2 flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#D9BE84]/40 to-[#BCA47B]/40 flex items-center justify-center shrink-0 border border-[#D9BE84]/20">
-              <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.name?.charAt(0) || c.firstName?.charAt(0) || '?'}}</span>
+              <!-- FIX: Removed optional chain since firstName is required -->
+              <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.firstName.charAt(0) || '?'}}</span>
             </div>
             <div>
-              <div class="text-gray-900 text-sm font-medium">{{c.name || c.firstName + ' ' + c.lastName}}</div>
-              <div class="text-gray-400 text-xs font-light">{{c.city || 'N/A'}}</div>
+              <div class="text-gray-900 text-sm font-medium">{{c.firstName}} {{c.lastName}}</div>
+              <div class="text-gray-400 text-xs font-light">{{c.email}}</div>
             </div>
           </div>
 
@@ -87,8 +88,10 @@
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0; else noReservation">
               <div *ngFor="let r of getCustomerReservations(c.id)" class="mb-1 last:mb-0">
                 <div class="flex items-center gap-2">
-                  <span class="text-gray-900 text-sm font-medium">#{{r.roomNumber}}</span>
-                  <span class="text-gray-500 text-xs">{{r.hotel}}</span>
+                  <!-- FIX: Use getRoomNumber helper -->
+                  <span class="text-gray-900 text-sm font-medium">#{{getRoomNumber(r.room)}}</span>
+                  <!-- FIX: Use getHotelNameForRoom helper -->
+                  <span class="text-gray-500 text-xs">{{getHotelNameForRoom(r.room)}}</span>
                 </div>
               </div>
             </ng-container>
@@ -101,8 +104,8 @@
           <div class="col-span-2">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0">
               <div *ngFor="let r of getCustomerReservations(c.id)" class="mb-1 last:mb-0">
-                <div class="text-gray-900 text-xs">{{r.checkIn}} → {{r.checkOut}}</div>
-                <div class="text-[#BCA47B] text-xs font-medium">${{r.total}}</div>
+                <div class="text-gray-900 text-xs">{{r.checkInDate}} → {{r.checkOutDate}}</div>
+                <div class="text-[#BCA47B] text-xs font-medium">${{r.totalPrice}}</div>
               </div>
             </ng-container>
           </div>
@@ -111,8 +114,12 @@
           <div class="col-span-1">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0">
               <span *ngFor="let r of getCustomerReservations(c.id)"
-                    [class.bg-emerald-50]="r.status==='active'" [class.text-emerald-600]="r.status==='active'" [class.border-emerald-100]="r.status==='active'"
-                    [class.bg-blue-50]="r.status==='upcoming'" [class.text-blue-600]="r.status==='upcoming'" [class.border-blue-100]="r.status==='upcoming'"
+                    [class.bg-emerald-50]="r.status==='active' || r.status==='ACTIVE'"
+                    [class.text-emerald-600]="r.status==='active' || r.status==='ACTIVE'"
+                    [class.border-emerald-100]="r.status==='active' || r.status==='ACTIVE'"
+                    [class.bg-blue-50]="r.status==='upcoming' || r.status==='UPCOMING'"
+                    [class.text-blue-600]="r.status==='upcoming' || r.status==='UPCOMING'"
+                    [class.border-blue-100]="r.status==='upcoming' || r.status==='UPCOMING'"
                     class="border px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase inline-block">
                 {{r.status}}
               </span>
@@ -127,7 +134,8 @@
             <button (click)="openEditCustomer(c)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
               Edit
             </button>
-            <button (click)="confirmDelete('customer', c.id)" class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
+            <!-- FIX: Added null check in confirmDelete -->
+            <button (click)="c.id && confirmDelete('customer', c.id)" class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
               Delete
             </button>
           </div>
@@ -151,37 +159,47 @@
     <p class="text-gray-500 text-sm font-light mb-8">Book a room for a customer.</p>
 
     <div class="space-y-5">
+      <!-- Customer -->
       <div>
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Customer</label>
-        <select [(ngModel)]="editingReservation.customerId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-          <option value="" disabled>Select a customer</option>
-          <option *ngFor="let c of customers" [value]="c.id">{{c.name || c.firstName + ' ' + c.lastName}} - {{c.email}}</option>
+        <select [ngModel]="editingReservation.user?.id" (ngModelChange)="editingReservation.user = {id: $event}" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option [value]="undefined">Select a customer</option>
+          <option *ngFor="let c of customers" [value]="c.id">{{c.firstName}} {{c.lastName}} - {{c.email}}</option>
         </select>
       </div>
+
+      <!-- Room -->
       <div>
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel & Room</label>
-        <select [(ngModel)]="editingReservation.roomId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-          <option value="" disabled>Select a room</option>
-          <option *ngFor="let r of availableRooms" [value]="r.id">{{r.hotel}} - Room #{{r.number}} (${{r.price}}/night)</option>
+        <select [ngModel]="editingReservation.room?.id" (ngModelChange)="editingReservation.room = {id: $event}" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option [value]="undefined">Select a room</option>
+          <!-- FIX: Use getHotelNameForRoom and getRoomNumber -->
+          <option *ngFor="let r of availableRooms" [value]="r.id">{{getHotelNameForRoom(r)}} - Room #{{getRoomNumber(r)}} (${{r.price}}/night)</option>
         </select>
       </div>
+
+      <!-- Dates -->
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-in Date</label>
-          <input [(ngModel)]="editingReservation.checkIn" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <input [(ngModel)]="editingReservation.checkInDate" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
         </div>
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-out Date</label>
-          <input [(ngModel)]="editingReservation.checkOut" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          <input [(ngModel)]="editingReservation.checkOutDate" type="date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
         </div>
       </div>
+
+      <!-- Guests -->
       <div>
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Guests</label>
         <input [(ngModel)]="editingReservation.guests" type="number" min="1" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Number of guests" />
       </div>
+
+      <!-- Special Requests -->
       <div>
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Special Requests</label>
-        <textarea [(ngModel)]="editingReservation.requests" rows="2" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Any special requests or notes"></textarea>
+        <textarea [(ngModel)]="editingReservation.specialRequests" rows="2" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Any special requests or notes"></textarea>
       </div>
     </div>
 
