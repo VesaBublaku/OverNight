@@ -8,21 +8,38 @@
         <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Hotels</div>
         <h1 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">Explore hotels in style.</h1>
         <p class="text-gray-500 text-sm font-light max-w-xl">Browse properties by city and brand — then open a hotel to see details and rooms.</p>
+        <p class="text-gray-400 text-xs mt-2" *ngIf="!isLoading">
+          {{ filteredHotels.length }} hotels found
+        </p>
       </div>
-
     </div>
 
+    <!-- Filters -->
     <div class="flex flex-col md:flex-row items-center gap-4">
       <div class="w-full md:flex-1">
-        <input type="text" placeholder="Search hotels..." class="w-full border border-gray-200 rounded-full px-5 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="searchHotels()"
+          placeholder="Search hotels by name, city, or chain..."
+          class="w-full border border-gray-200 rounded-full px-5 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+        />
       </div>
       <div class="w-full md:w-64">
-        <select class="w-full bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm text-gray-700 font-light focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none cursor-pointer">
-          <option>All</option>
+        <select
+          [(ngModel)]="selectedCity"
+          (ngModelChange)="onCityChange()"
+          class="w-full bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm text-gray-700 font-light focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none cursor-pointer"
+        >
+          <option value="">All Cities</option>
+          <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
         </select>
       </div>
       <div class="w-full md:w-auto">
-        <button class="w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-400 rounded-full px-6 py-2.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">
+        <button
+          (click)="clearFilters()"
+          class="w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-400 rounded-full px-6 py-2.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors"
+        >
           Clear Filters
         </button>
       </div>
@@ -33,37 +50,96 @@
 <!-- Main Content Grid (Beige background) -->
 <section class="bg-[#FAF8F5] min-h-screen py-12 px-4">
   <div class="max-w-[85rem] mx-auto sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      <div *ngFor="let hotel of hotels" class="bg-white rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.03)] overflow-hidden border border-gray-50 flex flex-col h-full">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#BCA47B] border-t-transparent"></div>
+        <p class="mt-4 text-gray-500">Loading hotels...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage" class="text-center py-20">
+      <div class="text-red-500">
+        <p class="text-lg">{{ errorMessage }}</p>
+        <button (click)="loadHotels()" class="mt-4 bg-[#111827] hover:bg-black text-white px-6 py-2 rounded-full text-sm transition-colors">
+          Retry
+        </button>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div *ngIf="!isLoading && !errorMessage && filteredHotels.length === 0" class="text-center py-20">
+      <p class="text-gray-400 text-lg">No hotels found matching your criteria.</p>
+      <button (click)="clearFilters()" class="mt-4 text-[#BCA47B] hover:text-[#A08B6B] transition-colors">
+        Clear all filters
+      </button>
+    </div>
+
+    <!-- Hotel Grid -->
+    <div *ngIf="!isLoading && !errorMessage && filteredHotels.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let hotel of filteredHotels" class="bg-white rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.03)] overflow-hidden border border-gray-50 flex flex-col h-full hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-shadow duration-300">
+
         <!-- Image Area -->
         <div class="relative h-48 w-full shrink-0">
-          <img [src]="hotel.image" class="w-full h-full object-cover" />
+          <img
+            [src]="getImageUrl(hotel)"
+            [alt]="hotel.name"
+            class="w-full h-full object-cover"
+            (error)="hotel.imageUrl = ''"
+          />
           <!-- Gradient Overlay -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
+          <!-- Rating Badge -->
+          <div *ngIf="hotel.rating" class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold">
+            {{ getStarRating(hotel.rating) }} {{ hotel.rating }}
+          </div>
+
           <!-- Content over image -->
           <div class="absolute bottom-5 left-5 right-5">
-            <h3 class="text-xl font-serif text-white mb-1 drop-shadow-md">{{hotel.title}}</h3>
-            <div class="text-[10px] font-semibold text-gray-300 tracking-[0.2em] uppercase">{{hotel.city}}</div>
+            <h3 class="text-xl font-serif text-white mb-1 drop-shadow-md">{{ hotel.name }}</h3>
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] font-semibold text-gray-300 tracking-[0.2em] uppercase">{{ getCityName(hotel) }}</span>
+              <span *ngIf="hotel.chain" class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.2em] uppercase">• {{ hotel.chain }}</span>
+            </div>
           </div>
         </div>
 
         <!-- Bottom Info Area -->
         <div class="p-6 flex flex-col flex-grow">
-          <p class="text-sm text-gray-500 font-light mb-8">{{hotel.address}}</p>
+          <p class="text-sm text-gray-500 font-light mb-2">{{ hotel.address || 'Address not available' }}</p>
+          <p *ngIf="hotel.description" class="text-sm text-gray-400 font-light line-clamp-2 mb-4">{{ hotel.description }}</p>
 
-          <div class="mt-auto flex items-center justify-between pt-2">
-            <a routerLink="/hotel-details" class="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-4 py-2 text-[9px] font-semibold tracking-[0.15em] uppercase transition-colors">
+          <!-- ✅ FIXED: Amenities preview with safe checks -->
+          <div *ngIf="hotel.hotelAmenities && hotel.hotelAmenities.length > 0" class="flex flex-wrap gap-1 mb-4">
+            <span *ngFor="let amenity of hotel.hotelAmenities.slice(0, 3)"
+                  class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+              {{ amenity?.name || amenity }}
+            </span>
+            <span *ngIf="hotel.hotelAmenities.length > 3"
+                  class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+              +{{ hotel.hotelAmenities.length - 3 }}
+            </span>
+          </div>
+
+          <div class="mt-auto flex items-center justify-between pt-2 border-t border-gray-50">
+            <button
+              (click)="viewHotelDetails(hotel.id)"
+              class="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-4 py-2 text-[9px] font-semibold tracking-[0.15em] uppercase transition-colors"
+            >
               View Details
-            </a>
-            <a routerLink="/room" class="text-gray-400 hover:text-gray-900 text-[9px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-1.5">
+            </button>
+            <button
+              (click)="viewRooms(hotel.id)"
+              class="text-gray-400 hover:text-gray-900 text-[9px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-1.5"
+            >
               Rooms <span>&rsaquo;</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </section>

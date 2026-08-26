@@ -40,7 +40,7 @@ public class DataSeeder implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (cityRepository.count() > 0) {
-            System.out.println(" Database already seeded. Skipping...");
+            System.out.println("✅ Database already seeded. Skipping...");
             return;
         }
 
@@ -62,7 +62,7 @@ public class DataSeeder implements CommandLineRunner {
         List<RoomAmenity> roomAmenities = createRoomAmenities();
         roomAmenityRepository.saveAll(roomAmenities);
 
-        // 5. Create Hotels
+        // 5. Create Hotels (linked to chains and cities)
         List<Hotel> hotels = createHotels(cities, hotelChains, hotelAmenities);
         hotelRepository.saveAll(hotels);
 
@@ -70,39 +70,50 @@ public class DataSeeder implements CommandLineRunner {
         List<RoomType> roomTypes = createRoomTypes(hotels);
         roomTypeRepository.saveAll(roomTypes);
 
-        // 7. Create Rooms
+        // 7. Create Rooms (linked to hotels)
         List<Room> rooms = createRooms(hotels, roomTypes, roomAmenities);
         roomRepository.saveAll(rooms);
 
-        // 8. Create Room Policies
+        // 8. Update hotel counts for chains
+        updateHotelChainCounts(hotelChains, hotels);
+
+        // 9. Create Room Policies
         List<RoomPolicy> policies = createRoomPolicies(hotels);
         roomPolicyRepository.saveAll(policies);
 
-        // 9. Create Services
+        // 10. Create Services
         List<Service> services = createServices(hotels);
         serviceRepository.saveAll(services);
 
-        // 10. Create Users
+        // 11. Create Users
         List<User> users = createUsers();
         userRepository.saveAll(users);
 
-        // 11. Create Staff
+        // 12. Create Staff
         List<Staff> staff = createStaff();
         staffRepository.saveAll(staff);
 
-        // 12. Create Reservations
+        // 13. Create Reservations
         List<Reservation> reservations = createReservations(users, rooms);
         reservationRepository.saveAll(reservations);
 
-        // 13. Create Payments
+        // 14. Create Payments
         List<Payment> payments = createPayments(reservations, users);
         paymentRepository.saveAll(payments);
 
-        // 14. Create Receipts
+        // 15. Create Receipts
         List<Receipt> receipts = createReceipts(payments, reservations, users);
         receiptRepository.saveAll(receipts);
 
         System.out.println("✅ Database seeding completed successfully!");
+        System.out.println("📊 Summary:");
+        System.out.println("   - Cities: " + cities.size());
+        System.out.println("   - Hotel Chains: " + hotelChains.size());
+        System.out.println("   - Hotels: " + hotels.size());
+        System.out.println("   - Rooms: " + rooms.size());
+        System.out.println("   - Users: " + users.size());
+        System.out.println("   - Staff: " + staff.size());
+        System.out.println("   - Reservations: " + reservations.size());
     }
 
     private List<City> createCities() {
@@ -194,47 +205,126 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private List<Hotel> createHotels(List<City> cities, List<HotelChain> chains, List<HotelAmenity> amenities) {
-        return Arrays.asList(
-                createHotel("Toronto Marriott Downtown", cities.get(0), chains.get(0), "110 Queen St W, Toronto, ON", "info.toronto@marriott.com", "4"),
-                createHotel("Hilton Vancouver", cities.get(1), chains.get(1), "433 Robson St, Vancouver, BC", "vancouver@hilton.com", "5"),
-                createHotel("Accor Le Mont-Royal", cities.get(2), chains.get(2), "1230 Rue de la Montagne, Montreal, QC", "montreal@accor.com", "4"),
-                createHotel("The Plaza Hotel", cities.get(3), chains.get(3), "768 5th Ave, New York, NY", "plaza@ihg.com", "5"),
-                createHotel("Hyatt Regency LA", cities.get(4), chains.get(4), "711 S Hope St, Los Angeles, CA", "la@hyatt.com", "4"),
-                createHotel("Marriott Chicago", cities.get(5), chains.get(0), "540 N Michigan Ave, Chicago, IL", "chicago@marriott.com", "4"),
-                createHotel("Hilton London", cities.get(6), chains.get(1), "22 Park Lane, London, UK", "london@hilton.com", "5"),
-                createHotel("Accor Paris", cities.get(7), chains.get(2), "40 Rue de Rivoli, Paris, France", "paris@accor.com", "4"),
-                createHotel("Hyatt Tokyo", cities.get(8), chains.get(4), "2-7-2 Nishi-Shinjuku, Tokyo, Japan", "tokyo@hyatt.com", "4"),
-                createHotel("Marriott Sydney", cities.get(9), chains.get(0), "161 Sussex St, Sydney, Australia", "sydney@marriott.com", "5")
-        );
+        List<Hotel> hotels = new ArrayList<>();
+
+        // Marriott Hotels (Chain 0)
+        hotels.add(createHotel("Toronto Marriott Downtown", cities.get(0), chains.get(0),
+                "110 Queen St W, Toronto, ON", "info.toronto@marriott.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(4), amenities.get(7))));
+        hotels.add(createHotel("Marriott Vancouver", cities.get(1), chains.get(0),
+                "1128 W Georgia St, Vancouver, BC", "vancouver@marriott.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(4), amenities.get(8))));
+        hotels.add(createHotel("Marriott Chicago", cities.get(5), chains.get(0),
+                "540 N Michigan Ave, Chicago, IL", "chicago@marriott.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(3), amenities.get(6))));
+        hotels.add(createHotel("Marriott Sydney", cities.get(9), chains.get(0),
+                "161 Sussex St, Sydney, Australia", "sydney@marriott.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(5), amenities.get(9))));
+        hotels.add(createHotel("Marriott London", cities.get(6), chains.get(0),
+                "14 Park Lane, London, UK", "london@marriott.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(4), amenities.get(6), amenities.get(7))));
+
+        // Hilton Hotels (Chain 1)
+        hotels.add(createHotel("Hilton Vancouver", cities.get(1), chains.get(1),
+                "433 Robson St, Vancouver, BC", "vancouver@hilton.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(4), amenities.get(8))));
+        hotels.add(createHotel("Hilton London", cities.get(6), chains.get(1),
+                "22 Park Lane, London, UK", "london@hilton.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(5), amenities.get(7))));
+        hotels.add(createHotel("Hilton New York", cities.get(3), chains.get(1),
+                "1335 6th Ave, New York, NY", "ny@hilton.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(4), amenities.get(6), amenities.get(9))));
+        hotels.add(createHotel("Hilton Paris", cities.get(7), chains.get(1),
+                "18 Rue de Rivoli, Paris, France", "paris@hilton.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(3), amenities.get(8))));
+        hotels.add(createHotel("Hilton Tokyo", cities.get(8), chains.get(1),
+                "2-7-2 Nishi-Shinjuku, Tokyo, Japan", "tokyo@hilton.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(5), amenities.get(7))));
+
+        // Accor Hotels (Chain 2)
+        hotels.add(createHotel("Accor Le Mont-Royal", cities.get(2), chains.get(2),
+                "1230 Rue de la Montagne, Montreal, QC", "montreal@accor.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(4), amenities.get(6), amenities.get(8))));
+        hotels.add(createHotel("Accor Paris", cities.get(7), chains.get(2),
+                "40 Rue de Rivoli, Paris, France", "paris@accor.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(3), amenities.get(7))));
+        hotels.add(createHotel("Accor Los Angeles", cities.get(4), chains.get(2),
+                "711 S Hope St, Los Angeles, CA", "la@accor.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(5), amenities.get(9))));
+        hotels.add(createHotel("Accor Berlin", cities.get(0), chains.get(2),
+                "125 Queen St W, Toronto, ON", "berlin@accor.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(4), amenities.get(6), amenities.get(8))));
+
+        // InterContinental Hotels (Chain 3)
+        hotels.add(createHotel("The Plaza Hotel", cities.get(3), chains.get(3),
+                "768 5th Ave, New York, NY", "plaza@ihg.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(4), amenities.get(7), amenities.get(9))));
+        hotels.add(createHotel("InterContinental London", cities.get(6), chains.get(3),
+                "1 Hamilton Place, London, UK", "london@ihg.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(5), amenities.get(8))));
+        hotels.add(createHotel("InterContinental Chicago", cities.get(5), chains.get(3),
+                "505 N Michigan Ave, Chicago, IL", "chicago@ihg.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(4), amenities.get(6), amenities.get(7))));
+        hotels.add(createHotel("InterContinental Tokyo", cities.get(8), chains.get(3),
+                "2-7-2 Nishi-Shinjuku, Tokyo, Japan", "tokyo@ihg.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(3), amenities.get(9))));
+
+        // Hyatt Hotels (Chain 4)
+        hotels.add(createHotel("Hyatt Regency LA", cities.get(4), chains.get(4),
+                "711 S Hope St, Los Angeles, CA", "la@hyatt.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(4), amenities.get(7))));
+        hotels.add(createHotel("Hyatt Tokyo", cities.get(8), chains.get(4),
+                "2-7-2 Nishi-Shinjuku, Tokyo, Japan", "tokyo@hyatt.com", 4,
+                Arrays.asList(amenities.get(0), amenities.get(1), amenities.get(5), amenities.get(8))));
+        hotels.add(createHotel("Hyatt Vancouver", cities.get(1), chains.get(4),
+                "655 Burrard St, Vancouver, BC", "vancouver@hyatt.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(3), amenities.get(6), amenities.get(9))));
+        hotels.add(createHotel("Hyatt Sydney", cities.get(9), chains.get(4),
+                "161 Sussex St, Sydney, Australia", "sydney@hyatt.com", 5,
+                Arrays.asList(amenities.get(0), amenities.get(2), amenities.get(4), amenities.get(7))));
+
+        return hotels;
     }
 
-    private Hotel createHotel(String name, City city, HotelChain chain, String address, String email, String rating) {
+    private Hotel createHotel(String name, City city, HotelChain chain, String address,
+                              String email, int rating, List<HotelAmenity> amenities) {
         Hotel hotel = new Hotel();
         hotel.setName(name);
         hotel.setCity(city);
         hotel.setHotelChain(chain);
         hotel.setAddress(address);
         hotel.setEmail(email);
-        hotel.setRating(Integer.parseInt(rating));
+        hotel.setRating(rating);
         hotel.setCheckIn("15:00");
         hotel.setCheckOut("11:00");
         hotel.setDescription("Luxurious " + rating + "-star hotel in the heart of " + city.getName() +
                 ", offering premium amenities and exceptional service.");
         hotel.setIsActive(true);
-        hotel.setImageUrl("https://via.placeholder.com/800x600/1a1a2e/ffffff?text=" + name.replace(" ", "+"));
+        hotel.setImageUrl("https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80");
+        hotel.setHotelAmenities(amenities);
         return hotel;
+    }
+
+    private void updateHotelChainCounts(List<HotelChain> chains, List<Hotel> hotels) {
+        for (HotelChain chain : chains) {
+            long count = hotels.stream()
+                    .filter(h -> h.getHotelChain() != null &&
+                            h.getHotelChain().getId().equals(chain.getId()))
+                    .count();
+            chain.setHotelCount((int) count);
+            hotelChainRepository.save(chain);
+            System.out.println("   - " + chain.getName() + ": " + count + " hotels");
+        }
     }
 
     private List<RoomType> createRoomTypes(List<Hotel> hotels) {
         List<RoomType> roomTypes = new ArrayList<>();
 
         for (Hotel hotel : hotels) {
-            roomTypes.addAll(Arrays.asList(
-                    createRoomType(hotel, "Standard", "Comfortable room with essential amenities", 150.0, 2),
-                    createRoomType(hotel, "Deluxe", "Spacious room with premium amenities", 250.0, 4),
-                    createRoomType(hotel, "Suite", "Luxurious suite with separate living area", 400.0, 4),
-                    createRoomType(hotel, "Family", "Large room perfect for families", 300.0, 6)
-            ));
+            roomTypes.add(createRoomType(hotel, "Standard", "Comfortable room with essential amenities", 150.0, 2));
+            roomTypes.add(createRoomType(hotel, "Deluxe", "Spacious room with premium amenities", 250.0, 4));
+            roomTypes.add(createRoomType(hotel, "Suite", "Luxurious suite with separate living area", 400.0, 4));
+            roomTypes.add(createRoomType(hotel, "Family", "Large room perfect for families", 300.0, 6));
         }
         return roomTypes;
     }
@@ -257,7 +347,9 @@ public class DataSeeder implements CommandLineRunner {
         for (int i = 0; i < hotels.size(); i++) {
             Hotel hotel = hotels.get(i);
             // Get room types for this hotel (4 types per hotel)
-            List<RoomType> hotelRoomTypes = roomTypes.subList(i * 4, i * 4 + 4);
+            int startIdx = i * 4;
+            int endIdx = startIdx + 4;
+            List<RoomType> hotelRoomTypes = roomTypes.subList(startIdx, endIdx);
 
             for (RoomType roomType : hotelRoomTypes) {
                 for (int j = 1; j <= 3; j++) {
@@ -271,7 +363,7 @@ public class DataSeeder implements CommandLineRunner {
                     room.setIsExtendable(j % 2 == 0);
                     room.setConditionNote("Recently renovated, excellent condition");
                     room.setIsActive(true);
-                    room.setImageUrl("https://via.placeholder.com/600x400/2c3e50/ffffff?text=Room+" + roomNumber);
+                    room.setImageUrl("https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80");
 
                     // Add random amenities
                     if (j == 1) {
@@ -376,10 +468,10 @@ public class DataSeeder implements CommandLineRunner {
 
         return Arrays.asList(
                 createStaff("admin@overnight.com", encodedPassword, "Admin", "User", "+14165550001", "ADMIN"),
-                createStaff("manager@overnight.com", encodedPassword, "Manager", "User", "+14165550002", "MANAGER"),
-                createStaff("reception1@overnight.com", encodedPassword, "Sarah", "Johnson", "+14165550003", "RECEPTION"),
-                createStaff("reception2@overnight.com", encodedPassword, "Michael", "Chen", "+14165550004", "RECEPTION"),
-                createStaff("housekeeping@overnight.com", encodedPassword, "Maria", "Garcia", "+14165550005", "HOUSEKEEPING")
+                createStaff("manager@overnight.com", encodedPassword, "Manager", "User", "+14165550002", "ADMIN"),
+                createStaff("reception1@overnight.com", encodedPassword, "Sarah", "Johnson", "+14165550003", "STAFF"),
+                createStaff("reception2@overnight.com", encodedPassword, "Michael", "Chen", "+14165550004", "STAFF"),
+                createStaff("housekeeping@overnight.com", encodedPassword, "Maria", "Garcia", "+14165550005", "STAFF")
         );
     }
 
@@ -397,10 +489,8 @@ public class DataSeeder implements CommandLineRunner {
 
     private List<Reservation> createReservations(List<User> users, List<Room> rooms) {
         List<Reservation> reservations = new ArrayList<>();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
         LocalDate today = LocalDate.now();
 
-        // Create active reservations
         for (int i = 0; i < 20; i++) {
             User user = users.get(i % users.size());
             Room room = rooms.get(i % rooms.size());
@@ -432,7 +522,6 @@ public class DataSeeder implements CommandLineRunner {
 
         for (int i = 0; i < reservations.size(); i++) {
             Reservation reservation = reservations.get(i);
-            // Only add payment for completed or active reservations
             if (i % 2 == 0 || reservation.getStatus().equals("COMPLETED")) {
                 Payment payment = new Payment();
                 payment.setReservation(reservation);
@@ -472,9 +561,9 @@ public class DataSeeder implements CommandLineRunner {
             receipt.setPaymentDate(payment.getPaymentDate());
             receipt.setPaymentTime(payment.getPaymentTime());
             receipt.setTransactionId(payment.getTransactionId());
-            receipt.setAmount(payment.getAmount() * 0.85); // 85% of total
-            receipt.setTax(payment.getAmount() * 0.10); // 10% tax
-            receipt.setServiceFee(payment.getAmount() * 0.05); // 5% service fee
+            receipt.setAmount(payment.getAmount() * 0.85);
+            receipt.setTax(payment.getAmount() * 0.10);
+            receipt.setServiceFee(payment.getAmount() * 0.05);
             receipt.setTotalAmount(payment.getAmount());
             receipt.setStatus(payment.getStatus());
             receipt.setIsActive(true);
@@ -483,14 +572,5 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         return receipts;
-    }
-
-    // Helper methods for creating individual entities
-    private City createCity(String name) {
-        City city = new City();
-        city.setName(name);
-        city.setCountry("Canada");
-        city.setIsActive(true);
-        return city;
     }
 }

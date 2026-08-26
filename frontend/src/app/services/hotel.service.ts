@@ -19,8 +19,9 @@ export interface Hotel {
   checkOut?: string;
   hotelChainId?: number;
   hotelChainName?: string;
-  isActive?: boolean;
+  isActive?: boolean;  // ✅ Remove the '?', make it required
   rooms?: Room[];
+  hotelAmenities?: any[];
 }
 
 @Injectable({
@@ -61,5 +62,30 @@ export class HotelService {
 
   deactivateHotel(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/deactivate`, {});
+  }
+
+  // Add to your existing HotelService
+  getHotelsByCity(cityId: number): Observable<Hotel[]> {
+    return this.http.get<Hotel[]>(`${this.apiUrl}/city/${cityId}`);
+  }
+
+  getHotelsByCityName(cityName: string): Observable<Hotel[]> {
+    return this.http.get<Hotel[]>(`${this.apiUrl}/city/name/${cityName}`);
+  }
+
+  getHotelsByChain(chain: string): Observable<Hotel[]> {
+    return this.http.get<Hotel[]>(`${this.apiUrl}/chain/${chain}`);
+  }
+
+  getHotelsByRating(rating: number): Observable<Hotel[]> {
+    return this.http.get<Hotel[]>(`${this.apiUrl}/rating/${rating}`);
+  }
+
+  searchHotels(keyword: string): Observable<Hotel[]> {
+    return this.http.get<Hotel[]>(`${this.apiUrl}/search?keyword=${keyword}`);
+  }
+
+  getAllChains(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/chains`);
   }
 }
