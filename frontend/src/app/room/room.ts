@@ -143,7 +143,7 @@ export class RoomComponent implements OnInit {
       }
     });
     this.cities = Array.from(citySet).sort();
-    console.log('📊 Cities extracted:', this.cities);
+    console.log('Cities extracted:', this.cities);
     this.cdr.detectChanges();
   }
 
@@ -174,7 +174,7 @@ export class RoomComponent implements OnInit {
   }
 
   applyFilters(): void {
-    console.log('🔍 Applying filters...');
+    console.log('Applying filters...');
 
     this.filteredRooms = this.rooms.filter(room => {
       let matches: boolean = true;
@@ -224,7 +224,7 @@ export class RoomComponent implements OnInit {
 
     this.sortRooms();
     this.cdr.detectChanges();
-    console.log('📊 Filtered rooms:', this.filteredRooms.length);
+    console.log('Filtered rooms:', this.filteredRooms.length);
   }
 
   sortRooms(): void {
@@ -293,7 +293,12 @@ export class RoomComponent implements OnInit {
 
   viewRoomDetails(roomId?: number): void {
     if (roomId) {
-      console.log('View room details for:', roomId);
+      console.log('Viewing room details for ID:', roomId);
+      this.router.navigate(['/room-details'], {
+        queryParams: { id: roomId }
+      });
+    } else {
+      console.warn('No room ID provided');
     }
   }
 }
