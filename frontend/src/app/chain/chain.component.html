@@ -9,25 +9,74 @@
         <p class="text-gray-400 text-sm font-light max-w-md leading-relaxed">Discover world-class hotel groups and explore their curated portfolios of luxury and comfort.</p>
       </div>
       <div class="flex-shrink-0 w-full md:w-64">
-        <input type="text" placeholder="Search brands..." class="w-full bg-white border border-[#E8E3DB] rounded-xl px-5 py-3 text-sm text-gray-700 font-light placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="searchChains()"
+          placeholder="Search brands..."
+          class="w-full bg-white border border-[#E8E3DB] rounded-xl px-5 py-3 text-sm text-gray-700 font-light placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors"
+        />
       </div>
     </div>
   </div>
 </section>
 
-<section class="py-16 bg-[#F5F1EB]">
+<!-- Loading State -->
+<div *ngIf="isLoading" class="flex justify-center items-center py-20 bg-[#F5F1EB]">
+  <div class="text-center">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#BCA47B] border-t-transparent"></div>
+    <p class="mt-4 text-gray-500">Loading hotel chains...</p>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="errorMessage" class="text-center py-20 bg-[#F5F1EB]">
+  <div class="text-red-500">
+    <p class="text-lg">{{ errorMessage }}</p>
+    <button (click)="loadChains()" class="mt-4 bg-[#111827] hover:bg-black text-white px-6 py-2 rounded-full text-sm transition-colors">
+      Retry
+    </button>
+  </div>
+</div>
+
+<!-- Hotel Chains Grid -->
+<section *ngIf="!isLoading && !errorMessage" class="py-16 bg-[#F5F1EB]">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div *ngFor="let chain of chains" class="bg-white rounded-[1.25rem] shadow-[0_4px_24px_rgb(0,0,0,0.04)] overflow-hidden">
+    <!-- Results count -->
+    <div *ngIf="filteredChains.length > 0" class="mb-6 text-sm text-gray-400">
+      Showing {{ filteredChains.length }} {{ filteredChains.length === 1 ? 'brand' : 'brands' }}
+    </div>
+
+    <!-- No results -->
+    <div *ngIf="filteredChains.length === 0" class="text-center py-12">
+      <p class="text-gray-400 text-lg">No hotel chains found matching "{{ searchQuery }}"</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div *ngFor="let chain of filteredChains" class="bg-white rounded-[1.25rem] shadow-[0_4px_24px_rgb(0,0,0,0.04)] overflow-hidden hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-shadow duration-300">
         <!-- Logo Area -->
         <div class="bg-[#FAF5EF] flex items-center justify-center h-48">
-          <img [src]="chain.image" [alt]="chain.name + ' logo'" class="h-20 w-auto object-contain" />
+          <img
+            [src]="getImageUrl(chain)"
+            [alt]="chain.name + ' logo'"
+            class="h-20 w-auto object-contain"
+            (error)="chain.imageUrl = ''"
+          />
         </div>
         <!-- Info Area -->
         <div class="px-7 pt-6 pb-7">
-          <h3 class="text-xl font-serif text-gray-900 mb-1">{{chain.name}}</h3>
-          <p class="text-gray-400 text-sm font-light mb-5">Hotels in this chain: <span class="font-semibold text-gray-600">{{chain.hotels}}</span></p>
-          <button class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">View Hotels</button>
+          <h3 class="text-xl font-serif text-gray-900 mb-1">{{ chain.name }}</h3>
+          <p class="text-gray-400 text-sm font-light mb-2">{{ chain.description || 'Luxury hotel chain with exceptional service.' }}</p>
+          <p class="text-gray-400 text-sm font-light mb-5">
+            Hotels in this chain: <span class="font-semibold text-gray-600">{{ chain.hotelCount || 0 }}</span>
+          </p>
+          <button
+            (click)="viewChainHotels(chain.id)"
+            class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors"
+          >
+            View Hotels
+          </button>
         </div>
       </div>
     </div>
