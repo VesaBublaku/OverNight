@@ -10,25 +10,26 @@
         <p class="text-gray-500 text-sm font-light max-w-xl">Filter by city, capacity, price, amenities — then book in minutes. Clean, calm, and built for browsing.</p>
 
         <div class="mt-6 inline-flex items-center bg-white border border-gray-200 rounded-full px-4 py-1.5 shadow-sm text-xs text-gray-600">
-          Results: ...
+          Results: {{ filteredRooms.length }} rooms
         </div>
       </div>
 
       <div class="flex flex-col items-end mt-6 md:mt-0">
         <div class="bg-[#FAF5EF] rounded-xl p-4 w-64 mb-4 border border-[#E8E3DB]">
           <div class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-2">Sort By</div>
-          <select class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-[#BCA47B] cursor-pointer">
-            <option>Featured</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
+          <select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-[#BCA47B] cursor-pointer">
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
           </select>
         </div>
-        <button class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase hover:text-gray-900 transition-colors mr-2">Reset Filters</button>
+        <button (click)="resetFilters()" class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase hover:text-gray-900 transition-colors mr-2">Reset Filters</button>
       </div>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-8">
 
+      <!-- Filters Sidebar -->
       <div class="w-full lg:w-[320px] flex-shrink-0">
         <div class="bg-[#FAF8F5] rounded-3xl p-8 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
           <div class="mb-8">
@@ -37,29 +38,51 @@
           </div>
 
           <div class="mb-6">
-            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
-            <input type="text" placeholder="Ottawa" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Search</label>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="applyFilters()"
+              placeholder="Search by hotel, city, or room..."
+              class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+            />
           </div>
 
           <div class="mb-6">
-            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Room-typw</label>
-            <input type="text" placeholder="Ottawa" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">City</label>
+            <select
+              [(ngModel)]="selectedCity"
+              (ngModelChange)="applyFilters()"
+              class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors"
+            >
+              <option value="">All Cities</option>
+              <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
+            </select>
           </div>
 
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Min Guests</label>
-              <input type="number" placeholder="1" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+              <input
+                type="number"
+                [(ngModel)]="minGuests"
+                (ngModelChange)="applyFilters()"
+                min="1"
+                placeholder="1"
+                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Max Price</label>
-              <input type="number" placeholder="250" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+              <input
+                type="number"
+                [(ngModel)]="maxPrice"
+                (ngModelChange)="applyFilters()"
+                min="1"
+                placeholder="1000"
+                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
+              />
             </div>
-          </div>
-
-          <div class="mb-6">
-            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Amenity Contains</label>
-            <input type="text" placeholder="WiFi, AC, balcony..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
           </div>
 
           <div class="bg-[#FAF5EF] rounded-xl p-4 flex items-center justify-between mb-8 border border-[#E8E3DB]">
@@ -67,12 +90,17 @@
               <div class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1">Extendable Only</div>
               <div class="text-[10px] text-gray-400 font-light">Show rooms you can extend.</div>
             </div>
-            <input type="checkbox" class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900" />
+            <input
+              type="checkbox"
+              [(ngModel)]="extendableOnly"
+              (ngModelChange)="applyFilters()"
+              class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+            />
           </div>
 
           <div class="flex items-center gap-3 mb-8">
-            <button class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Apply</button>
-            <button class="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Reset</button>
+            <button (click)="applyFilters()" class="bg-[#111827] hover:bg-black text-white px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Apply</button>
+            <button (click)="resetFilters()" class="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 px-6 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors">Reset</button>
           </div>
 
           <div class="bg-[#111827] text-white rounded-2xl p-6">
@@ -82,33 +110,62 @@
         </div>
       </div>
 
+      <!-- Room Grid -->
       <div class="flex-1">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div *ngFor="let room of rooms" class="bg-[#FAF8F5] rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.03)] overflow-hidden border border-gray-50">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#BCA47B] border-t-transparent"></div>
+            <p class="mt-4 text-gray-500">Loading rooms...</p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="errorMessage" class="text-center py-20">
+          <div class="text-red-500">
+            <p class="text-lg">{{ errorMessage }}</p>
+            <button (click)="loadRooms()" class="mt-4 bg-[#111827] hover:bg-black text-white px-6 py-2 rounded-full text-sm transition-colors">
+              Retry
+            </button>
+          </div>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="!isLoading && !errorMessage && filteredRooms.length === 0" class="text-center py-20">
+          <p class="text-gray-400 text-lg">No rooms found matching your criteria.</p>
+          <button (click)="resetFilters()" class="mt-4 text-[#BCA47B] hover:text-[#A08B6B] transition-colors">
+            Clear all filters
+          </button>
+        </div>
+
+        <!-- Room Grid -->
+        <div *ngIf="!isLoading && !errorMessage && filteredRooms.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div *ngFor="let room of filteredRooms" class="bg-[#FAF8F5] rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.03)] overflow-hidden border border-gray-50">
             <div class="relative h-72 w-full">
-              <img [src]="room.image" class="w-full h-full object-cover" />
+              <img [src]="getImageUrl(room)" [alt]="getRoomTitle(room)" class="w-full h-full object-cover" />
 
               <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
               <div class="absolute top-4 left-4">
-                <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[11px] font-semibold tracking-wider px-3.5 py-1.5 rounded-full">{{room.price}} / night</span>
+                <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[11px] font-semibold tracking-wider px-3.5 py-1.5 rounded-full">${{ room.price }} / night</span>
               </div>
 
               <div class="absolute bottom-5 left-5 right-5">
                 <div class="flex flex-wrap gap-2 mb-3">
-                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">{{room.city}}</span>
-                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Room #{{room.roomNumber}}</span>
-                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Capacity {{room.capacity}}</span>
-                  <span *ngIf="room.extendable" class="bg-[#464132]/60 backdrop-blur-md border border-[#7A6A4E]/30 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Extendable</span>
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">{{ getHotelCity(room.hotelId) }}</span>
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Room #{{ room.roomNumber }}</span>
+                  <span class="bg-black/30 backdrop-blur-md border border-white/10 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Capacity {{ room.capacity }}</span>
+                  <span *ngIf="room.isExtendable || room.extendable" class="bg-[#464132]/60 backdrop-blur-md border border-[#7A6A4E]/30 text-white text-[10px] font-semibold tracking-wider px-3 py-1.5 rounded-full">Extendable</span>
                 </div>
-                <h3 class="text-2xl font-serif text-white mb-1.5 drop-shadow-md">{{room.title}}</h3>
-                <p class="text-gray-300 text-xs font-light">Amenities: {{room.amenities}}</p>
+                <h3 class="text-2xl font-serif text-white mb-1.5 drop-shadow-md">{{ getRoomTitle(room) }}</h3>
+                <p class="text-gray-300 text-xs font-light">Amenities: {{ getAmenitiesString(room) }}</p>
               </div>
             </div>
 
             <div class="px-6 py-5 flex items-center justify-between bg-[#FAF8F5]">
               <span class="text-[13px] text-gray-500 font-light">Flexible stay options available</span>
               <a routerLink="/room-details"
+                 (click)="viewRoomDetails(room.id)"
                  class="bg-white hover:bg-gray-50 text-gray-900 px-5 py-2.5 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-2 shadow-sm">
                 View <span class="text-[#BCA47B] font-bold">&rarr;</span>
               </a>
