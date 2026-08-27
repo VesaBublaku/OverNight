@@ -110,7 +110,7 @@ export class HotelsComponent implements OnInit {
       }
     });
     this.cities = Array.from(citySet).sort();
-    console.log('📊 Cities extracted:', this.cities);
+    console.log('Cities extracted:', this.cities);
   }
 
   extractChains(): void {
@@ -121,42 +121,48 @@ export class HotelsComponent implements OnInit {
       }
     });
     this.chains = Array.from(chainSet).sort();
-    console.log('📊 Chains extracted:', this.chains);
+    console.log('Chains extracted:', this.chains);
   }
 
   searchHotels(): void {
-    if (!this.searchQuery.trim() && !this.selectedCity && !this.selectedChainId) {
-      this.filteredHotels = this.hotels;
-      return;
+    let filtered = this.hotels;
+
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+
+      filtered = filtered.filter(hotel => {
+        const name = typeof hotel.name === 'string' ? hotel.name : '';
+        const cityName = typeof hotel.cityName === 'string' ? hotel.cityName : '';
+        const city = typeof hotel.city === 'string' ? hotel.city : '';
+        const address = typeof hotel.address === 'string' ? hotel.address : '';
+        const chainName = typeof hotel.chain === 'string' ? hotel.chain : '';
+
+        const combinedCity = cityName || city;
+
+        return (
+          name.toLowerCase().includes(query) ||
+          combinedCity.toLowerCase().includes(query) ||
+          address.toLowerCase().includes(query) ||
+          chainName.toLowerCase().includes(query)
+        );
+      });
     }
 
-    this.filteredHotels = this.hotels.filter(hotel => {
-      let matches = true;
+    if (this.selectedCity) {
+      filtered = filtered.filter(hotel => {
+        const cityName = typeof hotel.cityName === 'string' ? hotel.cityName : '';
+        const city = typeof hotel.city === 'string' ? hotel.city : '';
+        return cityName === this.selectedCity || city === this.selectedCity;
+      });
+    }
 
-      if (this.searchQuery.trim()) {
-        const query = this.searchQuery.toLowerCase();
-        matches = matches && !!(
-          hotel.name?.toLowerCase().includes(query) ||
-          hotel.cityName?.toLowerCase().includes(query) ||
-          hotel.city?.toLowerCase().includes(query) ||
-          hotel.address?.toLowerCase().includes(query) ||
-          hotel.chain?.toLowerCase().includes(query)
-        );
-      }
+    if (this.selectedChainId) {
+      filtered = filtered.filter(hotel => {
+        return hotel.hotelChainId === this.selectedChainId;
+      });
+    }
 
-      if (this.selectedCity) {
-        matches = matches && !!(
-          hotel.cityName === this.selectedCity ||
-          hotel.city === this.selectedCity
-        );
-      }
-
-      if (this.selectedChainId) {
-        matches = matches && (hotel.hotelChainId === this.selectedChainId);
-      }
-
-      return matches;
-    });
+    this.filteredHotels = filtered;
   }
 
   clearChainFilter(): void {
