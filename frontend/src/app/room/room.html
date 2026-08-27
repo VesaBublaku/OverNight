@@ -16,7 +16,6 @@
           {{ filteredRooms.length }} rooms found
         </p>
 
-        <!-- ✅ Hotel filter indicator -->
         <div *ngIf="selectedHotelName" class="mt-4 inline-flex items-center gap-2 bg-[#FAF5EF] border border-[#E8E3DB] rounded-full px-4 py-2">
           <span class="text-xs text-gray-600">Showing rooms at: <strong>{{ selectedHotelName }}</strong></span>
           <button (click)="clearHotelFilter()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors">
@@ -96,6 +95,47 @@
             </div>
           </div>
 
+          <div class="mb-6">
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Amenities</label>
+
+            <input
+              type="text"
+              [(ngModel)]="amenitySearchQuery"
+              (ngModelChange)="applyFilters()"
+              placeholder="Search amenities..."
+              class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400 mb-3"
+            />
+
+            <div class="grid grid-cols-2 gap-1 mt-2 max-h-48 overflow-y-auto pr-1">
+              <label *ngFor="let amenity of availableAmenities"
+                     class="flex items-center justify-between gap-1 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-lg transition-colors text-xs">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <input
+                    type="checkbox"
+                    [value]="amenity"
+                    (change)="toggleAmenity(amenity)"
+                    [checked]="selectedAmenities.includes(amenity)"
+                    class="w-3.5 h-3.5 text-gray-900 border-gray-300 rounded focus:ring-gray-900 flex-shrink-0"
+                  />
+                  <span class="text-gray-700 truncate">{{ amenity }}</span>
+                </div>
+                <span class="text-[9px] text-gray-400 flex-shrink-0">{{ getAmenityCount(amenity) }}</span>
+              </label>
+            </div>
+
+            <div *ngIf="availableAmenities.length === 0 && !isLoading" class="text-center py-4">
+              <p class="text-xs text-gray-400">No amenities available</p>
+            </div>
+
+            <div *ngIf="selectedAmenities.length > 0" class="mt-3 flex flex-wrap gap-1">
+              <span *ngFor="let amenity of selectedAmenities"
+                    class="text-[10px] bg-[#FAF5EF] border border-[#E8E3DB] text-gray-700 px-2 py-1 rounded-full flex items-center gap-1">
+                {{ amenity }}
+                <button (click)="removeAmenity(amenity)" class="text-gray-400 hover:text-gray-900">✕</button>
+              </span>
+            </div>
+          </div>
+
           <div class="bg-[#FAF5EF] rounded-xl p-4 flex items-center justify-between mb-8 border border-[#E8E3DB]">
             <div>
               <div class="text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1">Extendable Only</div>
@@ -123,7 +163,6 @@
 
       <!-- Room Grid -->
       <div class="flex-1">
-        <!-- Loading State -->
         <div *ngIf="isLoading" class="flex justify-center items-center py-20">
           <div class="text-center">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#BCA47B] border-t-transparent"></div>
@@ -131,7 +170,6 @@
           </div>
         </div>
 
-        <!-- Error State -->
         <div *ngIf="errorMessage" class="text-center py-20">
           <div class="text-red-500">
             <p class="text-lg">{{ errorMessage }}</p>
@@ -141,7 +179,6 @@
           </div>
         </div>
 
-        <!-- No Results -->
         <div *ngIf="!isLoading && !errorMessage && filteredRooms.length === 0" class="text-center py-20">
           <p class="text-gray-400 text-lg">No rooms found matching your criteria.</p>
           <button (click)="resetFilters()" class="mt-4 text-[#BCA47B] hover:text-[#A08B6B] transition-colors">

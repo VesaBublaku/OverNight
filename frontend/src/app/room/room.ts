@@ -39,6 +39,12 @@ export class RoomComponent implements OnInit {
   isLoading: boolean = true;
   errorMessage: string = '';
 
+  // Amenity filter properties
+  amenitySearchQuery: string = '';
+  selectedAmenities: string[] = [];
+  availableAmenities: string[] = [];
+  amenityCounts: { [key: string]: number } = {};
+
   constructor(
     private roomService: RoomService,
     private hotelService: HotelService,
@@ -93,6 +99,7 @@ export class RoomComponent implements OnInit {
         }
 
         this.extractCities();
+        this.extractAmenities();
         this.isLoading = false;
         this.cdr.detectChanges();
 
@@ -145,6 +152,109 @@ export class RoomComponent implements OnInit {
     this.cities = Array.from(citySet).sort();
     console.log('Cities extracted:', this.cities);
     this.cdr.detectChanges();
+  }
+
+  extractAmenities(): void {
+    const amenitySet = new Set<string>();
+    const counts: { [key: string]: number } = {};
+
+    this.rooms.forEach(room => {
+      const amenities = this.getRoomAmenities(room);
+      amenities.forEach(amenity => {
+        if (amenity && amenity.trim()) {
+          const trimmed = amenity.trim();
+          amenitySet.add(trimmed);
+          counts[trimmed] = (counts[trimmed] || 0) + 1;
+        }
+      });
+    });
+
+    this.availableAmenities = Array.from(amenitySet).sort();
+    this.amenityCounts = counts;
+
+    console.log('Available amenities extracted:', this.availableAmenities);
+    console.log('Amenity counts:', this.amenityCounts);
+    this.cdr.detectChanges();
+  }
+
+  getRoomAmenities(room: Room): string[] {
+    const amenities: string[] = [];
+
+    // Check room.amenities (could be string or array)
+    if (room.amenities) {
+      if (typeof room.amenities === 'string') {
+        const parts = room.amenities.split(/[,;|]/).map(a => a.trim());
+        amenities.push(...parts);
+      } else if (Array.isArray(room.amenities)) {
+        const amenityArray = room.amenities as any[];
+        amenityArray.forEach((a: any) => {
+          if (typeof a === 'string') {
+            amenities.push(a);
+          } else if (a && typeof a === 'object') {
+            const name = a.name || a.amenityName || a.amenity || '';
+            if (name) amenities.push(name);
+          }
+        });
+      }
+    }
+
+    if ((room as any).roomAmenityIds && Array.isArray((room as any).roomAmenityIds)) {
+      (room as any).roomAmenityIds.forEach((item: any) => {
+        if (typeof item === 'string') {
+          amenities.push(item);
+        } else if (item && typeof item === 'object') {
+          const name = item.name || item.amenityName || item.amenity || '';
+          if (name) amenities.push(name);
+        }
+      });
+    }
+
+    if ((room as any).roomAmenities && Array.isArray((room as any).roomAmenities)) {
+      (room as any).roomAmenities.forEach((item: any) => {
+        if (typeof item === 'string') {
+          amenities.push(item);
+        } else if (item && typeof item === 'object') {
+          const name = item.name || item.amenityName || item.amenity || '';
+          if (name) amenities.push(name);
+        }
+      });
+    }
+
+    const uniqueAmenities = [...new Set(amenities)].filter(a => a && a.trim());
+
+    if (uniqueAmenities.length === 0) {
+      if (room.roomTypeName) {
+        const typeBasedAmenities = this.getAmenitiesByRoomType(room.roomTypeName);
+        if (typeBasedAmenities.length > 0) {
+          return typeBasedAmenities;
+        }
+      }
+      return ['WiFi', 'Air Conditioning', 'Smart TV'];
+    }
+
+    return uniqueAmenities;
+  }
+
+  getAmenitiesByRoomType(roomType: string): string[] {
+    const typeMap: { [key: string]: string[] } = {
+      'Deluxe': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony'],
+      'Suite': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony', 'Kitchenette', 'Spa Access'],
+      'Standard': ['WiFi', 'Air Conditioning', 'Smart TV'],
+      'Premium': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Sea View'],
+      'Family': ['WiFi', 'Air Conditioning', 'Smart TV', 'Kitchenette', 'Pool Access']
+    };
+
+    const lowerType = roomType.toLowerCase();
+    for (const [key, value] of Object.entries(typeMap)) {
+      if (lowerType.includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+    return [];
+  }
+
+  getAmenityCount(amenity: string): number {
+    return this.amenityCounts[amenity] || 0;
   }
 
   getHotelName(hotelId?: number): string {
@@ -218,6 +328,25 @@ export class RoomComponent implements OnInit {
         const isExtendable = room.isExtendable === true || room.extendable === true;
         matches = matches && isExtendable;
       }
+      
+      if (this.selectedAmenities.length > 0) {
+        const roomAmenities = this.getRoomAmenities(room);
+        const hasAllAmenities = this.selectedAmenities.every(selectedAmenity =>
+          roomAmenities.some(roomAmenity =>
+            roomAmenity.toLowerCase().trim() === selectedAmenity.toLowerCase().trim()
+          )
+        );
+        matches = matches && hasAllAmenities;
+      }
+
+      if (this.amenitySearchQuery.trim()) {
+        const query = this.amenitySearchQuery.toLowerCase().trim();
+        const roomAmenities = this.getRoomAmenities(room);
+        const hasMatchingAmenity = roomAmenities.some(amenity =>
+          amenity.toLowerCase().includes(query)
+        );
+        matches = matches && hasMatchingAmenity;
+      }
 
       return matches;
     });
@@ -225,6 +354,21 @@ export class RoomComponent implements OnInit {
     this.sortRooms();
     this.cdr.detectChanges();
     console.log('Filtered rooms:', this.filteredRooms.length);
+  }
+
+  toggleAmenity(amenity: string): void {
+    const index = this.selectedAmenities.indexOf(amenity);
+    if (index > -1) {
+      this.selectedAmenities.splice(index, 1);
+    } else {
+      this.selectedAmenities.push(amenity);
+    }
+    this.applyFilters();
+  }
+
+  removeAmenity(amenity: string): void {
+    this.selectedAmenities = this.selectedAmenities.filter(a => a !== amenity);
+    this.applyFilters();
   }
 
   sortRooms(): void {
@@ -249,6 +393,8 @@ export class RoomComponent implements OnInit {
     this.minGuests = 1;
     this.maxPrice = 1000;
     this.amenityFilter = '';
+    this.amenitySearchQuery = '';
+    this.selectedAmenities = [];
     this.extendableOnly = false;
     this.sortBy = 'featured';
     this.filteredRooms = this.rooms;
@@ -286,9 +432,8 @@ export class RoomComponent implements OnInit {
   }
 
   getAmenitiesString(room: Room): string {
-    if (room.amenities) return room.amenities;
-    const defaultAmenities = ['WiFi', 'AC', 'Smart TV'];
-    return defaultAmenities.join(', ');
+    const amenities = this.getRoomAmenities(room);
+    return amenities.join(', ');
   }
 
   viewRoomDetails(roomId?: number): void {
