@@ -42,13 +42,11 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getCurrentUser(@RequestAttribute("userId") Long userId) {
         return ResponseEntity.ok(userService.getCurrentUser(userId));
     }
 
     @PutMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> updateCurrentUser(
             @RequestAttribute("userId") Long userId,
             @RequestBody User updatedUser,
@@ -58,7 +56,6 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> deleteCurrentUser(
             @RequestAttribute("userId") Long userId,
             HttpServletRequest request) {
@@ -69,7 +66,6 @@ public class UserController {
     }
 
     @PutMapping("/me/password")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updatePassword(
             @RequestAttribute("userId") Long userId,
             @RequestBody Map<String, String> request) {
@@ -80,7 +76,6 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> logout(@RequestAttribute("userId") Long userId) {
         User user = userService.findById(userId);
         userService.logout(user);

@@ -48,7 +48,6 @@ export class UserSignupComponent {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-
     const user = {
       email: this.email,
       password: this.password,
@@ -63,9 +62,16 @@ export class UserSignupComponent {
     this.userService.register(user).subscribe({
       next: (response) => {
         console.log('Registration success:', response);
-        this.successMessage = 'Account created successfully! Redirecting to login...';
+
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('userId', response.user.id.toString());
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+
+        window.dispatchEvent(new Event('auth-changed'));
+
+        this.successMessage = 'Account created successfully! Redirecting...';
         setTimeout(() => {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/']);
         }, 1500);
       },
       error: (err) => {

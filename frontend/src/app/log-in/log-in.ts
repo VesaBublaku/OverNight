@@ -40,6 +40,13 @@ export class UserLoginComponent {
     this.userService.login(trimmedEmail, trimmedPassword).subscribe({
       next: (response) => {
         console.log('Login success:', response);
+
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('userId', response.user.id.toString());
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+
+        window.dispatchEvent(new Event('auth-changed'));
+
         this.successMessage = 'Login successful! Redirecting...';
         setTimeout(() => {
           this.router.navigate(['/']);

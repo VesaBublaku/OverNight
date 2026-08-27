@@ -40,15 +40,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractEmail(token);
                 Long userId = jwtUtil.extractUserId(token);
+                String role = jwtUtil.extractRole(token);  // ✅ GET ROLE FROM TOKEN
 
                 try {
                     Staff staff = staffRepo.findByEmailAndDeletedAtIsNull(email).orElse(null);
                     if (staff != null) {
-                        authenticateStaff(request, email, userId, staff);
+                        authenticateStaff(request, email, userId, staff, role);
                     } else {
                         User user = userRepo.findByEmailAndDeletedAtIsNull(email).orElse(null);
                         if (user != null) {
-                            authenticateUser(request, email, userId, user);
+                            authenticateUser(request, email, userId, user, role);
                         } else {
                             System.out.println("JWT valid but no account found for: " + email);
                         }
@@ -62,12 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void authenticateStaff(HttpServletRequest request, String email, Long userId, Staff staff) {
-        String role = staff.getRole() != null ? staff.getRole().toUpperCase().trim() : "STAFF";
+    private void authenticateStaff(HttpServletRequest request, String email, Long userId, Staff staff, String role) {
+        String staffRole = staff.getRole() != null ? staff.getRole().toUpperCase().trim() : "STAFF";
 
         java.util.List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_STAFF"));
-        if ("ADMIN".equals(role)) {
+        if ("ADMIN".equals(staffRole)) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
@@ -83,16 +84,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("Staff authenticated: " + email + " with authorities: " + authorities);
     }
 
-    private void authenticateUser(HttpServletRequest request, String email, Long userId, User user) {
+    private void authenticateUser(HttpServletRequest request, String email, Long userId, User user, String role) {
+        // ✅ Use role from token if available, otherwise default to ROLE_USER
+        String userRole = role != null ? role.toUpperCase().trim() : "USER";
+        String authority = userRole.equals("ADMIN") ? "ROLE_ADMIN" : "ROLE_USER";
+
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
                         user,
                         null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                        Collections.singletonList(new SimpleGrantedAuthority(authority))
                 );
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         request.setAttribute("userId", userId);
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        System.out.println("User authenticated: " + email + " with role: ROLE_USER");
+        System.out.println("User authenticated: " + email + " with role: " + authority);
     }
 }
