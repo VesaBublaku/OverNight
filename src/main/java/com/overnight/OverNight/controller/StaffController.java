@@ -32,7 +32,6 @@ public class StaffController {
     }
 
     @PostMapping("/register")
-    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Staff staff, HttpServletRequest request) {
         System.out.println("📥 Staff registration for: " + staff.getEmail());
         Map<String, Object> response = staffService.register(staff, request);
@@ -47,13 +46,11 @@ public class StaffController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Staff> getCurrentStaff(@RequestAttribute("userId") Long staffId) {
         return ResponseEntity.ok(staffService.getCurrentStaff(staffId));
     }
 
     @PutMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Staff> updateCurrentStaff(
             @RequestAttribute("userId") Long staffId,
             @RequestBody Staff updatedStaff,
@@ -63,7 +60,6 @@ public class StaffController {
     }
 
     @DeleteMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> deleteCurrentStaff(
             @RequestAttribute("userId") Long staffId,
             HttpServletRequest request) {
@@ -74,7 +70,6 @@ public class StaffController {
     }
 
     @PutMapping("/me/password")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updatePassword(
             @RequestAttribute("userId") Long staffId,
             @RequestBody Map<String, String> request,
@@ -86,7 +81,6 @@ public class StaffController {
     }
 
     @PostMapping("/logout")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> logout(@RequestAttribute("userId") Long staffId) {
         Staff staff = staffService.findById(staffId);
         staffService.logout(staff);

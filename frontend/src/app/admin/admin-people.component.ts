@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';  // ADD ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService, User as Customer } from '../services/user.service';
@@ -48,7 +48,8 @@ export class AdminPeopleComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private staffService: StaffService
+    private staffService: StaffService,
+    private cdr: ChangeDetectorRef  // ADD THIS
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +72,8 @@ export class AdminPeopleComponent implements OnInit {
           reservations: 0
         }));
         this.isLoading = false;
+
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error fetching customers:', err);
@@ -93,6 +96,7 @@ export class AdminPeopleComponent implements OnInit {
             isActive: true
           }
         ];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -110,6 +114,8 @@ export class AdminPeopleComponent implements OnInit {
           since: s.createdAt ? new Date(s.createdAt).getFullYear().toString() : '2025'
         }));
         this.isLoading = false;
+
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error fetching staff:', err);
@@ -131,6 +137,7 @@ export class AdminPeopleComponent implements OnInit {
             isActive: true
           }
         ];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -188,11 +195,13 @@ export class AdminPeopleComponent implements OnInit {
           this.loadCustomers();
           this.showCustomerModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating customer:', err);
           this.errorMessage = 'Failed to update customer. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -210,11 +219,13 @@ export class AdminPeopleComponent implements OnInit {
           this.loadCustomers();
           this.showCustomerModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error creating customer:', err);
           this.errorMessage = 'Failed to create customer. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
@@ -247,17 +258,19 @@ export class AdminPeopleComponent implements OnInit {
           this.loadStaff();
           this.showStaffModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating staff:', err);
           this.errorMessage = 'Failed to update staff. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
       const newStaff = {
         email: this.editingStaff.email || '',
-        password: 'staff123', // Default password
+        password: 'staff123',
         firstName: this.editingStaff.firstName || '',
         lastName: this.editingStaff.lastName || '',
         phone: this.editingStaff.phone || '',
@@ -269,11 +282,13 @@ export class AdminPeopleComponent implements OnInit {
           this.loadStaff();
           this.showStaffModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error creating staff:', err);
           this.errorMessage = 'Failed to create staff. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
@@ -296,11 +311,13 @@ export class AdminPeopleComponent implements OnInit {
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error deleting customer:', err);
           this.errorMessage = 'Failed to delete customer. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -310,11 +327,13 @@ export class AdminPeopleComponent implements OnInit {
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error deleting staff:', err);
           this.errorMessage = 'Failed to delete staff. Please try again.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }

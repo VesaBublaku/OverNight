@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +26,8 @@ export class StaffPaymentsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private cdr: ChangeDetectorRef  // ADD THIS
   ) {}
 
   ngOnInit(): void {
@@ -37,21 +38,6 @@ export class StaffPaymentsComponent implements OnInit {
   loadPayments(): void {
     this.paymentService.getAllPayments().subscribe({
       next: (data) => {
-        // Map the backend data to flat properties used by the template if needed,
-        // or just rely on the template to read from the nested objects.
-        // The HTML expects:
-        // p.transactionId
-        // p.reservationId
-        // p.customerName or p.reservation.user.firstName + ' ' + p.reservation.user.lastName
-        // p.customerEmail
-        // p.hotel
-        // p.roomNumber
-        // p.amount
-        // p.method
-        // p.status
-        // p.paymentDate
-        // p.paymentTime
-
         this.payments = (data || []).map(p => ({
           ...p,
           customerName: p.customerName || (p.reservation?.user ? `${p.reservation.user.firstName || ''} ${p.reservation.user.lastName || ''}`.trim() : 'Unknown'),
@@ -60,8 +46,12 @@ export class StaffPaymentsComponent implements OnInit {
           roomNumber: p.roomNumber || p.reservation?.room?.roomNumber || 'N/A',
           reservationId: p.reservationId || p.reservation?.id
         }));
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error fetching payments:', err)
+      error: (err) => {
+        console.error('Error fetching payments:', err);
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -74,8 +64,12 @@ export class StaffPaymentsComponent implements OnInit {
           pendingCount: data.pendingCount || 0,
           thisMonthRevenue: data.thisMonthRevenue || 0
         };
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error fetching stats:', err)
+      error: (err) => {
+        console.error('Error fetching stats:', err);
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -119,6 +113,7 @@ export class StaffPaymentsComponent implements OnInit {
   viewReceipt(payment: Payment): void {
     this.receiptData = payment;
     this.showReceiptModal = true;
+    this.cdr.detectChanges();
   }
 
   completePayment(payment: Payment): void {
@@ -127,8 +122,12 @@ export class StaffPaymentsComponent implements OnInit {
       next: () => {
         this.loadPayments();
         this.loadStats();
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error completing payment:', err)
+      error: (err) => {
+        console.error('Error completing payment:', err);
+        this.cdr.detectChanges();
+      }
     });
   }
 

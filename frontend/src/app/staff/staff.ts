@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -43,7 +43,8 @@ export class StaffDashboardComponent implements OnInit {
     private reservationService: ReservationService,
     private roomService: RoomService,
     private hotelService: HotelService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -64,11 +65,13 @@ export class StaffDashboardComponent implements OnInit {
           idNumber: (user as any).idNumber || ''
         }));
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading customers:', err);
         this.errorMessage = 'Failed to load customers. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -77,9 +80,11 @@ export class StaffDashboardComponent implements OnInit {
     this.reservationService.getAllReservations().subscribe({
       next: (data) => {
         this.reservations = data || [];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading reservations:', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -88,9 +93,11 @@ export class StaffDashboardComponent implements OnInit {
     this.roomService.getActiveRooms().subscribe({
       next: (data) => {
         this.availableRooms = data || [];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading available rooms:', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -99,9 +106,11 @@ export class StaffDashboardComponent implements OnInit {
     this.hotelService.getAllHotels().subscribe({
       next: (data) => {
         this.hotels = data || [];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading hotels:', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -187,11 +196,13 @@ export class StaffDashboardComponent implements OnInit {
         this.loadCustomers();
         this.showCustomerModal = false;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error updating customer:', err);
         this.errorMessage = 'Failed to update customer.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -233,11 +244,13 @@ export class StaffDashboardComponent implements OnInit {
           this.loadReservations();
           this.showReservationModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating reservation:', err);
           this.errorMessage = 'Failed to update reservation.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -246,11 +259,13 @@ export class StaffDashboardComponent implements OnInit {
           this.loadReservations();
           this.showReservationModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error creating reservation:', err);
           this.errorMessage = 'Failed to create reservation.';
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
@@ -265,15 +280,18 @@ export class StaffDashboardComponent implements OnInit {
           this.loadReservations();
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cancelling reservation:', err);
+          this.cdr.detectChanges();
         }
       });
     } else {
       this.customers = this.customers.filter(c => c.id !== this.deleteTarget!.id);
       this.showDeleteConfirm = false;
       this.deleteTarget = null;
+      this.cdr.detectChanges();
     }
   }
 

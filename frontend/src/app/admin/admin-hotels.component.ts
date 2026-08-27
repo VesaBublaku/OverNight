@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HotelService, Hotel } from '../services/hotel.service';
@@ -47,7 +47,8 @@ export class AdminHotelsComponent implements OnInit {
     private hotelChainService: HotelChainService,
     private cityService: CityService,
     private roomTypeService: RoomTypeService,
-    private roomAmenityService: RoomAmenityService
+    private roomAmenityService: RoomAmenityService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +93,7 @@ export class AdminHotelsComponent implements OnInit {
           }
         });
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading hotels:', err);
@@ -108,6 +110,7 @@ export class AdminHotelsComponent implements OnInit {
         if (hotel) {
           hotel.rooms = rooms || [];
         }
+        this.cdr.detectChanges();
       },
       error: (err) => console.error(`Error loading rooms for hotel ${hotelId}:`, err)
     });
@@ -124,6 +127,8 @@ export class AdminHotelsComponent implements OnInit {
             hotel.chain = this.chainMap.get(hotel.hotelChainId)?.name || hotel.chain || 'Unknown Chain';
           }
         });
+
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading hotel chains:', err);
@@ -150,6 +155,7 @@ export class AdminHotelsComponent implements OnInit {
             hotel.city = this.cityMap.get(hotel.cityId)?.name || hotel.city || 'Unknown City';
           }
         });
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading cities:', err);
@@ -161,6 +167,7 @@ export class AdminHotelsComponent implements OnInit {
           { id: 5, name: 'Vancouver', country: 'Canada' },
         ];
         this.cityMap = new Map(this.cities.map(city => [city.id!, city]));
+        this.cdr.detectChanges();
       }
     });
   }
