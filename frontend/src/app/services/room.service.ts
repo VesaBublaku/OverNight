@@ -16,7 +16,9 @@ export interface Room {
   isActive?: boolean;
   hotelId?: number;
   roomTypeId?: number;
+  roomType?: any;
   roomAmenityIds?: number[];
+  roomAmenities?: any[];
   roomTypeName?: string;
   amenities?: string;
 }

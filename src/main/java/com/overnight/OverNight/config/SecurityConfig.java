@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,7 +18,6 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -51,7 +49,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -60,14 +57,17 @@ public class SecurityConfig {
                                 "/api/staff/exists/**",
                                 "/api/staff/register"
                         ).permitAll()
-                        // Public GET endpoints (no authentication required)
+                        .requestMatchers(HttpMethod.GET, "/api/hotels", "/api/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/hotels", "/api/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/hotels", "/api/hotels/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms", "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
-                                "/api/hotels",
-                                "/api/hotels/**",
-                                "/api/rooms",
-                                "/api/rooms/**",
                                 "/api/room-types/**",
                                 "/api/room-amenities",
                                 "/api/room-amenities/**",
@@ -75,13 +75,6 @@ public class SecurityConfig {
                                 "/api/services/**",
                                 "/api/room-policies/**"
                         ).permitAll()
-                        // Admin only endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/hotels/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
                         // Staff and Admin endpoints
                         .requestMatchers("/api/users", "/api/users/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("STAFF", "ADMIN")

@@ -76,14 +76,12 @@ public class HotelController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Hotel> createHotel(@RequestBody Hotel hotel) {
         Hotel created = hotelService.createHotel(hotel);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Hotel> updateHotel(
             @PathVariable Long id,
             @RequestBody Hotel hotel) {
@@ -92,7 +90,6 @@ public class HotelController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteHotel(@PathVariable Long id) {
         hotelService.deleteHotel(id);
         Map<String, String> response = new HashMap<>();
@@ -101,7 +98,6 @@ public class HotelController {
     }
 
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> activateHotel(@PathVariable Long id) {
         hotelService.activateHotel(id);
         Map<String, String> response = new HashMap<>();
@@ -110,7 +106,6 @@ public class HotelController {
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deactivateHotel(@PathVariable Long id) {
         hotelService.deactivateHotel(id);
         Map<String, String> response = new HashMap<>();

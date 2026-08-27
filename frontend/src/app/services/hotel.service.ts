@@ -19,6 +19,7 @@ export interface Hotel {
   checkOut?: string;
   hotelChainId?: number;
   hotelChainName?: string;
+  hotelChain?: any;  // Add this
   isActive?: boolean;
   rooms?: Room[];
   hotelAmenities?: any[];
@@ -64,7 +65,6 @@ export class HotelService {
     return this.http.put(`${this.apiUrl}/${id}/deactivate`, {});
   }
 
-  // Add to your existing HotelService
   getHotelsByCity(cityId: number): Observable<Hotel[]> {
     return this.http.get<Hotel[]>(`${this.apiUrl}/city/${cityId}`);
   }
@@ -88,5 +88,4 @@ export class HotelService {
   getAllChains(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/chains`);
   }
-
 }

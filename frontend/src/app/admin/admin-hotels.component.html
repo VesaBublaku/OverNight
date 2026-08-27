@@ -145,12 +145,19 @@
           <div class="flex flex-wrap gap-2 mb-4">
             <span class="bg-[#FAF8F5] text-gray-500 border border-gray-100 px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">Capacity {{room.capacity}}</span>
             <span *ngIf="room.isExtendable || room.extendable" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">Extendable</span>
-            <span *ngIf="room.roomTypeName" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">{{room.roomTypeName}}</span>
+            <span *ngIf="getRoomTypeName(room)" class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">{{getRoomTypeName(room)}}</span>
           </div>
 
-          <div class="text-gray-400 text-xs font-light mb-3 leading-relaxed">{{room.amenities || 'No amenities listed'}}</div>
+          <!-- ✅ FIXED: Use getRoomAmenities() helper -->
+          <div class="text-gray-400 text-xs font-light mb-3 leading-relaxed">
+            <ng-container *ngIf="getRoomAmenities(room); else noAmenities">
+              {{getRoomAmenities(room)}}
+            </ng-container>
+            <ng-template #noAmenities>No amenities listed</ng-template>
+          </div>
 
-          <div *ngIf="room.conditionNote && room.conditionNote !== 'Good' && room.conditionNote !== 'Excellent'" class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-light px-3 py-2 rounded-lg mb-4">
+          <!-- ✅ FIXED: Only show warning if condition is NOT good -->
+          <div *ngIf="room.conditionNote && !isGoodCondition(room.conditionNote)" class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-light px-3 py-2 rounded-lg mb-4">
             ⚠ {{room.conditionNote}}
           </div>
 
@@ -204,9 +211,9 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Chain</label>
-          <select [(ngModel)]="editingHotel.chain" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-            <option value="">Select Chain</option>
-            <option *ngFor="let chain of hotelChains" [value]="chain.name">{{chain.name}}</option>
+          <select [(ngModel)]="editingHotel.hotelChainId" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+            <option [value]="">Select Chain</option>
+            <option *ngFor="let chain of hotelChains" [ngValue]="chain.id">{{chain.name}}</option>
           </select>
         </div>
         <div>

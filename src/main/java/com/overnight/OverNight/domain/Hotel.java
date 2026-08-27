@@ -117,4 +117,27 @@ public class Hotel {
     public String getHotelChainName() {
         return hotelChain != null ? hotelChain.getName() : null;
     }
+
+    @JsonProperty("chain")
+    public String getChain() {
+        if (hotelChain != null) {
+            return hotelChain.getName();
+        }
+        return chain;
+    }
+
+    @JsonProperty("chain")
+    public void setChain(String chain) {
+        this.chain = chain;
+    }
+
+    @JsonProperty("hotelChain")
+    public HotelChain getHotelChain() {
+        return hotelChain;
+    }
+
+    @JsonProperty("hotelChain")
+    public void setHotelChain(HotelChain hotelChain) {
+        this.hotelChain = hotelChain;
+    }
 }

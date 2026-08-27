@@ -38,6 +38,9 @@ export class AdminHotelsComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
+  cityMap: Map<number, City> = new Map();
+  chainMap: Map<number, HotelChain> = new Map();
+
   constructor(
     private hotelService: HotelService,
     private roomService: RoomService,
@@ -61,7 +64,28 @@ export class AdminHotelsComponent implements OnInit {
     this.hotelService.getAllHotels().subscribe({
       next: (data) => {
         this.hotels = data || [];
-        // Load rooms for each hotel
+
+        this.hotels.forEach(hotel => {
+          if (hotel.hotelChain && typeof hotel.hotelChain === 'object') {
+            const chainObj = hotel.hotelChain as any;
+            hotel.chain = chainObj.name || hotel.chain || 'Unknown Chain';
+            hotel.hotelChainId = chainObj.id || hotel.hotelChainId;
+          }
+
+          else if (hotel.hotelChainName) {
+            hotel.chain = hotel.hotelChainName;
+          }
+
+          if (hotel.city && typeof hotel.city === 'object') {
+            const cityObj = hotel.city as any;
+            hotel.city = cityObj.name || 'Unknown City';
+            hotel.cityId = cityObj.id || hotel.cityId;
+          }
+          else if (hotel.cityName) {
+            hotel.city = hotel.cityName;
+          }
+        });
+
         this.hotels.forEach(hotel => {
           if (hotel.id) {
             this.loadRoomsForHotel(hotel.id);
@@ -93,8 +117,25 @@ export class AdminHotelsComponent implements OnInit {
     this.hotelChainService.getAllHotelChains().subscribe({
       next: (data) => {
         this.hotelChains = data || [];
+        this.chainMap = new Map(this.hotelChains.map(chain => [chain.id!, chain]));
+
+        this.hotels.forEach(hotel => {
+          if (hotel.hotelChainId && this.chainMap.has(hotel.hotelChainId)) {
+            hotel.chain = this.chainMap.get(hotel.hotelChainId)?.name || hotel.chain || 'Unknown Chain';
+          }
+        });
       },
-      error: (err) => console.error('Error loading hotel chains:', err)
+      error: (err) => {
+        console.error('Error loading hotel chains:', err);
+        this.hotelChains = [
+          { id: 1, name: 'Marriott' },
+          { id: 2, name: 'Hilton' },
+          { id: 3, name: 'Hyatt' },
+          { id: 4, name: 'Four Seasons' },
+          { id: 5, name: 'Ritz-Carlton' },
+        ];
+        this.chainMap = new Map(this.hotelChains.map(chain => [chain.id!, chain]));
+      }
     });
   }
 
@@ -102,10 +143,16 @@ export class AdminHotelsComponent implements OnInit {
     this.cityService.getAllCities().subscribe({
       next: (data) => {
         this.cities = data || [];
+        this.cityMap = new Map(this.cities.map(city => [city.id!, city]));
+
+        this.hotels.forEach(hotel => {
+          if (hotel.cityId && this.cityMap.has(hotel.cityId)) {
+            hotel.city = this.cityMap.get(hotel.cityId)?.name || hotel.city || 'Unknown City';
+          }
+        });
       },
       error: (err) => {
         console.error('Error loading cities:', err);
-        // Fallback mock data if API fails
         this.cities = [
           { id: 1, name: 'St Johns', country: 'Canada' },
           { id: 2, name: 'Ottawa', country: 'Canada' },
@@ -113,6 +160,7 @@ export class AdminHotelsComponent implements OnInit {
           { id: 4, name: 'Toronto', country: 'Canada' },
           { id: 5, name: 'Vancouver', country: 'Canada' },
         ];
+        this.cityMap = new Map(this.cities.map(city => [city.id!, city]));
       }
     });
   }
@@ -124,7 +172,6 @@ export class AdminHotelsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading room types:', err);
-        // Fallback mock data if API fails
         this.roomTypes = [
           { id: 1, name: 'Standard', basePrice: 150, maxOccupancy: 2 },
           { id: 2, name: 'Deluxe', basePrice: 250, maxOccupancy: 4 },
@@ -142,7 +189,6 @@ export class AdminHotelsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading room amenities:', err);
-        // Fallback mock data if API fails
         this.roomAmenities = [
           { id: 1, name: 'Free WiFi' },
           { id: 2, name: 'Air Conditioning' },
@@ -157,12 +203,85 @@ export class AdminHotelsComponent implements OnInit {
     });
   }
 
+  getRoomAmenities(room: Room): string {
+    if (room.amenities && typeof room.amenities === 'string') {
+      return room.amenities;
+    }
+
+    if (room.roomAmenities && Array.isArray(room.roomAmenities)) {
+      const names = room.roomAmenities
+        .map((a: any) => typeof a === 'string' ? a : (a.name || a.amenityName || ''))
+        .filter((name: string) => name);
+
+      return names.join(', ');
+    }
+
+    if (typeof room.roomAmenities === 'string') {
+      return room.roomAmenities;
+    }
+
+    if (room.roomAmenityIds && Array.isArray(room.roomAmenityIds)) {
+      if (this.roomAmenities && this.roomAmenities.length > 0) {
+        const names = room.roomAmenityIds
+          .map(id => {
+            const amenity = this.roomAmenities.find(a => a.id === id);
+            return amenity ? amenity.name : '';
+          })
+          .filter((name: string) => name);
+
+        return names.join(', ');
+      }
+    }
+
+    return '';
+  }
+
+  isGoodCondition(note: string): boolean {
+    if (!note) return true;
+    const goodPhrases = ['good', 'excellent', 'renovated', 'renovation', 'new', 'perfect', 'great', 'clean', 'updated', 'recently', 'well-maintained'];
+    const lower = note.toLowerCase();
+    return goodPhrases.some(phrase => lower.includes(phrase));
+  }
+
+  getRoomTypeName(room: Room): string {
+    if (room.roomTypeName) return room.roomTypeName;
+    if (room.roomType && typeof room.roomType === 'object') {
+      const typeObj = room.roomType as any;
+      return typeObj.name || '';
+    }
+    return '';
+  }
+
+  getCityName(hotel: Hotel): string {
+    if (typeof hotel.city === 'string') return hotel.city;
+    if (hotel.city && typeof hotel.city === 'object') {
+      const cityObj = hotel.city as any;
+      return cityObj.name || 'Unknown City';
+    }
+    if (hotel.cityId && this.cityMap.has(hotel.cityId)) {
+      return this.cityMap.get(hotel.cityId)?.name || 'Unknown City';
+    }
+    return 'Unknown City';
+  }
+
+  getChainName(hotel: Hotel): string {
+    if (typeof hotel.chain === 'string') return hotel.chain;
+    if (hotel.chain && typeof hotel.chain === 'object') {
+      const chainObj = hotel.chain as any;
+      return chainObj.name || 'Unknown Chain';
+    }
+    if (hotel.hotelChainId && this.chainMap.has(hotel.hotelChainId)) {
+      return this.chainMap.get(hotel.hotelChainId)?.name || 'Unknown Chain';
+    }
+    return 'Unknown Chain';
+  }
+
   get filteredHotels() {
     const q = this.hotelSearch.toLowerCase();
     return this.hotels.filter(h =>
       (h.name || '').toLowerCase().includes(q) ||
-      (h.city || '').toLowerCase().includes(q) ||
-      (h.chain || '').toLowerCase().includes(q)
+      this.getCityName(h).toLowerCase().includes(q) ||
+      this.getChainName(h).toLowerCase().includes(q)
     );
   }
 
@@ -205,7 +324,19 @@ export class AdminHotelsComponent implements OnInit {
   }
 
   openEditHotel(h: Hotel) {
-    this.editingHotel = { ...h };
+    this.errorMessage = '';
+    const hotelCopy = { ...h };
+    if (hotelCopy.city && typeof hotelCopy.city === 'object') {
+      const cityObj = hotelCopy.city as any;
+      if (cityObj.id) hotelCopy.cityId = cityObj.id;
+      hotelCopy.city = cityObj.name || '';
+    }
+    if (hotelCopy.chain && typeof hotelCopy.chain === 'object') {
+      const chainObj = hotelCopy.chain as any;
+      if (chainObj.id) hotelCopy.hotelChainId = chainObj.id;
+      hotelCopy.chain = chainObj.name || '';
+    }
+    this.editingHotel = hotelCopy;
     this.showHotelModal = true;
   }
 
@@ -218,6 +349,11 @@ export class AdminHotelsComponent implements OnInit {
     if (hotelData.cityId) {
       hotelData.city = { id: Number(hotelData.cityId) };
     }
+    if (hotelData.hotelChainId) {
+      hotelData.hotelChain = { id: Number(hotelData.hotelChainId) };
+      delete hotelData.chain;
+    }
+
     delete hotelData.cityId;
     delete hotelData.rooms;
 
@@ -269,10 +405,9 @@ export class AdminHotelsComponent implements OnInit {
 
   openEditRoom(r: Room) {
     this.errorMessage = '';
-    const room = r as Room & { roomType?: { id?: number } };
     this.editingRoom = {
-      ...room,
-      roomTypeId: room.roomTypeId ?? room.roomType?.id,
+      ...r,
+      roomTypeId: r.roomTypeId ?? (r.roomType as any)?.id,
     };
     this.showRoomModal = true;
   }

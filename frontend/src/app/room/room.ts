@@ -180,7 +180,6 @@ export class RoomComponent implements OnInit {
   getRoomAmenities(room: Room): string[] {
     const amenities: string[] = [];
 
-    // Check room.amenities (could be string or array)
     if (room.amenities) {
       if (typeof room.amenities === 'string') {
         const parts = room.amenities.split(/[,;|]/).map(a => a.trim());
@@ -328,7 +327,7 @@ export class RoomComponent implements OnInit {
         const isExtendable = room.isExtendable === true || room.extendable === true;
         matches = matches && isExtendable;
       }
-      
+
       if (this.selectedAmenities.length > 0) {
         const roomAmenities = this.getRoomAmenities(room);
         const hasAllAmenities = this.selectedAmenities.every(selectedAmenity =>
