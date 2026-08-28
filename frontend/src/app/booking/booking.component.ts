@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -6,6 +6,7 @@ import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { ReservationService } from '../services/reservation.service';
 import { RoomService } from '../services/room.service';
+import { HotelService } from '../services/hotel.service';
 
 @Component({
   selector: 'app-booking',
@@ -29,7 +30,10 @@ export class BookingComponent implements OnInit {
     image: '',
     city: '',
     hotelName: '',
-    extendable: false
+    extendable: false,
+    capacity: 1,
+    amenities: [],
+    roomTypeName: ''
   };
 
   guestName: string = '';
@@ -59,7 +63,9 @@ export class BookingComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private reservationService: ReservationService,
-    private roomService: RoomService
+    private roomService: RoomService,
+    private hotelService: HotelService,
+    private cdr: ChangeDetectorRef  // ✅ Added
   ) {}
 
   ngOnInit(): void {
@@ -91,13 +97,32 @@ export class BookingComponent implements OnInit {
     this.isLoading = true;
     this.roomService.getRoomById(this.roomId).subscribe({
       next: (data) => {
-        this.room = data;
-        this.isLoading = false;
-        this.room.price = data.price || 0;
-        this.room.number = data.roomNumber || data.number || 'N/A';
-        if (data.hotelId) {
-          this.loadHotelInfo(data.hotelId);
+        console.log('📥 Room data loaded:', data);
+
+        // ✅ Fix: Use hotelId to get hotel info
+        const hotelId = data.hotelId;
+
+        // If there's a hotelId, load hotel info
+        if (hotelId) {
+          this.loadHotelInfo(hotelId);
         }
+
+        // Map the room data for display
+        this.room = {
+          id: data.id,
+          number: data.roomNumber || data.number || 'N/A',
+          price: data.price || 0,
+          image: data.imageUrl || '',
+          city: 'Loading...', // Will be updated by loadHotelInfo
+          hotelName: 'Loading...', // Will be updated by loadHotelInfo
+          extendable: data.isExtendable || data.extendable || false,
+          capacity: data.capacity || 1,
+          amenities: data.amenities || data.roomAmenities || [],
+          roomTypeName: data.roomTypeName || data.roomType?.name || ''
+        };
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading room:', error);
@@ -109,8 +134,20 @@ export class BookingComponent implements OnInit {
   }
 
   loadHotelInfo(hotelId: number): void {
-    this.room.hotelName = 'Hotel Name';
-    this.room.city = 'City Name';
+    this.hotelService.getHotelById(hotelId).subscribe({
+      next: (hotel) => {
+        console.log('🏨 Hotel loaded:', hotel);
+        this.room.hotelName = hotel.name || 'Hotel';
+        this.room.city = hotel.cityName || hotel.city || 'City';
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading hotel:', error);
+        this.room.hotelName = 'Hotel';
+        this.room.city = 'City';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadUnavailableDates(): void {
@@ -134,9 +171,13 @@ export class BookingComponent implements OnInit {
       image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80',
       city: 'St Johns',
       hotelName: 'Marriott St Johns East',
-      extendable: true
+      extendable: true,
+      capacity: 2,
+      amenities: ['WiFi', 'Air Conditioning', 'Smart TV', 'Work Desk'],
+      roomTypeName: 'Deluxe'
     };
     this.isLoading = false;
+    this.cdr.detectChanges();
   }
 
   isDateUnavailable(date: string): boolean {
@@ -164,12 +205,14 @@ export class BookingComponent implements OnInit {
         } else {
           this.errorMessage = 'This room is not available for the selected dates. Please choose different dates.';
         }
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error checking availability:', error);
         this.isLoading = false;
         this.isAvailable = false;
         this.errorMessage = 'Failed to check availability. Please try again.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -187,6 +230,7 @@ export class BookingComponent implements OnInit {
         this.serviceFee = this.subtotal * 0.03;
         this.totalAmount = this.subtotal + this.tax + this.serviceFee;
       }
+      this.cdr.detectChanges();
     }
   }
 
@@ -196,6 +240,7 @@ export class BookingComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
     this.reservationService.checkAvailability(
       this.roomId,
       this.checkIn,
@@ -204,6 +249,7 @@ export class BookingComponent implements OnInit {
       next: (available) => {
         if (!available) {
           alert('Sorry, this room is no longer available for the selected dates.');
+          this.isLoading = false;
           return;
         }
 
@@ -236,12 +282,14 @@ export class BookingComponent implements OnInit {
           error: (error) => {
             console.error('Error creating reservation:', error);
             alert('Failed to create reservation: ' + (error.error?.message || 'Please try again.'));
+            this.isLoading = false;
           }
         });
       },
       error: (error) => {
         console.error('Error checking availability:', error);
         alert('Please check your dates and try again.');
+        this.isLoading = false;
       }
     });
   }
@@ -249,6 +297,7 @@ export class BookingComponent implements OnInit {
   processPayment(reservationId: number): void {
     if (!this.cardNumber || !this.expiryDate || !this.cvv || !this.cardholderName) {
       alert('Please fill in all card details.');
+      this.isLoading = false;
       return;
     }
 
@@ -262,13 +311,15 @@ export class BookingComponent implements OnInit {
     };
 
     this.reservationService.processPayment(paymentData).subscribe({
-      next: (response) => {
+      next: () => {
         alert(`Payment of $${this.totalAmount.toFixed(2)} successful!`);
+        this.isLoading = false;
         this.router.navigate(['/reservations']);
       },
       error: (error) => {
         console.error('Payment failed:', error);
         alert('Payment failed: ' + (error.error?.message || 'Please try again.'));
+        this.isLoading = false;
       }
     });
   }
@@ -277,11 +328,13 @@ export class BookingComponent implements OnInit {
     this.reservationService.confirmReservation(reservationId).subscribe({
       next: () => {
         alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
+        this.isLoading = false;
         this.router.navigate(['/reservations']);
       },
       error: (error) => {
         console.error('Error confirming reservation:', error);
         alert('Failed to confirm reservation. Please try again.');
+        this.isLoading = false;
       }
     });
   }
@@ -304,5 +357,43 @@ export class BookingComponent implements OnInit {
 
   isFormValid(): boolean {
     return !!(this.guestName && this.email && this.checkIn && this.checkOut && this.isAvailable);
+  }
+
+  getRoomAmenities(): string[] {
+    if (!this.room) return ['WiFi', 'Air Conditioning', 'Smart TV'];
+
+    if (this.room.amenities) {
+      if (typeof this.room.amenities === 'string') {
+        return this.room.amenities.split(/[,;|]/).map((a: string) => a.trim()).filter(Boolean);
+      }
+      if (Array.isArray(this.room.amenities)) {
+        return this.room.amenities.map((a: any) => typeof a === 'string' ? a : a.name || a.amenityName || '').filter(Boolean);
+      }
+    }
+
+    const defaultAmenities: { [key: string]: string[] } = {
+      'Deluxe': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony'],
+      'Suite': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony', 'Kitchenette', 'Spa Access'],
+      'Standard': ['WiFi', 'Air Conditioning', 'Smart TV'],
+      'Premium': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Sea View'],
+      'Family': ['WiFi', 'Air Conditioning', 'Smart TV', 'Kitchenette', 'Pool Access']
+    };
+
+    const roomType = this.room.roomTypeName || this.room.roomType?.name || '';
+    for (const [key, value] of Object.entries(defaultAmenities)) {
+      if (roomType.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return ['WiFi', 'Air Conditioning', 'Smart TV'];
+  }
+
+  getDefaultImage(): string {
+    return 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80';
+  }
+
+  goBack(): void {
+    this.router.navigate(['/room']);
   }
 }

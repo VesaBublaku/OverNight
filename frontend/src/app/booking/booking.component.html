@@ -372,12 +372,12 @@
 
         <!-- Summary Header Image -->
         <div class="relative h-40 w-full">
-          <img [src]="room.image" class="w-full h-full object-cover" />
+          <img [src]="room.image || getDefaultImage()" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
           <div class="absolute bottom-4 left-5 right-5">
             <div class="text-[9px] font-semibold text-gray-300 tracking-[0.2em] uppercase mb-1">Summary</div>
-            <h3 class="text-xl font-serif text-white drop-shadow-md mb-1">{{room.hotelName}}</h3>
-            <div class="text-xs text-gray-300 font-light">{{room.city}} &bull; Room #{{room.number}}</div>
+            <h3 class="text-xl font-serif text-white drop-shadow-md mb-1">{{ room.hotelName || 'Hotel' }}</h3>
+            <div class="text-xs text-gray-300 font-light">{{ room.city || 'City' }} &bull; Room #{{ room.number || 'N/A' }}</div>
           </div>
         </div>
 
@@ -385,7 +385,7 @@
         <div class="p-6 md:p-8">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm text-gray-600 font-light">Rate</span>
-            <span class="text-sm font-semibold text-gray-900">${{room.price}}/night</span>
+            <span class="text-sm font-semibold text-gray-900">${{ room.price || 0 }}/night</span>
           </div>
           <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
             <span class="text-sm text-gray-600 font-light">Nights</span>
@@ -410,17 +410,18 @@
           <div class="bg-[#FAF8F5] rounded-xl p-5 mb-8 border border-gray-100">
             <div class="text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-4">Amenities</div>
             <div class="flex flex-wrap gap-2">
-              <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">WiFi</span>
-              <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">AC</span>
-              <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Smart TV</span>
-              <span class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Work Desk</span>
+          <span *ngFor="let amenity of getRoomAmenities()"
+                class="bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">
+            {{ amenity }}
+          </span>
             </div>
           </div>
 
           <!-- Back Button -->
-          <a routerLink="/room" class="block text-center w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-6 py-3.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">
+          <button (click)="goBack()"
+                  class="block text-center w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-6 py-3.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">
             Back to Search
-          </a>
+          </button>
         </div>
 
       </div>
