@@ -39,7 +39,6 @@ export class RoomComponent implements OnInit {
   isLoading: boolean = true;
   errorMessage: string = '';
 
-  // Amenity filter properties
   amenitySearchQuery: string = '';
   selectedAmenities: string[] = [];
   availableAmenities: string[] = [];
@@ -57,11 +56,29 @@ export class RoomComponent implements OnInit {
     console.log('RoomComponent initialized!');
 
     this.route.queryParams.subscribe(params => {
+      console.log('📥 Query params received:', params);
+
+      const city = params['city'];
+      const checkIn = params['checkIn'];
+      const checkOut = params['checkOut'];
+      const guests = params['guests'];
       const hotelId = params['hotel'];
+
       if (hotelId) {
         this.selectedHotelId = parseInt(hotelId);
         console.log('Filtering by hotel ID:', this.selectedHotelId);
       }
+
+      if (city) {
+        this.selectedCity = city;
+        console.log('Filtering by city:', city);
+      }
+
+      if (guests) {
+        this.minGuests = parseInt(guests);
+        console.log('Filtering by guests:', this.minGuests);
+      }
+
       this.loadRooms();
       this.loadHotels();
     });
@@ -85,18 +102,7 @@ export class RoomComponent implements OnInit {
           isActive: room.isActive === true
         }));
 
-        if (this.selectedHotelId) {
-          this.filteredRooms = this.rooms.filter(room =>
-            room.hotelId === this.selectedHotelId
-          );
-
-          const hotel = this.hotels.find(h => h.id === this.selectedHotelId);
-          if (hotel) {
-            this.selectedHotelName = hotel.name || 'Hotel';
-          }
-        } else {
-          this.filteredRooms = this.rooms;
-        }
+        this.applyFilters();
 
         this.extractCities();
         this.extractAmenities();

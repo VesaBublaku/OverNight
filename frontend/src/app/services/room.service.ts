@@ -27,43 +27,61 @@ export interface Room {
   providedIn: 'root'
 })
 export class RoomService {
-  private apiUrl = 'http://localhost:8082/api/rooms';
+  private apiUrl = 'http://localhost:8082/api';
 
   constructor(private http: HttpClient) {}
+  
+  getRooms(): Observable<Room[]> {
+    return this.http.get<Room[]>(`${this.apiUrl}/rooms`);
+  }
 
   getAllRooms(): Observable<Room[]> {
-    return this.http.get<Room[]>(this.apiUrl);
+    return this.http.get<Room[]>(`${this.apiUrl}/rooms`);
   }
 
   getActiveRooms(): Observable<Room[]> {
-    return this.http.get<Room[]>(`${this.apiUrl}/active`);
+    return this.http.get<Room[]>(`${this.apiUrl}/rooms/active`);
   }
 
   getRoomById(id: number): Observable<Room> {
-    return this.http.get<Room>(`${this.apiUrl}/${id}`);
+    return this.http.get<Room>(`${this.apiUrl}/rooms/${id}`);
   }
 
   getRoomsByHotel(hotelId: number): Observable<Room[]> {
-    return this.http.get<Room[]>(`${this.apiUrl}/hotel/${hotelId}`);
+    return this.http.get<Room[]>(`${this.apiUrl}/rooms/hotel/${hotelId}`);
   }
 
   createRoom(room: Room): Observable<Room> {
-    return this.http.post<Room>(this.apiUrl, room);
+    return this.http.post<Room>(`${this.apiUrl}/rooms`, room);
   }
 
   updateRoom(id: number, room: Room): Observable<Room> {
-    return this.http.put<Room>(`${this.apiUrl}/${id}`, room);
+    return this.http.put<Room>(`${this.apiUrl}/rooms/${id}`, room);
   }
 
   deleteRoom(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/rooms/${id}`);
   }
 
   activateRoom(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/activate`, {});
+    return this.http.put(`${this.apiUrl}/rooms/${id}/activate`, {});
   }
 
   deactivateRoom(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/deactivate`, {});
+    return this.http.put(`${this.apiUrl}/rooms/${id}/deactivate`, {});
+  }
+
+  getCities(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/cities`);
+  }
+
+  searchRooms(params: any): Observable<Room[]> {
+    const cleanParams: any = {};
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+        cleanParams[key] = params[key];
+      }
+    });
+    return this.http.get<Room[]>(`${this.apiUrl}/rooms/search`, { params: cleanParams });
   }
 }

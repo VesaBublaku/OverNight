@@ -101,7 +101,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/receipts", "/api/receipts/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/staff", "/api/staff/**").hasAnyRole("STAFF", "ADMIN")
-                        
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
