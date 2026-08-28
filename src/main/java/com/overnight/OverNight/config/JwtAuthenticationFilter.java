@@ -85,19 +85,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void authenticateUser(HttpServletRequest request, String email, Long userId, User user, String role) {
-        // ✅ Use role from token if available, otherwise default to ROLE_USER
         String userRole = role != null ? role.toUpperCase().trim() : "USER";
         String authority = userRole.equals("ADMIN") ? "ROLE_ADMIN" : "ROLE_USER";
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
-                        user,
+                        user,  // This is the User object with ID
                         null,
                         Collections.singletonList(new SimpleGrantedAuthority(authority))
                 );
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         request.setAttribute("userId", userId);
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        System.out.println("User authenticated: " + email + " with role: " + authority);
+        System.out.println("User authenticated: " + email + " with ID: " + userId + " and role: " + authority);
     }
 }

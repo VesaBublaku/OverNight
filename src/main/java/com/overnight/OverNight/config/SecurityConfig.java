@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
+                        // PUBLIC ENDPOINTS
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -61,31 +61,35 @@ public class SecurityConfig {
                                 "/api/staff/register"
                         ).permitAll()
 
+                        // INDIVIDUAL USER - ANY AUTHENTICATED USER
                         .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
-
+                        // /me endpoints - ANY AUTHENTICATED USER
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
 
+                        // COLLECTION - STAFF/ADMIN ONLY
                         .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
 
+                        // Hotels - all allowed
                         .requestMatchers(HttpMethod.GET, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/hotels", "/api/hotels/**").permitAll()
 
+                        // Rooms - all allowed
                         .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms", "/api/rooms/**").permitAll()
 
+                        // Public GET endpoints
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
@@ -97,6 +101,7 @@ public class SecurityConfig {
                                 "/api/room-policies/**"
                         ).permitAll()
 
+                        // Staff/Admin only
                         .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/receipts", "/api/receipts/**").hasAnyRole("STAFF", "ADMIN")

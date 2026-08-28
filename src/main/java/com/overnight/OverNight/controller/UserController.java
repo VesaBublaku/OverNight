@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -91,9 +92,26 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN') or hasRole('STAFF')")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<User> getUserById(@PathVariable Long id, @RequestAttribute("userId") Long userId) {
+        System.out.println("🔍 Requested ID: " + id);
+        System.out.println("🔍 Authenticated User ID: " + userId);
+
+        // If user is accessing their own profile, allow it
+        if (userId.equals(id)) {
+            return ResponseEntity.ok(userService.getUserById(id));
+        }
+
+        // Otherwise, check if they have admin/staff role
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            boolean isAdminOrStaff = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF"));
+            if (isAdminOrStaff) {
+                return ResponseEntity.ok(userService.getUserById(id));
+            }
+        }
+
+        throw new RuntimeException("You do not have permission to access this profile");
     }
 
     @PutMapping("/{id}")

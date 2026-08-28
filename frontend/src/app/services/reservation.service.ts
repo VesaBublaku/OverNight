@@ -5,24 +5,8 @@ import { Observable } from 'rxjs';
 export interface Reservation {
   id?: number;
   reservationNumber?: string;
-  user?: {
-    id: number;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-  } | null;
-  room?: {
-    id: number;
-    roomNumber?: string;
-    price?: number;
-    hotel?: {
-      id: number;
-      name: string;
-      city: string;
-    };
-  } | null;
+  userId?: number;
+  roomId?: number;
   checkInDate?: string;
   checkOutDate?: string;
   nights?: number;
@@ -31,53 +15,84 @@ export interface Reservation {
   specialRequests?: string;
   status?: string;
   isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  user?: {
+    id: number;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  } | null;
+  room?: {
+    id: number;
+    roomNumber?: string;
+    price?: number;
+    capacity?: number;
+    hotelId?: number;
+    hotel?: {
+      id: number;
+      name?: string;
+      cityName?: string;
+    };
+  } | null;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
-  private apiUrl = 'http://localhost:8082/api/reservations';
+  private apiUrl = 'http://localhost:8082/api';
 
   constructor(private http: HttpClient) {}
 
+  checkAvailability(roomId: number, checkIn: string, checkOut: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/reservations/check-availability`, {
+      params: {
+        roomId: roomId.toString(),
+        checkIn: checkIn,
+        checkOut: checkOut
+      }
+    });
+  }
+
+  getUnavailableDates(roomId: number): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/reservations/unavailable-dates/${roomId}`);
+  }
+
+  createReservation(reservation: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reservations`, reservation);
+  }
+
   getAllReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(this.apiUrl);
-  }
-
-  getReservationsByUser(userId: number): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/user/${userId}`);
-  }
-
-  getUpcomingReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/upcoming`);
-  }
-
-  getPastReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/past`);
+    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`);
   }
 
   getReservationById(id: number): Observable<Reservation> {
-    return this.http.get<Reservation>(`${this.apiUrl}/${id}`);
+    return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
   }
 
-  createReservation(reservation: Reservation): Observable<Reservation> {
-    return this.http.post<Reservation>(this.apiUrl, reservation);
+  updateReservation(id: number, reservation: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/reservations/${id}`, reservation);
   }
 
-  updateReservation(id: number, reservation: Reservation): Observable<Reservation> {
-    return this.http.put<Reservation>(`${this.apiUrl}/${id}`, reservation);
+  deleteReservation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/reservations/${id}`);
   }
 
   cancelReservation(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/cancel`, {});
+    return this.http.put(`${this.apiUrl}/reservations/${id}/cancel`, {});
   }
 
-  checkIn(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/check-in`, {});
+  confirmReservation(reservationId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/reservations/${reservationId}/confirm`, {});
   }
 
-  checkOut(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/check-out`, {});
+  processPayment(paymentData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/payments`, paymentData);
+  }
+
+  getUserReservations(userId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/user/${userId}`);
   }
 }

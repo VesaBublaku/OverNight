@@ -132,4 +132,26 @@ public class ReservationController {
         response.put("activeReservations", reservationService.countActiveByRoom(roomId));
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/check-availability")
+    public ResponseEntity<Boolean> checkAvailability(
+            @RequestParam Long roomId,
+            @RequestParam String checkIn,
+            @RequestParam String checkOut
+    ) {
+        boolean available = reservationService.isRoomAvailable(roomId, checkIn, checkOut);
+        return ResponseEntity.ok(available);
+    }
+
+    @GetMapping("/unavailable-dates/{roomId}")
+    public ResponseEntity<List<String>> getUnavailableDates(@PathVariable Long roomId) {
+        List<String> dates = reservationService.getUnavailableDates(roomId);
+        return ResponseEntity.ok(dates);
+    }
+
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<Reservation> confirmReservation(@PathVariable Long id) {
+        Reservation confirmed = reservationService.confirmReservation(id);
+        return ResponseEntity.ok(confirmed);
+    }
 }

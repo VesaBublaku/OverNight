@@ -79,26 +79,26 @@
         <div class="space-y-6">
           <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Full Name</label>
-            <input type="text" placeholder="Your full name" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            <input type="text" [(ngModel)]="guestName" placeholder="Your full name" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
           </div>
           <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Address</label>
-            <input type="text" placeholder="Street, City, Country" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            <input type="text" [(ngModel)]="address" placeholder="Street, City, Country" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
           </div>
           <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Email</label>
-            <input type="email" placeholder="you@example.com" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400 mb-2" />
+            <input type="email" [(ngModel)]="email" placeholder="you@example.com" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400 mb-2" />
             <p class="text-xs text-gray-400 font-light">We use this (with your ID) to find-or-create your customer record.</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Date of Birth</label>
-              <input type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+              <input type="date" [(ngModel)]="dob" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">ID Type</label>
-              <select class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none bg-white">
+              <select [(ngModel)]="idType" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none bg-white">
                 <option>Passport</option>
                 <option>Driver's License</option>
                 <option>National ID</option>
@@ -107,7 +107,11 @@
           </div>
           <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">ID Number</label>
-            <input type="text" placeholder="Document number" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+            <input type="text" [(ngModel)]="idNumber" placeholder="Document number" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Phone Number</label>
+            <input type="text" [(ngModel)]="phone" placeholder="Phone number" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400" />
           </div>
         </div>
       </div>
@@ -125,24 +129,43 @@
           </span>
         </div>
 
+        <!-- Availability Status -->
+        <div *ngIf="checkIn && checkOut" class="mt-4">
+          <div *ngIf="isLoading" class="flex items-center gap-2 text-gray-500">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-[#BCA47B] border-t-transparent"></div>
+            Checking availability...
+          </div>
+          <div *ngIf="!isLoading && isAvailable" class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">
+            ✅ Room is available for these dates!
+          </div>
+          <div *ngIf="!isLoading && !isAvailable && errorMessage" class="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+            ❌ {{ errorMessage }}
+          </div>
+        </div>
+
         <div class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-in</label>
-              <input type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+              <input type="date" [(ngModel)]="checkIn" (change)="onDateChange()" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Check-out</label>
-              <input type="date" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+              <input type="date" [(ngModel)]="checkOut" (change)="onDateChange()" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light text-gray-600 focus:outline-none focus:border-[#BCA47B] transition-colors" />
             </div>
           </div>
 
           <div>
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Number of Guests</label>
+            <input type="number" [(ngModel)]="guests" min="1" max="10" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors" />
+          </div>
+
+          <div>
             <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Notes (Optional)</label>
-            <textarea placeholder="e.g., Late check-in requested" rows="4" class="w-full bg-[#FAF8F5] border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"></textarea>
+            <textarea [(ngModel)]="notes" placeholder="e.g., Late check-in requested" rows="4" class="w-full bg-[#FAF8F5] border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"></textarea>
             <div class="flex justify-between mt-2">
               <span class="text-xs text-gray-400 font-light">Optional, up to 1000 chars.</span>
-              <span class="text-xs text-gray-400 font-light">0/1000</span>
+              <span class="text-xs text-gray-400 font-light">{{ (notes || '').length }}/1000</span>
             </div>
           </div>
 
@@ -171,11 +194,11 @@
             <p class="text-gray-500 text-sm font-light">Choose how you'd like to pay for your stay.</p>
           </div>
           <span class="bg-[#FAF5EF] text-gray-500 border border-[#E8E3DB] px-4 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">
-      Secure
-    </span>
+            Secure
+          </span>
         </div>
 
-        <!-- Payment Option Toggle - Refined -->
+        <!-- Payment Option Toggle -->
         <div class="grid grid-cols-2 gap-3 mb-8">
           <button
             class="py-3 px-4 rounded-xl text-sm font-light transition-all border"
@@ -271,8 +294,9 @@
           <!-- Online Pay Button -->
           <div class="pt-2">
             <button
-              (click)="processPayment()"
-              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
+              (click)="createReservation()"
+              [disabled]="!isFormValid() || isLoading"
+              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
               Pay ${{ totalAmount.toFixed(2) }} Now
             </button>
             <p class="text-xs text-gray-400 font-light text-center mt-4">Your card will be charged immediately.</p>
@@ -327,7 +351,10 @@
 
           <!-- Confirm Reservation Button -->
           <div class="pt-4">
-            <button class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
+            <button
+              (click)="createReservation()"
+              [disabled]="!isFormValid() || isLoading"
+              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
               Confirm Reservation
             </button>
             <p class="text-xs text-gray-400 font-light text-center mt-4">
@@ -358,25 +385,25 @@
         <div class="p-6 md:p-8">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm text-gray-600 font-light">Rate</span>
-            <span class="text-sm font-semibold text-gray-900">{{room.price}}/night</span>
+            <span class="text-sm font-semibold text-gray-900">${{room.price}}/night</span>
           </div>
           <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
             <span class="text-sm text-gray-600 font-light">Nights</span>
-            <span class="text-sm font-medium text-gray-900">&mdash;</span>
+            <span class="text-sm font-medium text-gray-900">{{ nights || 0 }}</span>
           </div>
 
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm text-gray-500 font-light">Subtotal</span>
-            <span class="text-sm font-medium text-gray-600">CA$0.00</span>
+            <span class="text-sm font-medium text-gray-600">${{ subtotal.toFixed(2) }}</span>
           </div>
           <div class="flex items-center justify-between pb-6 border-b border-gray-100 mb-6">
             <span class="text-sm text-gray-500 font-light">Service fee (3%)</span>
-            <span class="text-sm font-medium text-gray-600">CA$0.00</span>
+            <span class="text-sm font-medium text-gray-600">${{ serviceFee.toFixed(2) }}</span>
           </div>
 
           <div class="flex items-center justify-between mb-8">
             <span class="text-base text-gray-900 font-semibold">Total</span>
-            <span class="text-base font-bold text-gray-900">CA$0.00</span>
+            <span class="text-base font-bold text-gray-900">${{ totalAmount.toFixed(2) }}</span>
           </div>
 
           <!-- Amenities -->

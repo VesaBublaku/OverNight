@@ -13,6 +13,8 @@ interface ExtendedUser extends User {
   idNumber?: string;
 }
 
+
+
 @Component({
   selector: 'app-staff-dashboard',
   standalone: true,

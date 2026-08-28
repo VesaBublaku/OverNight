@@ -25,7 +25,6 @@ export class ProfileComponent implements OnInit {
     address: ''
   };
 
-  editingUser: any = {};
   isLoading = false;
   errorMessage = '';
   successMessage = '';
@@ -43,13 +42,48 @@ export class ProfileComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // ✅ Get user ID from localStorage (set during login)
-    const userId = localStorage.getItem('userId');
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        console.log('User from localStorage:', userData);
 
-    if (userId) {
-      // Fetch user by ID directly - no need for /me endpoint
-      this.userService.getUserById(Number(userId)).subscribe({
-        next: (data) => {
+        this.user = {
+          id: userData.id,
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email,
+          email: userData.email,
+          memberSince: userData.memberSince || new Date().getFullYear().toString(),
+          tier: 'Gold Status',
+          points: '12,450',
+          phone: userData.phone || '',
+          address: userData.address || ''
+        };
+        this.isLoading = false;
+        this.cdr.detectChanges();
+
+        this.refreshUserFromServer();
+        return;
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+
+    this.fetchUserFromServer();
+  }
+
+  refreshUserFromServer(): void {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      console.warn('No userId found in localStorage');
+      return;
+    }
+
+    console.log('Refreshing user from server for ID:', userId);
+
+    this.userService.getUserById(Number(userId)).subscribe({
+      next: (data) => {
+        console.log(' User from server:', data);
+        if (data) {
           this.user = {
             id: data.id,
             name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
@@ -60,6 +94,36 @@ export class ProfileComponent implements OnInit {
             phone: data.phone || '',
             address: data.address || ''
           };
+          localStorage.setItem('currentUser', JSON.stringify(data));
+          this.cdr.detectChanges();
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error refreshing user from server:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  fetchUserFromServer(): void {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      this.userService.getUserById(Number(userId)).subscribe({
+        next: (data) => {
+          console.log('User from server:', data);
+          this.user = {
+            id: data.id,
+            name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
+            email: data.email,
+            memberSince: data.memberSince || new Date().getFullYear().toString(),
+            tier: 'Gold Status',
+            points: '12,450',
+            phone: data.phone || '',
+            address: data.address || ''
+          };
+          localStorage.setItem('currentUser', JSON.stringify(data));
           this.isLoading = false;
           this.cdr.detectChanges();
         },
@@ -71,9 +135,9 @@ export class ProfileComponent implements OnInit {
         }
       });
     } else {
-      // Fallback: Try to get current user from /me endpoint
       this.userService.getCurrentUser().subscribe({
         next: (data) => {
+          console.log('User from /me endpoint:', data);
           this.user = {
             id: data.id,
             name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.email,
@@ -84,11 +148,13 @@ export class ProfileComponent implements OnInit {
             phone: data.phone || '',
             address: data.address || ''
           };
+          localStorage.setItem('userId', String(data.id));
+          localStorage.setItem('currentUser', JSON.stringify(data));
           this.isLoading = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error loading user profile:', err);
+          console.error(' Error loading user profile:', err);
           this.errorMessage = 'Failed to load profile. Please log in again.';
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -102,7 +168,6 @@ export class ProfileComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Split name into firstName and lastName
     const nameParts = this.user.name.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
@@ -114,15 +179,12 @@ export class ProfileComponent implements OnInit {
       address: this.user.address
     };
 
-    // ✅ Use user ID to update
     if (this.user.id) {
       this.userService.updateUser(this.user.id, updatedUser as User).subscribe({
         next: () => {
           this.successMessage = 'Profile updated successfully!';
           this.isLoading = false;
-          this.cdr.detectChanges();
 
-          // Update localStorage
           const storedUser = localStorage.getItem('currentUser');
           if (storedUser) {
             const cached = JSON.parse(storedUser);
@@ -132,6 +194,7 @@ export class ProfileComponent implements OnInit {
             cached.address = this.user.address;
             localStorage.setItem('currentUser', JSON.stringify(cached));
           }
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating profile:', err);

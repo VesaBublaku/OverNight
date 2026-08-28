@@ -30,7 +30,7 @@ export class RoomService {
   private apiUrl = 'http://localhost:8082/api';
 
   constructor(private http: HttpClient) {}
-  
+
   getRooms(): Observable<Room[]> {
     return this.http.get<Room[]>(`${this.apiUrl}/rooms`);
   }

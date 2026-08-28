@@ -47,4 +47,22 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
 
     @Query("SELECT SUM(r.totalPrice) FROM Reservation r WHERE r.status = 'COMPLETED' AND r.deletedAt IS NULL")
     Double getTotalRevenue();
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId " +
+            "AND r.isActive = true " +
+            "AND r.status != 'CANCELLED' " +
+            "AND r.status != 'COMPLETED' " +
+            "AND ((r.checkInDate <= :checkOut AND r.checkOutDate >= :checkIn))")
+    long countOverlappingReservations(@Param("roomId") Long roomId,
+                                      @Param("checkIn") String checkIn,
+                                      @Param("checkOut") String checkOut);
+
+    @Query("SELECT DISTINCT r.checkInDate FROM Reservation r " +
+            "WHERE r.room.id = :roomId " +
+            "AND r.isActive = true " +
+            "AND r.status != 'CANCELLED' " +
+            "AND r.status != 'COMPLETED' " +
+            "AND r.checkInDate >= :today")
+    List<String> findUnavailableDates(@Param("roomId") Long roomId,
+                                      @Param("today") String today);
 }

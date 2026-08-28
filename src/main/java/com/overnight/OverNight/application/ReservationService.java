@@ -202,4 +202,27 @@ public class ReservationService {
         Double revenue = reservationRepo.getTotalRevenue();
         return revenue != null ? revenue : 0.0;
     }
+
+    @Transactional(readOnly = true)
+    public boolean isRoomAvailable(Long roomId, String checkIn, String checkOut) {
+        // Check if there are any overlapping reservations
+        long overlapping = reservationRepo.countOverlappingReservations(
+                roomId,
+                checkIn,
+                checkOut
+        );
+        return overlapping == 0;
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getUnavailableDates(Long roomId) {
+        return reservationRepo.findUnavailableDates(roomId, LocalDate.now().toString());
+    }
+
+    @Transactional
+    public Reservation confirmReservation(Long id) {
+        Reservation reservation = getReservationById(id);
+        reservation.setStatus("CONFIRMED");
+        return reservationRepo.save(reservation);
+    }
 }
