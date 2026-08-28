@@ -49,7 +49,8 @@ public class UserService {
             throw new RuntimeException("Account is deactivated");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getId(),"USER");
+        String role = user.getRole() != null ? user.getRole() : "USER";
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), role);
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
@@ -66,6 +67,10 @@ public class UserService {
             throw new RuntimeException("Email already exists");
         }
 
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("USER");
+        }
+
         if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
             throw new RuntimeException("Password is required");
         }
@@ -75,7 +80,11 @@ public class UserService {
 
         User savedUser = userRepo.save(user);
 
-        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(),"USER");
+        String token = jwtUtil.generateToken(
+                savedUser.getEmail(),
+                savedUser.getId(),
+                savedUser.getRole()
+        );
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);

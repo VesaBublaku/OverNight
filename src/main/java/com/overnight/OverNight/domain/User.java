@@ -41,6 +41,9 @@ public class User {
     @Column(name = "member_since")
     private String memberSince;
 
+    @Column(nullable = false)
+    private String role = "USER";
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

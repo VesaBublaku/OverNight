@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -49,7 +51,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ PUBLIC ENDPOINTS (Login, Register, etc.)
+
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -59,31 +61,31 @@ public class SecurityConfig {
                                 "/api/staff/register"
                         ).permitAll()
 
-                        // ✅ Allow ANY authenticated user to access their OWN profile
+                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
 
-                        // ✅ Allow ANY authenticated user to access/update by ID
-                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/*").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/*").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
 
-                        // ✅ Hotels - ALL operations allowed
                         .requestMatchers(HttpMethod.GET, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/hotels", "/api/hotels/**").permitAll()
 
-                        // ✅ Rooms - ALL operations allowed
                         .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms", "/api/rooms/**").permitAll()
 
-                        // ✅ Public GET endpoints
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
@@ -95,17 +97,11 @@ public class SecurityConfig {
                                 "/api/room-policies/**"
                         ).permitAll()
 
-                        // ✅ Staff/Admin ONLY for managing ALL users (list, delete, etc.)
-                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
-
-                        // ✅ Staff/Admin ONLY for sensitive data
                         .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/receipts", "/api/receipts/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/staff", "/api/staff/**").hasAnyRole("STAFF", "ADMIN")
-
-                        // ✅ Any other request must be authenticated
+                        
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

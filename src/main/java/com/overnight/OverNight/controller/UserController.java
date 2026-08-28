@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -90,6 +91,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN') or hasRole('STAFF')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
@@ -137,4 +139,5 @@ public class UserController {
         response.put("exists", userService.existsByEmail(email));
         return ResponseEntity.ok(response);
     }
+
 }
