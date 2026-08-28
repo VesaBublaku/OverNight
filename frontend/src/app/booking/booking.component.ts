@@ -65,17 +65,49 @@ export class BookingComponent implements OnInit {
     private reservationService: ReservationService,
     private roomService: RoomService,
     private hotelService: HotelService,
-    private cdr: ChangeDetectorRef  // ✅ Added
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
+      console.log('Booking page - Room ID from URL:', id);
+
       if (id) {
         this.roomId = parseInt(id);
+
+        const cachedRoom = localStorage.getItem('bookingRoom');
+        const cachedRoomId = localStorage.getItem('bookingRoomId');
+
+        if (cachedRoom && cachedRoomId && parseInt(cachedRoomId) === this.roomId) {
+          try {
+            const roomData = JSON.parse(cachedRoom);
+            console.log('Using cached room data:', roomData);
+            this.room = {
+              id: roomData.id,
+              number: roomData.roomNumber || roomData.number || 'N/A',
+              price: roomData.price || 0,
+              image: roomData.imageUrl || '',
+              city: roomData.hotelCity || roomData.city || 'City',
+              hotelName: roomData.hotelName || roomData.hotel?.name || 'Hotel',
+              extendable: roomData.isExtendable || roomData.extendable || false,
+              capacity: roomData.capacity || 1,
+              amenities: roomData.amenities || roomData.roomAmenities || [],
+              roomTypeName: roomData.roomTypeName || roomData.roomType?.name || ''
+            };
+            console.log('Room from cache:', this.room);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            return;
+          } catch (e) {
+            console.error('Error parsing cached room:', e);
+          }
+        }
+
         this.loadRoomDetails();
         this.loadUnavailableDates();
       } else {
+        console.warn('⚠No room ID in URL, using mock data');
         this.loadMockRoom();
       }
     });
@@ -95,42 +127,69 @@ export class BookingComponent implements OnInit {
 
   loadRoomDetails(): void {
     this.isLoading = true;
+    console.log('Loading room with ID:', this.roomId);
+
     this.roomService.getRoomById(this.roomId).subscribe({
       next: (data) => {
-        console.log('📥 Room data loaded:', data);
+        console.log('Room data loaded:', data);
 
-        // ✅ Fix: Use hotelId to get hotel info
-        const hotelId = data.hotelId;
-
-        // If there's a hotelId, load hotel info
-        if (hotelId) {
-          this.loadHotelInfo(hotelId);
+        if (!data || !data.id) {
+          console.error('Invalid room data received:', data);
+          this.errorMessage = 'Invalid room data received';
+          this.isLoading = false;
+          this.createFallbackRoom();
+          this.cdr.detectChanges();
+          return;
         }
 
-        // Map the room data for display
         this.room = {
           id: data.id,
           number: data.roomNumber || data.number || 'N/A',
           price: data.price || 0,
           image: data.imageUrl || '',
-          city: 'Loading...', // Will be updated by loadHotelInfo
-          hotelName: 'Loading...', // Will be updated by loadHotelInfo
+          city: data.hotelCity || data.hotel?.cityName || data.hotel?.city || 'City',
+          hotelName: data.hotelName || data.hotel?.name || 'Hotel',
           extendable: data.isExtendable || data.extendable || false,
           capacity: data.capacity || 1,
           amenities: data.amenities || data.roomAmenities || [],
           roomTypeName: data.roomTypeName || data.roomType?.name || ''
         };
 
+        console.log('Room mapped for display:', this.room);
+
+        localStorage.setItem('bookingRoom', JSON.stringify(this.room));
+        localStorage.setItem('bookingRoomId', String(this.room.id));
+
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading room:', error);
-        this.errorMessage = 'Failed to load room details';
+        console.error('Error status:', error.status);
+
+        this.errorMessage = `Failed to load room details. Status: ${error.status}`;
         this.isLoading = false;
-        this.loadMockRoom();
+        this.createFallbackRoom();
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  createFallbackRoom(): void {
+    console.log('Creating fallback room with ID:', this.roomId);
+    this.room = {
+      id: this.roomId,
+      number: String(this.roomId),
+      price: 200,
+      image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=80',
+      city: 'City',
+      hotelName: `Hotel ${this.roomId}`,
+      extendable: false,
+      capacity: 2,
+      amenities: ['WiFi', 'Air Conditioning', 'Smart TV'],
+      roomTypeName: 'Standard'
+    };
+    console.log('Fallback room created:', this.room);
   }
 
   loadHotelInfo(hotelId: number): void {

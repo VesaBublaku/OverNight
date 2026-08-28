@@ -25,7 +25,7 @@
   <div class="relative z-20 max-w-[70rem] mx-auto w-full px-4 sm:px-6 lg:px-8 mb-6">
     <!-- Breadcrumbs / Subtitle -->
     <div class="text-[9px] font-semibold text-white/80 tracking-[0.3em] uppercase mb-3 drop-shadow-md">
-      Booking &bull; {{room.city}} &bull; {{room.hotelName}}
+      Booking &bull; {{ room.city || 'City' }} &bull; {{ room.hotelName || 'Hotel' }}
     </div>
 
     <!-- Title -->
@@ -39,18 +39,19 @@
   <div class="relative z-30 max-w-[70rem] mx-auto w-full px-4 sm:px-6 lg:px-8 -mb-16">
     <div class="bg-white/90 backdrop-blur-xl border border-white/20 rounded-full px-6 py-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-3">
+      <span class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
+        Room #{{ room.number || 'N/A' }}
+      </span>
         <span class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
-          Room #{{room.number}}
-        </span>
-        <span class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
-          Rate: <span class="font-bold">{{room.price}}</span> / night
-        </span>
-        <span class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
-          Extendable stay
-        </span>
+        Rate: <span class="font-bold">${{ room.price || 0 }}</span> / night
+      </span>
+        <!-- ✅ Make this dynamic -->
+        <span *ngIf="room.extendable || room.isExtendable" class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
+        Extendable stay
+      </span>
       </div>
       <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase">
-        Secure Checkout Soon
+        Secure Checkout
       </div>
     </div>
   </div>

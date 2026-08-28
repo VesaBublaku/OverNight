@@ -128,7 +128,6 @@ export class RoomDetailsComponent implements OnInit {
     return 'Hotel';
   }
 
-  // ✅ Get city name safely
   getCityName(): string {
     if (this.hotel?.cityName) {
       return this.hotel.cityName;
@@ -155,12 +154,46 @@ export class RoomDetailsComponent implements OnInit {
   }
 
   getAmenities(): string[] {
-    if (this.room?.amenities) {
-      return this.room.amenities.split(',').map(a => a.trim());
+    if (!this.room) return ['WiFi', 'Air Conditioning', 'Smart TV'];
+
+    const amenities = this.room.amenities || this.room.roomAmenities;
+
+    if (!amenities) {
+      return this.getDefaultAmenities();
     }
-    return ['WiFi', 'AC', 'Smart TV', 'Premium Bedding'];
+
+    if (Array.isArray(amenities)) {
+      return amenities.map((a: any) => {
+        if (typeof a === 'string') return a;
+        return a.name || a.amenityName || '';
+      }).filter(Boolean);
+    }
+
+    if (typeof amenities === 'string') {
+      return amenities.split(/[,;|]/).map((a: string) => a.trim()).filter(Boolean);
+    }
+
+    return ['WiFi', 'Air Conditioning', 'Smart TV'];
   }
 
+  getDefaultAmenities(): string[] {
+    const roomType = this.room?.roomTypeName || this.room?.roomType?.name || '';
+    const defaultAmenities: { [key: string]: string[] } = {
+      'Deluxe': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony'],
+      'Suite': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Balcony', 'Kitchenette', 'Spa Access'],
+      'Standard': ['WiFi', 'Air Conditioning', 'Smart TV'],
+      'Premium': ['WiFi', 'Air Conditioning', 'Smart TV', 'Mini Bar', 'Safe', 'Sea View'],
+      'Family': ['WiFi', 'Air Conditioning', 'Smart TV', 'Kitchenette', 'Pool Access']
+    };
+
+    for (const [key, value] of Object.entries(defaultAmenities)) {
+      if (roomType.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+
+    return ['WiFi', 'Air Conditioning', 'Smart TV'];
+  }
   goBack(): void {
     this.router.navigate(['/room']);
   }
@@ -180,12 +213,19 @@ export class RoomDetailsComponent implements OnInit {
   }
 
   bookRoom(): void {
+    console.log('Booking room with ID:', this.room?.id);
+    console.log('Full room data:', this.room);
+
     if (this.room?.id) {
+      localStorage.setItem('bookingRoom', JSON.stringify(this.room));
+      localStorage.setItem('bookingRoomId', String(this.room.id));
+
       this.router.navigate(['/booking'], {
-        queryParams: { roomId: this.room.id }
+        queryParams: { id: this.room.id }
       });
     } else {
-      this.router.navigate(['/booking']);
+      console.error('No room ID available for booking');
+      alert('Cannot book this room. Please try again.');
     }
   }
 }

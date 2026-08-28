@@ -20,7 +20,17 @@ export interface Room {
   roomAmenityIds?: number[];
   roomAmenities?: any[];
   roomTypeName?: string;
-  amenities?: string;
+  amenities?: string | string[];
+  hotel?: {
+    id: number;
+    name?: string;
+    cityName?: string;
+    city?: string;
+    imageUrl?: string;
+  };
+  hotelName?: string;
+  hotelCity?: string;
+  roomTitle?: string;
 }
 
 @Injectable({
