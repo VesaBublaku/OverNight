@@ -56,13 +56,19 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div *ngFor="let chain of filteredChains" class="bg-white rounded-[1.25rem] shadow-[0_4px_24px_rgb(0,0,0,0.04)] overflow-hidden hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-shadow duration-300">
         <!-- Logo Area -->
-        <div class="bg-[#FAF5EF] flex items-center justify-center h-48">
+        <div class="relative bg-[#FAF5EF] flex items-center justify-center h-48 overflow-hidden">
           <img
             [src]="getImageUrl(chain)"
             [alt]="chain.name + ' logo'"
-            class="h-20 w-auto object-contain"
+            class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             (error)="chain.imageUrl = ''"
           />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <div class="absolute bottom-3 left-4 right-4">
+    <span class="text-white text-xs font-semibold tracking-[0.2em] uppercase bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
+      {{ chain.hotelCount || 0 }} Hotels
+    </span>
+          </div>
         </div>
         <!-- Info Area -->
         <div class="px-7 pt-6 pb-7">

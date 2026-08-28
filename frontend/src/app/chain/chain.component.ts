@@ -78,7 +78,15 @@ export class ChainComponent implements OnInit {
     if (chain.imageUrl) {
       return chain.imageUrl;
     }
-    return `https://via.placeholder.com/200x200/1a1a2e/ffffff?text=${encodeURIComponent(chain.name)}`;
+    const fallbackImages = [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1542314831-c53cd426d116?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80'
+    ];
+    const index = (chain.id || 0) % fallbackImages.length;
+    return fallbackImages[index];
   }
 
   viewChainHotels(chainId?: number): void {
