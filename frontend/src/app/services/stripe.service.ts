@@ -19,8 +19,11 @@ export class StripeService {
     });
   }
 
-  confirmPayment(paymentIntentId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/confirm/${paymentIntentId}`, {});
+  // ✅ Fixed: Pass reservationId in request body
+  confirmPayment(paymentIntentId: string, reservationId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/confirm/${paymentIntentId}`, {
+      reservationId: reservationId
+    });
   }
 
   getPaymentStatus(paymentIntentId: string): Observable<any> {

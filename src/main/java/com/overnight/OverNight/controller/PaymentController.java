@@ -152,4 +152,10 @@ public class PaymentController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/hotel/{reservationId}")
+    public ResponseEntity<Payment> processHotelPayment(@PathVariable Long reservationId) {
+        Payment payment = paymentService.processPayAtHotel(reservationId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+    }
 }

@@ -1,3 +1,4 @@
+// staff-payments.component.ts
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ export class StaffPaymentsComponent implements OnInit {
   showReceiptModal = false;
   receiptData: Payment | null = null;
   payments: Payment[] = [];
+  isLoading = true;
 
   // Stats from backend
   stats = {
@@ -27,7 +29,7 @@ export class StaffPaymentsComponent implements OnInit {
   constructor(
     private router: Router,
     private paymentService: PaymentService,
-    private cdr: ChangeDetectorRef  // ADD THIS
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -36,20 +38,55 @@ export class StaffPaymentsComponent implements OnInit {
   }
 
   loadPayments(): void {
+    this.isLoading = true;
     this.paymentService.getAllPayments().subscribe({
       next: (data) => {
-        this.payments = (data || []).map(p => ({
-          ...p,
-          customerName: p.customerName || (p.reservation?.user ? `${p.reservation.user.firstName || ''} ${p.reservation.user.lastName || ''}`.trim() : 'Unknown'),
-          customerEmail: p.customerEmail || p.reservation?.user?.email || 'N/A',
-          hotel: p.hotel || p.reservation?.room?.hotel?.name || 'Unknown',
-          roomNumber: p.roomNumber || p.reservation?.room?.roomNumber || 'N/A',
-          reservationId: p.reservationId || p.reservation?.id
-        }));
+        console.log('📊 Raw payment data:', data);
+
+        this.payments = (data || []).map(p => {
+          // Safely extract customer name
+          let customerName = 'Unknown';
+          let customerEmail = 'N/A';
+
+          if (p.reservation?.user) {
+            const user = p.reservation.user;
+            customerName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown';
+            customerEmail = user.email || 'N/A';
+          } else if (p.user) {
+            const user = p.user;
+            customerName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown';
+            customerEmail = user.email || 'N/A';
+          }
+
+          // Safely extract hotel name
+          let hotel = 'Unknown';
+          if (p.reservation?.room?.hotel) {
+            hotel = p.reservation.room.hotel.name || 'Unknown';
+          }
+
+          // Safely extract room number
+          let roomNumber = 'N/A';
+          if (p.reservation?.room) {
+            roomNumber = p.reservation.room.roomNumber || 'N/A';
+          }
+
+          return {
+            ...p,
+            customerName: customerName,
+            customerEmail: customerEmail,
+            hotel: hotel,
+            roomNumber: roomNumber,
+            reservationId: p.reservationId || p.reservation?.id
+          };
+        });
+
+        console.log('✅ Mapped payments:', this.payments);
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching payments:', err);
+        console.error('❌ Error fetching payments:', err);
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
@@ -67,7 +104,7 @@ export class StaffPaymentsComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching stats:', err);
+        console.error('❌ Error fetching stats:', err);
         this.cdr.detectChanges();
       }
     });
@@ -105,8 +142,11 @@ export class StaffPaymentsComponent implements OnInit {
     const month = now.getMonth();
     const year = now.getFullYear();
     return this.payments.filter(p => {
-      const date = p.paymentDate ? new Date(p.paymentDate) : new Date();
-      return p.status === 'COMPLETED' && date.getMonth() === month && date.getFullYear() === year;
+      if (!p.paymentDate) return false;
+      const date = new Date(p.paymentDate);
+      return p.status?.toUpperCase() === 'COMPLETED' &&
+        date.getMonth() === month &&
+        date.getFullYear() === year;
     }).length;
   }
 
@@ -118,14 +158,17 @@ export class StaffPaymentsComponent implements OnInit {
 
   completePayment(payment: Payment): void {
     if (!payment.id) return;
+    if (!confirm(`Complete payment ${payment.transactionId}?`)) return;
+
     this.paymentService.completePayment(payment.id).subscribe({
       next: () => {
+        alert('✅ Payment completed successfully!');
         this.loadPayments();
         this.loadStats();
-        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error completing payment:', err);
+        console.error('❌ Error completing payment:', err);
+        alert('Failed to complete payment. Please try again.');
         this.cdr.detectChanges();
       }
     });

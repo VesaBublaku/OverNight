@@ -99,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/payments/confirm/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/payments/status/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/cancel/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/hotel/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
