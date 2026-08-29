@@ -19,20 +19,28 @@ public class ReservationService {
     private final ReservationRepo reservationRepo;
     private final UserRepo userRepo;
     private final RoomRepo roomRepo;
+    private final UserService userService;
 
     @Transactional
     public Reservation createReservation(Reservation reservation) {
-        if (reservation.getUser() != null && reservation.getUser().getId() != null) {
-            User user = userRepo.findByIdAndDeletedAtIsNull(reservation.getUser().getId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + reservation.getUser().getId()));
-            reservation.setUser(user);
+
+        if (reservation.getUser() == null || reservation.getUser().getId() == null) {
+            throw new RuntimeException("User is required for reservation");
         }
 
-        if (reservation.getRoom() != null && reservation.getRoom().getId() != null) {
-            Room room = roomRepo.findByIdAndDeletedAtIsNull(reservation.getRoom().getId())
-                    .orElseThrow(() -> new RuntimeException("Room not found with id: " + reservation.getRoom().getId()));
-            reservation.setRoom(room);
+        User user = userService.findById(reservation.getUser().getId());
+        if (user == null) {
+            throw new RuntimeException("User not found");
         }
+        reservation.setUser(user);
+
+        if (reservation.getRoom() == null || reservation.getRoom().getId() == null) {
+            throw new RuntimeException("Room is required for reservation");
+        }
+
+        Room room = roomRepo.findByIdAndDeletedAtIsNull(reservation.getRoom().getId())
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + reservation.getRoom().getId()));
+        reservation.setRoom(room);
 
         if (reservation.getNights() == null || reservation.getNights() == 0) {
             LocalDate checkIn = LocalDate.parse(reservation.getCheckInDate());

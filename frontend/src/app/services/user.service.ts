@@ -96,4 +96,5 @@ export class UserService {
   getToken(): string | null {
     return localStorage.getItem('token');
   }
+
 }

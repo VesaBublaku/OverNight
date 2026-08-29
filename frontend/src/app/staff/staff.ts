@@ -13,8 +13,6 @@ interface ExtendedUser extends User {
   idNumber?: string;
 }
 
-
-
 @Component({
   selector: 'app-staff-dashboard',
   standalone: true,
@@ -142,20 +140,62 @@ export class StaffDashboardComponent implements OnInit {
 
   get filteredCustomers(): ExtendedUser[] {
     const q = this.searchQuery.toLowerCase();
-    return this.customers.filter(c =>
+
+    const regularCustomers = this.customers.filter(c =>
       (c.firstName?.toLowerCase().includes(q) || false) ||
       (c.lastName?.toLowerCase().includes(q) || false) ||
       c.email.toLowerCase().includes(q) ||
       (c.phone?.includes(q) || false) ||
       (c.address?.toLowerCase().includes(q) || false)
     );
+
+    const hasUnassigned = this.unassignedReservations.length > 0;
+    const searchMatchesGuest = q.includes('guest') || q.includes('unassigned') || q === '';
+
+    if (hasUnassigned && searchMatchesGuest) {
+      const guestCustomer: ExtendedUser = {
+        id: -1, // Special ID
+        firstName: 'Guest',
+        lastName: 'User',
+        email: 'guest@system.com',
+        phone: 'N/A',
+        address: '',
+        isActive: true,
+        dob: '',
+        idType: '',
+        idNumber: ''
+      };
+
+      const hasGuest = regularCustomers.some(c => c.id === -1);
+      if (!hasGuest) {
+        return [...regularCustomers, guestCustomer];
+      }
+    }
+
+    return regularCustomers;
   }
 
   getCustomerReservations(customerId: number | undefined): Reservation[] {
     if (!customerId) return [];
+
+    if (customerId === -1) {
+      return this.unassignedReservations;
+    }
+
     return this.reservations.filter(r =>
       r.user?.id === customerId &&
-      (r.status === 'ACTIVE' || r.status === 'active' || r.status === 'UPCOMING' || r.status === 'upcoming')
+      (r.status === 'ACTIVE' || r.status === 'active' ||
+        r.status === 'UPCOMING' || r.status === 'upcoming' ||
+        r.status === 'CONFIRMED' || r.status === 'confirmed')
+    );
+  }
+
+  get unassignedReservations(): Reservation[] {
+    return this.reservations.filter(r =>
+      !r.user &&
+      (r.status === 'ACTIVE' || r.status === 'active' ||
+        r.status === 'UPCOMING' || r.status === 'upcoming' ||
+        r.status === 'CONFIRMED' || r.status === 'confirmed')
     );
   }
 
@@ -303,6 +343,7 @@ export class StaffDashboardComponent implements OnInit {
 
   getCustomerName(user: any): string {
     if (!user) return 'Guest';
+    if (user.id === -1) return 'Guest User';
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Guest';
   }
 }

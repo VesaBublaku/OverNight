@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+// SecurityConfig.java - Updated version
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -51,7 +52,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // PUBLIC ENDPOINTS
+                        // ✅ PUBLIC ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -61,35 +62,23 @@ public class SecurityConfig {
                                 "/api/staff/register"
                         ).permitAll()
 
-                        // INDIVIDUAL USER - ANY AUTHENTICATED USER
-                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").authenticated()
+                        // ✅ PUBLIC RESERVATION ENDPOINTS - No authentication required (GREEN)
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/check-availability").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/unavailable-dates/**").permitAll()
 
-                        // /me endpoints - ANY AUTHENTICATED USER
-                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/me").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
-
-                        // COLLECTION - STAFF/ADMIN ONLY
-                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
-
-                        // Hotels - all allowed
+                        // ✅ PUBLIC HOTEL ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/hotels", "/api/hotels/**").permitAll()
 
-                        // Rooms - all allowed
+                        // ✅ PUBLIC ROOM ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms", "/api/rooms/**").permitAll()
 
-                        // Public GET endpoints
+                        // ✅ PUBLIC GET ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
@@ -101,9 +90,25 @@ public class SecurityConfig {
                                 "/api/room-policies/**"
                         ).permitAll()
 
-                        // Staff/Admin only
+                        // ⚠️ AUTHENTICATED ENDPOINTS - Login required (YELLOW)
+                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
+
+                        // ⚠️ RESERVATION ENDPOINTS - Login required (YELLOW)
+                        .requestMatchers(HttpMethod.POST, "/api/reservations/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/reservations/{id}/confirm").permitAll()
+
+                        // 🔴 STAFF/ADMIN ONLY - Staff or Admin role required (RED)
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/stats/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/payments", "/api/payments/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/reservations", "/api/reservations/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/receipts", "/api/receipts/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/staff", "/api/staff/**").hasAnyRole("STAFF", "ADMIN")
 

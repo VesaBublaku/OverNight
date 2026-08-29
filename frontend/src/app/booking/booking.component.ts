@@ -69,6 +69,29 @@ export class BookingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const token = localStorage.getItem('token');
+    const userJson = localStorage.getItem('currentUser');  // ⭐ Changed from 'user' to 'currentUser'
+
+    console.log(' BOOKING PAGE AUTH CHECK ');
+    console.log('Token exists:', !!token);
+    console.log('User JSON exists:', !!userJson);
+
+    if (!token) {
+      console.warn('User not logged in!');
+    }
+
+    if (userJson) {
+      try {
+        const currentUser = JSON.parse(userJson);
+        this.email = currentUser.email || '';
+        this.guestName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+        this.phone = currentUser.phone || '';
+        console.log('Loaded user:', currentUser);
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+      }
+    }
+
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
       console.log('Booking page - Room ID from URL:', id);
@@ -107,22 +130,10 @@ export class BookingComponent implements OnInit {
         this.loadRoomDetails();
         this.loadUnavailableDates();
       } else {
-        console.warn('⚠No room ID in URL, using mock data');
+        console.warn('No room ID in URL, using mock data');
         this.loadMockRoom();
       }
     });
-
-    const userJson = localStorage.getItem('user');
-    if (userJson) {
-      try {
-        const currentUser = JSON.parse(userJson);
-        this.email = currentUser.email || '';
-        this.guestName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
-        this.phone = currentUser.phone || '';
-      } catch (e) {
-        console.error('Error parsing user from localStorage:', e);
-      }
-    }
   }
 
   loadRoomDetails(): void {
@@ -195,7 +206,7 @@ export class BookingComponent implements OnInit {
   loadHotelInfo(hotelId: number): void {
     this.hotelService.getHotelById(hotelId).subscribe({
       next: (hotel) => {
-        console.log('🏨 Hotel loaded:', hotel);
+        console.log('Hotel loaded:', hotel);
         this.room.hotelName = hotel.name || 'Hotel';
         this.room.city = hotel.cityName || hotel.city || 'City';
         this.cdr.detectChanges();
@@ -299,6 +310,53 @@ export class BookingComponent implements OnInit {
       return;
     }
 
+    const userJson = localStorage.getItem('currentUser');  // ⭐ Changed from 'user' to 'currentUser'
+    const token = localStorage.getItem('token');
+
+    console.log(' CREATE RESERVATION DEBUG ');
+    console.log('User JSON:', userJson);
+    console.log('Token exists:', !!token);
+    console.log('Token value:', token ? token.substring(0, 30) + '...' : 'null');
+
+    if (!token) {
+      alert('Please login first to make a reservation.');
+      this.router.navigate(['/login']);
+      this.isLoading = false;
+      return;
+    }
+
+    let userId: number | null = null;
+    let userEmail = this.email;
+
+    if (userJson) {
+      try {
+        const currentUser = JSON.parse(userJson);
+        userId = currentUser.id;
+        userEmail = currentUser.email || this.email;
+        console.log('User ID found:', userId);
+        console.log('User data:', currentUser);
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+      }
+    }
+
+    if (!userId && token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.userId || payload.id;
+        console.log('User ID from token:', userId);
+      } catch (e) {
+        console.error('Error decoding token:', e);
+      }
+    }
+
+    if (!userId) {
+      alert('Please login first to make a reservation.');
+      this.router.navigate(['/login']);
+      this.isLoading = false;
+      return;
+    }
+
     this.isLoading = true;
     this.reservationService.checkAvailability(
       this.roomId,
@@ -313,6 +371,7 @@ export class BookingComponent implements OnInit {
         }
 
         const reservation = {
+          user: { id: userId },
           room: { id: this.roomId },
           checkInDate: this.checkIn,
           checkOutDate: this.checkOut,
@@ -320,9 +379,9 @@ export class BookingComponent implements OnInit {
           guests: this.guests || 1,
           totalPrice: this.totalAmount,
           specialRequests: this.notes,
-          status: 'PENDING',
+          status: 'UPCOMING',
           guestName: this.guestName,
-          email: this.email,
+          email: userEmail,
           address: this.address,
           phone: this.phone,
           dob: this.dob,
@@ -330,8 +389,12 @@ export class BookingComponent implements OnInit {
           idNumber: this.idNumber
         };
 
+        console.log('Sending reservation with user ID:', userId);
+        console.log('Reservation data:', reservation);
+
         this.reservationService.createReservation(reservation).subscribe({
           next: (response) => {
+            console.log('Reservation created:', response);
             if (this.paymentMethod === 'online') {
               this.processPayment(response.id);
             } else {
@@ -340,7 +403,12 @@ export class BookingComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error creating reservation:', error);
-            alert('Failed to create reservation: ' + (error.error?.message || 'Please try again.'));
+            console.error('Error status:', error.status);
+            console.error('Error message:', error.message);
+            console.error('Full error:', error);
+
+            const errorMsg = error.error?.message || error.message || 'Please try again.';
+            alert('Failed to create reservation: ' + errorMsg);
             this.isLoading = false;
           }
         });

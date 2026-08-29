@@ -96,12 +96,10 @@ public class UserController {
         System.out.println("🔍 Requested ID: " + id);
         System.out.println("🔍 Authenticated User ID: " + userId);
 
-        // If user is accessing their own profile, allow it
         if (userId.equals(id)) {
             return ResponseEntity.ok(userService.getUserById(id));
         }
 
-        // Otherwise, check if they have admin/staff role
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             boolean isAdminOrStaff = auth.getAuthorities().stream()
