@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,6 +7,8 @@ import { Footer } from '../footer/footer';
 import { ReservationService } from '../services/reservation.service';
 import { RoomService } from '../services/room.service';
 import { HotelService } from '../services/hotel.service';
+import { StripeService } from '../services/stripe.service';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-booking',
@@ -14,9 +16,16 @@ import { HotelService } from '../services/hotel.service';
   imports: [CommonModule, FormsModule, Header, Footer],
   templateUrl: './booking.component.html',
 })
-export class BookingComponent implements OnInit {
+export class BookingComponent implements OnInit, OnDestroy {
   paymentMethod: string = 'online';
   roomId: number = 0;
+
+  stripe: Stripe | null = null;
+  private elements: any;
+  private cardElement: any;
+  clientSecret: string | null = null;
+  paymentIntentId: string | null = null;
+  isProcessingPayment: boolean = false;
 
   cardNumber: string = '';
   expiryDate: string = '';
@@ -65,14 +74,51 @@ export class BookingComponent implements OnInit {
     private reservationService: ReservationService,
     private roomService: RoomService,
     private hotelService: HotelService,
+    private stripeService: StripeService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    const token = localStorage.getItem('token');
-    const userJson = localStorage.getItem('currentUser');  // ⭐ Changed from 'user' to 'currentUser'
+  async ngOnInit(): Promise<void> {
+    try {
+      const publishableKey = 'pk_test_51U9rbMEiJBXU7FwCIFD0LN0xKqRn9LHvE6eKDkP5pohVb1d06s7M4KNbej1oJEWLknxMrP3FlUR2YyXxvXbRpMOv008nbBC5BD';
+      this.stripe = await loadStripe(publishableKey);
+      console.log('Stripe loaded successfully');
 
-    console.log(' BOOKING PAGE AUTH CHECK ');
+      if (this.stripe) {
+        this.elements = this.stripe.elements();
+        this.cardElement = this.elements.create('card', {
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#424770',
+              '::placeholder': {
+                color: '#aab7c4',
+              },
+            },
+          },
+          hidePostalCode: true,
+        });
+        this.cardElement.mount('#card-element');
+
+        this.cardElement.on('change', (event: any) => {
+          const displayError = document.getElementById('card-errors');
+          if (displayError) {
+            if (event.error) {
+              displayError.textContent = event.error.message;
+            } else {
+              displayError.textContent = '';
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load Stripe:', error);
+    }
+
+    const token = localStorage.getItem('token');
+    const userJson = localStorage.getItem('currentUser');
+
+    console.log('BOOKING PAGE AUTH CHECK');
     console.log('Token exists:', !!token);
     console.log('User JSON exists:', !!userJson);
 
@@ -134,6 +180,12 @@ export class BookingComponent implements OnInit {
         this.loadMockRoom();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cardElement) {
+      this.cardElement.destroy();
+    }
   }
 
   loadRoomDetails(): void {
@@ -310,13 +362,12 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    const userJson = localStorage.getItem('currentUser');  // ⭐ Changed from 'user' to 'currentUser'
+    const userJson = localStorage.getItem('currentUser');
     const token = localStorage.getItem('token');
 
-    console.log(' CREATE RESERVATION DEBUG ');
+    console.log('CREATE RESERVATION DEBUG');
     console.log('User JSON:', userJson);
     console.log('Token exists:', !!token);
-    console.log('Token value:', token ? token.substring(0, 30) + '...' : 'null');
 
     if (!token) {
       alert('Please login first to make a reservation.');
@@ -334,7 +385,6 @@ export class BookingComponent implements OnInit {
         userId = currentUser.id;
         userEmail = currentUser.email || this.email;
         console.log('User ID found:', userId);
-        console.log('User data:', currentUser);
       } catch (e) {
         console.error('Error parsing user from localStorage:', e);
       }
@@ -390,23 +440,19 @@ export class BookingComponent implements OnInit {
         };
 
         console.log('Sending reservation with user ID:', userId);
-        console.log('Reservation data:', reservation);
 
         this.reservationService.createReservation(reservation).subscribe({
           next: (response) => {
             console.log('Reservation created:', response);
+
             if (this.paymentMethod === 'online') {
-              this.processPayment(response.id);
+              this.processStripePayment(response.id, this.totalAmount);
             } else {
               this.confirmReservation(response.id);
             }
           },
           error: (error) => {
             console.error('Error creating reservation:', error);
-            console.error('Error status:', error.status);
-            console.error('Error message:', error.message);
-            console.error('Full error:', error);
-
             const errorMsg = error.error?.message || error.message || 'Please try again.';
             alert('Failed to create reservation: ' + errorMsg);
             this.isLoading = false;
@@ -421,47 +467,74 @@ export class BookingComponent implements OnInit {
     });
   }
 
-  processPayment(reservationId: number): void {
-    if (!this.cardNumber || !this.expiryDate || !this.cvv || !this.cardholderName) {
-      alert('Please fill in all card details.');
+  async processStripePayment(reservationId: number, amount: number): Promise<void> {
+    this.isProcessingPayment = true;
+
+    try {
+      this.stripeService.createPaymentIntent(reservationId, amount, 'usd').subscribe({
+        next: async (response) => {
+          this.clientSecret = response.clientSecret;
+          this.paymentIntentId = response.paymentIntentId;
+
+          if (this.stripe && this.clientSecret && this.cardElement) {
+            const { error, paymentIntent } = await this.stripe.confirmCardPayment(
+              this.clientSecret,
+              {
+                payment_method: {
+                  card: this.cardElement,
+                  billing_details: {
+                    name: this.cardholderName || this.guestName,
+                    email: this.email,
+                  },
+                },
+              }
+            );
+
+            if (error) {
+              console.error('Payment error:', error);
+              alert('Payment failed: ' + error.message);
+              this.isProcessingPayment = false;
+              this.isLoading = false;
+            } else if (paymentIntent) {
+              if (paymentIntent.status === 'succeeded') {
+                alert(`Payment of $${amount.toFixed(2)} successful!`);
+                this.confirmReservation(reservationId);
+              } else {
+                alert('Payment was not completed. Please try again.');
+                this.isProcessingPayment = false;
+                this.isLoading = false;
+              }
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error creating payment intent:', error);
+          alert('Payment initialization failed. Please try again.');
+          this.isProcessingPayment = false;
+          this.isLoading = false;
+        }
+      });
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+      this.isProcessingPayment = false;
       this.isLoading = false;
-      return;
     }
-
-    const paymentData = {
-      reservationId: reservationId,
-      amount: this.totalAmount,
-      cardNumber: this.cardNumber,
-      expiryDate: this.expiryDate,
-      cvv: this.cvv,
-      cardholderName: this.cardholderName
-    };
-
-    this.reservationService.processPayment(paymentData).subscribe({
-      next: () => {
-        alert(`Payment of $${this.totalAmount.toFixed(2)} successful!`);
-        this.isLoading = false;
-        this.router.navigate(['/reservations']);
-      },
-      error: (error) => {
-        console.error('Payment failed:', error);
-        alert('Payment failed: ' + (error.error?.message || 'Please try again.'));
-        this.isLoading = false;
-      }
-    });
   }
 
   confirmReservation(reservationId: number): void {
     this.reservationService.confirmReservation(reservationId).subscribe({
       next: () => {
-        alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
+        alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)}`);
         this.isLoading = false;
+        this.isProcessingPayment = false;
         this.router.navigate(['/reservations']);
       },
       error: (error) => {
         console.error('Error confirming reservation:', error);
-        alert('Failed to confirm reservation. Please try again.');
+        alert('Reservation created but confirmation failed. Please contact support.');
         this.isLoading = false;
+        this.isProcessingPayment = false;
       }
     });
   }

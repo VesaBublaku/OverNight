@@ -5,7 +5,7 @@ import com.overnight.OverNight.domain.Payment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.stripe.exception.StripeException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -102,6 +102,54 @@ public class PaymentController {
         paymentService.deletePayment(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Payment deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/create-intent")
+    public ResponseEntity<Map<String, String>> createPaymentIntent(
+            @RequestBody Map<String, Object> request) throws StripeException {
+
+        Long reservationId = Long.valueOf(request.get("reservationId").toString());
+        Double amount = Double.valueOf(request.get("amount").toString());
+        String currency = request.get("currency") != null ? request.get("currency").toString() : "usd";
+
+        Map<String, String> response = paymentService.createStripePaymentIntent(reservationId, amount, currency);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/confirm/{paymentIntentId}")
+    public ResponseEntity<Payment> confirmPayment(
+            @PathVariable String paymentIntentId,
+            @RequestBody Map<String, Object> request) throws StripeException {
+
+        Long reservationId = Long.valueOf(request.get("reservationId").toString());
+        Payment payment = paymentService.confirmStripePayment(paymentIntentId, reservationId);
+        return ResponseEntity.ok(payment);
+    }
+
+    @GetMapping("/status/{paymentIntentId}")
+    public ResponseEntity<Map<String, String>> getPaymentStatus(
+            @PathVariable String paymentIntentId) throws StripeException {
+
+        var paymentIntent = paymentService.getStripePaymentIntent(paymentIntentId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("status", paymentIntent.getStatus());
+        response.put("paymentIntentId", paymentIntent.getId());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/cancel/{paymentIntentId}")
+    public ResponseEntity<Map<String, String>> cancelPaymentIntent(
+            @PathVariable String paymentIntentId) throws StripeException {
+
+        var paymentIntent = paymentService.cancelStripePaymentIntent(paymentIntentId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("status", paymentIntent.getStatus());
+        response.put("paymentIntentId", paymentIntent.getId());
+
         return ResponseEntity.ok(response);
     }
 }

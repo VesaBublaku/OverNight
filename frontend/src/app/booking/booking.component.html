@@ -45,7 +45,6 @@
         <span class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
         Rate: <span class="font-bold">${{ room.price || 0 }}</span> / night
       </span>
-        <!-- ✅ Make this dynamic -->
         <span *ngIf="room.extendable || room.isExtendable" class="bg-[#FAF5EF] text-gray-800 px-4 py-1.5 rounded-full text-[11px] font-medium border border-[#E8E3DB]">
         Extendable stay
       </span>
@@ -186,7 +185,7 @@
         </div>
       </div>
 
-      <!-- ===== STEP 3: Payment ===== -->
+      <!-- ===== STEP 3: Payment with Stripe ===== -->
       <div class="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
         <div class="flex items-center justify-between mb-8">
           <div>
@@ -223,53 +222,18 @@
           </button>
         </div>
 
-        <!-- Online Payment Form -->
+        <!-- Online Payment Form with Stripe -->
         <div *ngIf="paymentMethod === 'online'" class="space-y-6">
           <div class="bg-[#FAF8F5] border border-gray-100 text-gray-600 text-sm font-light rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
-            <span class="text-[#BCA47B]"></span>
-            Your payment is secure and encrypted.
+            <span class="text-[#BCA47B]">🔒</span>
+            Your payment is secure and encrypted with Stripe.
           </div>
 
+          <!-- Stripe Card Element -->
           <div>
-            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Card Number</label>
-            <input
-              type="text"
-              placeholder="1234 5678 9012 3456"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
-              [(ngModel)]="cardNumber"
-            />
-          </div>
-
-          <div class="grid grid-cols-2 gap-6">
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Expiry Date</label>
-              <input
-                type="text"
-                placeholder="MM/YY"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
-                [(ngModel)]="expiryDate"
-              />
-            </div>
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">CVV</label>
-              <input
-                type="password"
-                placeholder="•••"
-                maxlength="4"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
-                [(ngModel)]="cvv"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Cardholder Name</label>
-            <input
-              type="text"
-              placeholder="Name on card"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors placeholder-gray-400"
-              [(ngModel)]="cardholderName"
-            />
+            <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Card Details</label>
+            <div id="card-element" class="border border-gray-200 rounded-xl p-4 bg-white"></div>
+            <div id="card-errors" class="text-red-500 text-sm mt-2" role="alert"></div>
           </div>
 
           <!-- Payment Summary -->
@@ -296,9 +260,16 @@
           <div class="pt-2">
             <button
               (click)="createReservation()"
-              [disabled]="!isFormValid() || isLoading"
-              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm">
-              Pay ${{ totalAmount.toFixed(2) }} Now
+              [disabled]="!isFormValid() || isLoading || isProcessingPayment"
+              class="w-full bg-[#E5D3B3] hover:bg-[#D9BE84] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span *ngIf="!isProcessingPayment">Pay ${{ totalAmount.toFixed(2) }} Now</span>
+              <span *ngIf="isProcessingPayment" class="flex items-center gap-2">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
             </button>
             <p class="text-xs text-gray-400 font-light text-center mt-4">Your card will be charged immediately.</p>
           </div>
@@ -307,13 +278,13 @@
         <!-- Pay at Hotel Option -->
         <div *ngIf="paymentMethod === 'hotel'" class="space-y-6">
           <div class="bg-[#FAF8F5] border border-gray-100 text-gray-600 text-sm font-light rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
-            <span class="text-[#BCA47B]"></span>
+            <span class="text-[#BCA47B]">🏨</span>
             You'll pay at the front desk when you check in.
           </div>
 
           <div class="bg-[#FAF8F5] rounded-2xl p-6 border border-gray-100">
             <div class="flex items-start gap-3">
-              <span class="text-xl text-[#BCA47B]"></span>
+              <span class="text-xl text-[#BCA47B]">📋</span>
               <div>
                 <h4 class="font-medium text-gray-900 mb-1">Pay at Check-in</h4>
                 <p class="text-sm text-gray-500 font-light leading-relaxed">

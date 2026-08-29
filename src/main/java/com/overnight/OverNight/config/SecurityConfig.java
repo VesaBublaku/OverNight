@@ -17,7 +17,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-// SecurityConfig.java - Updated version
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -52,7 +51,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ PUBLIC ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -62,23 +60,19 @@ public class SecurityConfig {
                                 "/api/staff/register"
                         ).permitAll()
 
-                        // ✅ PUBLIC RESERVATION ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET, "/api/reservations/check-availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservations/unavailable-dates/**").permitAll()
 
-                        // ✅ PUBLIC HOTEL ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/hotels", "/api/hotels/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/hotels", "/api/hotels/**").permitAll()
 
-                        // ✅ PUBLIC ROOM ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/rooms", "/api/rooms/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms", "/api/rooms/**").permitAll()
 
-                        // ✅ PUBLIC GET ENDPOINTS - No authentication required (GREEN)
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cities/**",
                                 "/api/hotel-chains/**",
@@ -90,7 +84,6 @@ public class SecurityConfig {
                                 "/api/room-policies/**"
                         ).permitAll()
 
-                        // ⚠️ AUTHENTICATED ENDPOINTS - Login required (YELLOW)
                         .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").authenticated()
@@ -100,11 +93,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
 
-                        // ⚠️ RESERVATION ENDPOINTS - Login required (YELLOW)
                         .requestMatchers(HttpMethod.POST, "/api/reservations/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/reservations/{id}/confirm").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/create-intent").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/confirm/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/status/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/cancel/**").permitAll()
 
-                        // 🔴 STAFF/ADMIN ONLY - Staff or Admin role required (RED)
                         .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/reservations/stats/**").hasAnyRole("STAFF", "ADMIN")
