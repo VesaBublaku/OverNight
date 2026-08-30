@@ -4,7 +4,7 @@ import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { RoomService, Room } from '../services/room.service';
-import { HotelService, Hotel } from '../services/hotel.service';
+import {Hotel, HotelService, RoomPolicy} from '../services/hotel.service';
 
 @Component({
   selector: 'app-room-details',
@@ -19,6 +19,7 @@ export class RoomDetailsComponent implements OnInit {
   roomId: number | null = null;
   isLoading: boolean = true;
   errorMessage: string = '';
+  hotelPolicies: RoomPolicy[] = [];
 
   constructor(
     private roomService: RoomService,
@@ -96,6 +97,7 @@ export class RoomDetailsComponent implements OnInit {
           name: data.name || 'Unnamed Hotel',
           cityName: data.cityName || data.city || 'Unknown City'
         };
+        this.hotelPolicies = data.policies || [];
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -105,6 +107,27 @@ export class RoomDetailsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  getPolicyByType(type: string): RoomPolicy | undefined {
+    return this.hotelPolicies?.find(p => p.policyType === type);
+  }
+
+  getCheckInTime(): string {
+    const policy = this.getPolicyByType('CHECK_IN');
+    if (policy?.description) {
+      return policy.description;
+    }
+    return this.hotel?.checkIn || '15:00';
+  }
+
+  getCancellationPolicy(): string {
+    const policy = this.getPolicyByType('CANCELLATION');
+    return policy?.description || 'Cancellation policies vary. Please check at booking.';
+  }
+
+  getAllActivePolicies(): RoomPolicy[] {
+    return this.hotelPolicies?.filter(p => p.isActive) || [];
   }
 
   getImageUrl(room: Room): string {

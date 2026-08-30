@@ -133,16 +133,40 @@
           <!-- Check-in & Policies -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="border border-gray-100 rounded-2xl p-6">
-              <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Check-in</div>
+              <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">
+                {{ getPolicyByType('CHECK_IN')?.title || 'Check-in' }}
+              </div>
               <p class="text-sm text-gray-500 font-light leading-relaxed">
-                Standard check-in is typically mid-afternoon. Exact times can be confirmed at the front desk.
+                {{ getCheckInTime() }}
               </p>
             </div>
             <div class="border border-gray-100 rounded-2xl p-6">
-              <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Policies</div>
+              <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">
+                {{ getPolicyByType('CANCELLATION')?.title || 'Cancellation Policy' }}
+              </div>
               <p class="text-sm text-gray-500 font-light leading-relaxed">
-                Cancellation windows and special rules can be added later — your booking flow is ready.
+                {{ getCancellationPolicy() }}
               </p>
+            </div>
+          </div>
+
+          <!-- Show ALL policies section -->
+          <div *ngIf="getAllActivePolicies().length > 0"
+               class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50 mt-8">
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-5">
+              Hotel Policies
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div *ngFor="let policy of getAllActivePolicies()"
+                   class="border border-gray-100 rounded-2xl p-6">
+                <div class="text-[9px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">
+                  {{ policy.title }}
+                </div>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">
+                  {{ policy.description }}
+                </p>
+              </div>
             </div>
           </div>
 

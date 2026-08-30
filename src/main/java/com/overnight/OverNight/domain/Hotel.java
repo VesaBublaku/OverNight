@@ -77,7 +77,6 @@ public class Hotel {
     )
     private List<HotelAmenity> hotelAmenities = new ArrayList<>();
 
-    @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RoomPolicy> policies = new ArrayList<>();
 

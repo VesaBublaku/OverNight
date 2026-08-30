@@ -57,7 +57,9 @@
       <div *ngFor="let p of filteredPayments; let last = last" [class.border-b]="!last" class="border-gray-100">
         <div class="grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-[#FAF8F5] transition-colors">
           <div class="col-span-2">
-            <div class="text-gray-900 text-sm font-medium">#{{p.transactionId}}</div>
+            <div class="text-gray-900 text-sm font-medium">
+              #{{p.transactionId?.replace('TXN-', '')?.slice(0, 8) ?? 'N/A'}}
+            </div>
             <div class="text-gray-400 text-xs font-light">Res: {{p.reservationId}}</div>
           </div>
           <div class="col-span-2">

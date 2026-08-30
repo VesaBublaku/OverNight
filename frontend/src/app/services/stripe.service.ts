@@ -19,7 +19,6 @@ export class StripeService {
     });
   }
 
-  // ✅ Fixed: Pass reservationId in request body
   confirmPayment(paymentIntentId: string, reservationId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/confirm/${paymentIntentId}`, {
       reservationId: reservationId

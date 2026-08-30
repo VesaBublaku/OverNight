@@ -3,6 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Room } from './room.service';
 
+export interface RoomPolicy {
+  id: number;
+  policyType: string;
+  title: string;
+  description: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
 export interface Hotel {
   id?: number;
   name: string;
@@ -19,10 +31,11 @@ export interface Hotel {
   checkOut?: string;
   hotelChainId?: number;
   hotelChainName?: string;
-  hotelChain?: any;  // Add this
+  hotelChain?: any;
   isActive?: boolean;
   rooms?: Room[];
   hotelAmenities?: any[];
+  policies?: RoomPolicy[];
 }
 
 @Injectable({

@@ -149,29 +149,6 @@ export class StaffDashboardComponent implements OnInit {
       (c.address?.toLowerCase().includes(q) || false)
     );
 
-    const hasUnassigned = this.unassignedReservations.length > 0;
-    const searchMatchesGuest = q.includes('guest') || q.includes('unassigned') || q === '';
-
-    if (hasUnassigned && searchMatchesGuest) {
-      const guestCustomer: ExtendedUser = {
-        id: -1, // Special ID
-        firstName: 'Guest',
-        lastName: 'User',
-        email: 'guest@system.com',
-        phone: 'N/A',
-        address: '',
-        isActive: true,
-        dob: '',
-        idType: '',
-        idNumber: ''
-      };
-
-      const hasGuest = regularCustomers.some(c => c.id === -1);
-      if (!hasGuest) {
-        return [...regularCustomers, guestCustomer];
-      }
-    }
-
     return regularCustomers;
   }
 

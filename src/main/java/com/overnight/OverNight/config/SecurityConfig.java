@@ -94,6 +94,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
 
                         .requestMatchers(HttpMethod.POST, "/api/reservations/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/user/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/reservations/{id}/confirm").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/create-intent").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/confirm/**").permitAll()

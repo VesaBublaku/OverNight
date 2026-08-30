@@ -73,7 +73,6 @@
             </div>
             <div>
               <div class="text-gray-900 text-sm font-medium">{{c.firstName}} {{c.lastName}}</div>
-              <div class="text-gray-400 text-xs font-light">{{c.email}}</div>
             </div>
           </div>
 
@@ -128,13 +127,9 @@
 
           <!-- Actions -->
           <div class="col-span-2 flex items-center justify-end gap-2">
-            <button (click)="openAddReservation(c.id)" class="bg-[#FAF5EF] hover:bg-[#E8E3DB] text-[#BCA47B] px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
-              Book
-            </button>
             <button (click)="openEditCustomer(c)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
               Edit
             </button>
-            <!-- FIX: Added null check in confirmDelete -->
             <button (click)="c.id && confirmDelete('customer', c.id)" class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
               Delete
             </button>
