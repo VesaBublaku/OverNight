@@ -72,6 +72,8 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   }
 
   private processReservations(reservations: Reservation[]) {
+    console.log('ALL RESERVATIONS:', reservations);
+
     if (!reservations || reservations.length === 0) {
       this.upcomingReservations = [];
       this.pastReservations = [];
@@ -82,20 +84,31 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const formattedReservations = reservations.map(res => ({
-      id: res.reservationNumber || `RES-${res.id}`,
-      hotelName: res.room?.hotel?.name || 'Hotel',
-      city: res.room?.hotel?.cityName || 'City',
-      room: res.room?.roomNumber || 'N/A',
-      checkIn: this.formatDate(res.checkInDate),
-      checkOut: this.formatDate(res.checkOutDate),
-      guests: res.guests || 1,
-      total: `CA$${res.totalPrice?.toFixed(2) || '0.00'}`,
-      status: this.getStatusDisplay(res.status || 'pending'),
-      image: this.getHotelImage(res.room?.hotel?.name || 'hotel'),
-      rawCheckIn: res.checkInDate,
-      rawCheckOut: res.checkOutDate
-    }));
+    const formattedReservations = reservations.map(res => {
+      const roomId = res.roomId ||
+        res.room?.id ||
+        1;
+
+      console.log('Reservation:', res.id, 'Room ID:', roomId);
+      console.log('Full reservation data:', res);
+
+      return {
+        id: res.reservationNumber || `RES-${res.id}`,
+        reservationId: res.id,
+        roomId: roomId,
+        hotelName: res.room?.hotel?.name || 'Hotel',
+        city: res.room?.hotel?.cityName || 'City',
+        room: res.room?.roomNumber || 'N/A',
+        checkIn: this.formatDate(res.checkInDate),
+        checkOut: this.formatDate(res.checkOutDate),
+        guests: res.guests || 1,
+        total: `CA$${res.totalPrice?.toFixed(2) || '0.00'}`,
+        status: this.getStatusDisplay(res.status || 'pending'),
+        image: this.getHotelImage(res.room?.hotel?.name || 'hotel'),
+        rawCheckIn: res.checkInDate,
+        rawCheckOut: res.checkOutDate
+      };
+    });
 
     this.upcomingReservations = formattedReservations
       .filter(r => r.rawCheckIn && new Date(r.rawCheckIn) >= today)
@@ -110,6 +123,9 @@ export class ReservationsComponent implements OnInit, OnDestroy {
         if (!a.rawCheckIn || !b.rawCheckIn) return 0;
         return new Date(b.rawCheckIn).getTime() - new Date(a.rawCheckIn).getTime();
       });
+
+    console.log('Upcoming:', this.upcomingReservations);
+    console.log('Past:', this.pastReservations);
 
     this.cdr.detectChanges();
   }

@@ -13,7 +13,8 @@
 
   <!-- Top Navigation (Absolute) -->
   <div class="absolute top-8 left-4 right-4 sm:left-8 sm:right-8 z-20 flex items-center justify-between">
-    <a routerLink="/room-details" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">
+    <a [routerLink]="['/room-details']" [queryParams]="{ id: roomId }"
+       class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">
       &larr; Back
     </a>
     <a routerLink="/room-details" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors cursor-pointer">

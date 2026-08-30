@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import {Router, ActivatedRoute, RouterLink} from '@angular/router';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { ReservationService } from '../services/reservation.service';
@@ -14,7 +14,7 @@ import { loadStripe, Stripe } from '@stripe/stripe-js';
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header, Footer],
+  imports: [CommonModule, FormsModule, Header, Footer, RouterLink],
   templateUrl: './booking.component.html',
 })
 export class BookingComponent implements OnInit, OnDestroy {
