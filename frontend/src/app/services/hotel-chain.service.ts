@@ -62,4 +62,12 @@ export class HotelChainService {
   getTotalChains(): Observable<{ total: number }> {
     return this.http.get<{ total: number }>(`${this.apiUrl}/count`);
   }
+
+  incrementHotelCount(id: number): Observable<HotelChain> {
+    return this.http.put<HotelChain>(`${this.apiUrl}/${id}/increment-hotel-count`, {});
+  }
+
+  decrementHotelCount(id: number): Observable<HotelChain> {
+    return this.http.put<HotelChain>(`${this.apiUrl}/${id}/decrement-hotel-count`, {});
+  }
 }

@@ -1,0 +1,157 @@
+<div class="min-h-screen bg-[#FAF8F5]">
+
+  <!-- Top Bar -->
+  <div class="bg-white border-b border-gray-100 px-8 h-16 flex items-center justify-between shadow-[0_1px_8px_rgb(0,0,0,0.03)]">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase">Admin</span>
+      <span class="text-gray-300 mx-1">/</span>
+      <span class="text-[10px] font-semibold text-gray-900 tracking-[0.2em] uppercase">Hotel Chains</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-[0.1em]">
+        {{chains.length}} Chains
+      </span>
+      <span class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-[0.1em]">
+        {{totalHotels}} Hotels
+      </span>
+    </div>
+  </div>
+
+  <div class="p-8">
+
+    <!-- Page Header -->
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">Management</div>
+        <h1 class="text-4xl font-serif text-gray-900 mb-2">Hotel Chains</h1>
+        <p class="text-gray-500 text-sm font-light">Add, edit and remove hotel chains.</p>
+      </div>
+    </div>
+
+    <!-- Search + Add -->
+    <div class="flex items-center gap-4 mb-6">
+      <input [(ngModel)]="searchTerm" type="text" placeholder="Search chains by name…"
+             class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors shadow-sm" />
+      <button (click)="openAddChain()" class="flex items-center gap-2 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-xl text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shrink-0 shadow-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Chain
+      </button>
+    </div>
+
+    <!-- Chains Table -->
+    <div class="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.03)]">
+      <!-- Header row -->
+      <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase bg-[#FAF8F5]">
+        <div class="col-span-4">Chain Name</div>
+        <div class="col-span-2">Hotels</div>
+        <div class="col-span-1">Status</div>
+        <div class="col-span-3">Description</div>
+        <div class="col-span-2 text-right">Actions</div>
+      </div>
+
+      <div *ngFor="let chain of filteredChains; let last = last" [class.border-b]="!last" class="border-gray-100">
+        <div class="grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-[#FAF8F5] transition-colors group">
+          <div class="col-span-4">
+            <div class="text-gray-900 text-sm font-medium mb-1">{{chain.name}}</div>
+            <div class="text-gray-400 text-xs font-light">ID: #{{chain.id}}</div>
+          </div>
+          <div class="col-span-2 text-gray-500 text-sm font-light">{{chain.hotelCount || 0}}</div>
+          <div class="col-span-1">
+            <span [class]="chain.isActive ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-200'"
+                  class="border px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase">
+              {{chain.isActive ? 'Active' : 'Inactive'}}
+            </span>
+          </div>
+          <div class="col-span-3 text-gray-500 text-xs font-light truncate">{{chain.description || 'No description'}}</div>
+          <div class="col-span-2 flex items-center justify-end gap-2">
+            <button (click)="openEditChain(chain)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
+              Edit
+            </button>
+            <button (click)="confirmDelete(chain.id!)" class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredChains.length === 0" class="py-16 text-center text-gray-400 text-sm">
+        No chains found. <button (click)="openAddChain()" class="text-[#BCA47B] underline">Add one?</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHAIN MODAL ===== -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeModal()"></div>
+  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-2xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
+    <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingChain.id ? 'Edit' : 'New Chain'}}</div>
+    <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingChain.id ? 'Edit Hotel Chain' : 'Add Hotel Chain'}}</h2>
+    <p class="text-gray-500 text-sm font-light mb-8">Fill in the chain details below.</p>
+
+    <div *ngIf="errorMessage" class="bg-red-50 border border-red-100 text-red-600 text-sm font-light rounded-xl px-4 py-3 mb-6">
+      {{ errorMessage }}
+    </div>
+
+    <div class="space-y-5">
+      <!-- Chain Name -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Chain Name *</label>
+        <input [(ngModel)]="editingChain.name" type="text"
+               class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors"
+               placeholder="e.g. Marriott" />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Description</label>
+        <textarea [(ngModel)]="editingChain.description" rows="3"
+                  class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors"
+                  placeholder="Chain description..."></textarea>
+      </div>
+
+      <!-- Image URL -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Image URL</label>
+        <input [(ngModel)]="editingChain.imageUrl" type="text"
+               class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors"
+               placeholder="https://example.com/chain-image.jpg" />
+        <div *ngIf="editingChain.imageUrl" class="mt-2">
+          <img [src]="editingChain.imageUrl" class="h-20 w-auto rounded-lg object-cover border border-gray-200" alt="Chain preview" />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+        <select [(ngModel)]="editingChain.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option [value]="true">Active</option>
+          <option [value]="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100">
+      <button (click)="closeModal()" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
+      <button (click)="saveChain()" class="flex-1 bg-[#111827] hover:bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors shadow-md">
+        {{editingChain.id ? 'Save Changes' : 'Add Chain'}}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRM ===== -->
+<div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="showDeleteConfirm=false"></div>
+  <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-sm shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 text-center">
+    <div class="w-14 h-14 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+      <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+    </div>
+    <h3 class="text-xl font-serif text-gray-900 mb-3">Are you sure?</h3>
+    <p class="text-gray-500 text-sm font-light mb-8">This action cannot be undone. The hotel chain will be permanently removed.</p>
+    <div class="flex items-center gap-3">
+      <button (click)="showDeleteConfirm=false" class="flex-1 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-4 py-3 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">Cancel</button>
+      <button (click)="executeDelete()" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors">Delete</button>
+    </div>
+  </div>
+</div>

@@ -32,6 +32,15 @@ import { RouterModule, Router } from '@angular/router';
             Hotels & Rooms
           </a>
 
+          <a routerLink="/admin/hotel-chains" routerLinkActive="bg-[#FAF5EF] text-gray-900 border border-[#E8E3DB]"
+             class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-[#FAF8F5] text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 text-[#BCA47B]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Hotel Chains
+          </a>
+          
+
           <a routerLink="/admin/people" routerLinkActive="bg-[#FAF5EF] text-gray-900 border border-[#E8E3DB]"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-[#FAF8F5] text-sm font-medium transition-colors">
             <svg class="w-4 h-4 text-[#BCA47B]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">

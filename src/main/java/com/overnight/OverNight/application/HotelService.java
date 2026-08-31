@@ -18,6 +18,7 @@ public class HotelService {
     private final HotelRepo hotelRepo;
     private final CityRepo cityRepo;
     private final HotelChainRepo hotelChainRepo;
+    private final HotelChainService hotelChainService;
 
     @Transactional
     public Hotel createHotel(Hotel hotel) {
@@ -35,6 +36,7 @@ public class HotelService {
             HotelChain chain = hotelChainRepo.findByIdAndDeletedAtIsNull(hotel.getHotelChain().getId())
                     .orElseThrow(() -> new RuntimeException("Hotel chain not found with id: " + hotel.getHotelChain().getId()));
             hotel.setHotelChain(chain);
+            hotelChainService.incrementHotelCount(chain.getId());
         }
 
         hotel.setIsActive(true);
@@ -66,6 +68,8 @@ public class HotelService {
     @Transactional
     public Hotel updateHotel(Long id, Hotel updatedHotel) {
         Hotel hotel = getHotelById(id);
+
+        Long oldChainId = hotel.getHotelChain() != null ? hotel.getHotelChain().getId() : null;
 
         if (updatedHotel.getName() != null) {
             Hotel existing = hotelRepo.findByNameAndDeletedAtIsNull(updatedHotel.getName()).orElse(null);
@@ -103,10 +107,22 @@ public class HotelService {
         if (updatedHotel.getCheckOut() != null) {
             hotel.setCheckOut(updatedHotel.getCheckOut());
         }
-        if (updatedHotel.getHotelChain() != null && updatedHotel.getHotelChain().getId() != null) {
-            HotelChain chain = hotelChainRepo.findByIdAndDeletedAtIsNull(updatedHotel.getHotelChain().getId())
+
+        Long newChainId = updatedHotel.getHotelChain() != null && updatedHotel.getHotelChain().getId() != null
+                ? updatedHotel.getHotelChain().getId() : null;
+
+        if (newChainId != null && !newChainId.equals(oldChainId)) {
+            HotelChain newChain = hotelChainRepo.findByIdAndDeletedAtIsNull(newChainId)
                     .orElseThrow(() -> new RuntimeException("Hotel chain not found"));
-            hotel.setHotelChain(chain);
+            hotel.setHotelChain(newChain);
+
+            if (oldChainId != null) {
+                hotelChainService.decrementHotelCount(oldChainId);
+            }
+            hotelChainService.incrementHotelCount(newChainId);
+        } else if (newChainId == null && oldChainId != null) {
+            hotel.setHotelChain(null);
+            hotelChainService.decrementHotelCount(oldChainId);
         }
 
         return hotelRepo.save(hotel);
@@ -115,9 +131,15 @@ public class HotelService {
     @Transactional
     public void deleteHotel(Long id) {
         Hotel hotel = getHotelById(id);
+
+        Long chainId = hotel.getHotelChain() != null ? hotel.getHotelChain().getId() : null;
+
         hotel.setDeletedAt(LocalDateTime.now());
         hotel.setIsActive(false);
         hotelRepo.save(hotel);
+        if (chainId != null) {
+            hotelChainService.decrementHotelCount(chainId);
+        }
     }
 
     @Transactional

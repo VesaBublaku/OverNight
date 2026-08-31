@@ -22,6 +22,7 @@ import {StaffPaymentsComponent} from './staff/staff-payments';
 import {UserLoginComponent} from './log-in/log-in';
 import {UserSignupComponent} from './signup/signup';
 import {RoomComponent} from './room/room';
+import {AdminHotelChainsComponent} from './admin/admin-hotel-chains.component';
 
 export const routes: Routes = [
   // ── Public ──────────────────────────────────────
@@ -49,6 +50,7 @@ export const routes: Routes = [
       { path: '',        redirectTo: 'hotels', pathMatch: 'full' },
       { path: 'hotels',  component: AdminHotelsComponent },
       { path: 'people',  component: AdminPeopleComponent },
+      { path: 'hotel-chains', component: AdminHotelChainsComponent }
     ]
   },
 

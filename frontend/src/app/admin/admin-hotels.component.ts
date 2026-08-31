@@ -21,7 +21,7 @@ export class AdminHotelsComponent implements OnInit {
   showHotelModal = false;
   showRoomModal = false;
   showDeleteConfirm = false;
-  deleteTarget: { type: 'hotel' | 'room'; id: number } | null = null;
+  deleteTarget: { type: 'hotel' | 'room'; id: number; chainId?: number } | null = null;
 
   editingHotel: Partial<Hotel> = {};
   editingRoom: Partial<Room> = {};
@@ -365,29 +365,73 @@ export class AdminHotelsComponent implements OnInit {
     delete hotelData.rooms;
 
     if (this.editingHotel.id) {
+      // EDIT: Get old hotel data before updating
+      const oldHotel = this.hotels.find(h => h.id === this.editingHotel.id);
+      const oldChainId = oldHotel?.hotelChainId;
+      const newChainId = hotelData.hotelChain?.id;
+
       this.hotelService.updateHotel(this.editingHotel.id, hotelData as Hotel).subscribe({
         next: () => {
+          // Update chain counts if chain changed
+          if (oldChainId && oldChainId !== newChainId) {
+            // Decrement old chain
+            this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
+              error: (err) => console.error('Error decrementing chain count:', err)
+            });
+            if (newChainId) {
+              // Increment new chain
+              this.hotelChainService.incrementHotelCount(newChainId).subscribe({
+                error: (err) => console.error('Error incrementing chain count:', err)
+              });
+            }
+          } else if (newChainId && !oldChainId) {
+            // Hotel was assigned to a chain for the first time
+            this.hotelChainService.incrementHotelCount(newChainId).subscribe({
+              error: (err) => console.error('Error incrementing chain count:', err)
+            });
+          } else if (oldChainId && !newChainId) {
+            // Hotel was removed from a chain
+            this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
+              error: (err) => console.error('Error decrementing chain count:', err)
+            });
+          }
+
           this.loadHotels();
           this.showHotelModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating hotel:', err);
           this.errorMessage = err.error?.message || `Failed to update hotel (${err.status}). Please try again.`;
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
+      // CREATE NEW HOTEL
+      const chainId = hotelData.hotelChain?.id;
+
       this.hotelService.createHotel(hotelData as Hotel).subscribe({
-        next: () => {
+        next: (newHotel) => {
+          // Increment chain count if hotel has a chain
+          if (chainId) {
+            this.hotelChainService.incrementHotelCount(chainId).subscribe({
+              next: () => console.log('Chain count incremented'),
+              error: (err) => console.error('Error incrementing chain count:', err)
+            });
+          }
+
           this.loadHotels();
           this.showHotelModal = false;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error creating hotel:', err);
           this.errorMessage = err.error?.message || `Failed to create hotel (${err.status}). Please try again.`;
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
@@ -490,7 +534,19 @@ export class AdminHotelsComponent implements OnInit {
   }
 
   confirmDelete(type: 'hotel' | 'room', id: number) {
-    this.deleteTarget = { type, id };
+    // For hotels, store the chain ID for later use
+    if (type === 'hotel') {
+      const hotel = this.hotels.find(h => h.id === id);
+      // Store the chain ID in the deleteTarget
+      this.deleteTarget = {
+        type,
+        id,
+        // Add extra data for hotel deletion
+        chainId: hotel?.hotelChainId
+      };
+    } else {
+      this.deleteTarget = { type, id };
+    }
     this.showDeleteConfirm = true;
   }
 
@@ -499,31 +555,48 @@ export class AdminHotelsComponent implements OnInit {
     this.isLoading = true;
 
     if (this.deleteTarget.type === 'hotel') {
+      // Get the hotel before deleting to know which chain to update
+      const hotel = this.hotels.find(h => h.id === this.deleteTarget?.id);
+      const chainId = hotel?.hotelChainId;
+
       this.hotelService.deleteHotel(this.deleteTarget.id).subscribe({
         next: () => {
+          // Decrement chain count if hotel had a chain
+          if (chainId) {
+            this.hotelChainService.decrementHotelCount(chainId).subscribe({
+              next: () => console.log('Chain count decremented'),
+              error: (err) => console.error('Error decrementing chain count:', err)
+            });
+          }
+
           this.loadHotels();
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error deleting hotel:', err);
           this.errorMessage = err.error?.message || `Failed to delete hotel (${err.status}). Please try again.`;
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
+      // Delete room
       this.roomService.deleteRoom(this.deleteTarget.id).subscribe({
         next: () => {
           this.loadHotels();
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error deleting room:', err);
           this.errorMessage = err.error?.message || `Failed to delete room (${err.status}). Please try again.`;
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     }
