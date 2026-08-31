@@ -23,4 +23,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL")
     List<User> findAllActiveUsers();
+
+    @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL AND u.isActive = true")
+    List<User> findAllActiveAndEnabled();
+
 }

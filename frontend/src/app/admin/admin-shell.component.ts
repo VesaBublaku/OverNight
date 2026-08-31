@@ -40,7 +40,6 @@ import { RouterModule, Router } from '@angular/router';
             Hotel Chains
           </a>
           
-
           <a routerLink="/admin/people" routerLinkActive="bg-[#FAF5EF] text-gray-900 border border-[#E8E3DB]"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-[#FAF8F5] text-sm font-medium transition-colors">
             <svg class="w-4 h-4 text-[#BCA47B]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">

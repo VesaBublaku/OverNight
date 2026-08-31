@@ -20,9 +20,10 @@ export class ProfileComponent implements OnInit {
     email: '',
     memberSince: '',
     tier: 'Gold Status',
-    points: '0',
+    points: '12,450',
     phone: '',
-    address: ''
+    address: '',
+    dob: ''
   };
 
   isLoading = false;
@@ -56,7 +57,8 @@ export class ProfileComponent implements OnInit {
           tier: 'Gold Status',
           points: '12,450',
           phone: userData.phone || '',
-          address: userData.address || ''
+          address: userData.address || '',
+          dob: userData.dob || ''
         };
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -82,7 +84,7 @@ export class ProfileComponent implements OnInit {
 
     this.userService.getUserById(Number(userId)).subscribe({
       next: (data) => {
-        console.log(' User from server:', data);
+        console.log('User from server:', data);
         if (data) {
           this.user = {
             id: data.id,
@@ -92,7 +94,8 @@ export class ProfileComponent implements OnInit {
             tier: 'Gold Status',
             points: '12,450',
             phone: data.phone || '',
-            address: data.address || ''
+            address: data.address || '',
+            dob: data.dob || ''
           };
           localStorage.setItem('currentUser', JSON.stringify(data));
           this.cdr.detectChanges();
@@ -121,7 +124,8 @@ export class ProfileComponent implements OnInit {
             tier: 'Gold Status',
             points: '12,450',
             phone: data.phone || '',
-            address: data.address || ''
+            address: data.address || '',
+            dob: data.dob || ''
           };
           localStorage.setItem('currentUser', JSON.stringify(data));
           this.isLoading = false;
@@ -146,7 +150,8 @@ export class ProfileComponent implements OnInit {
             tier: 'Gold Status',
             points: '12,450',
             phone: data.phone || '',
-            address: data.address || ''
+            address: data.address || '',
+            dob: data.dob || ''
           };
           localStorage.setItem('userId', String(data.id));
           localStorage.setItem('currentUser', JSON.stringify(data));
@@ -154,7 +159,7 @@ export class ProfileComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error(' Error loading user profile:', err);
+          console.error('Error loading user profile:', err);
           this.errorMessage = 'Failed to load profile. Please log in again.';
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -176,12 +181,17 @@ export class ProfileComponent implements OnInit {
       firstName: firstName,
       lastName: lastName,
       phone: this.user.phone,
-      address: this.user.address
+      address: this.user.address,
+      dob: this.user.dob || '',
+      memberSince: this.user.memberSince || ''
     };
+
+    console.log('Sending update:', updatedUser);
 
     if (this.user.id) {
       this.userService.updateUser(this.user.id, updatedUser as User).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Update response:', response);
           this.successMessage = 'Profile updated successfully!';
           this.isLoading = false;
 
@@ -192,13 +202,17 @@ export class ProfileComponent implements OnInit {
             cached.lastName = lastName;
             cached.phone = this.user.phone;
             cached.address = this.user.address;
+            cached.dob = this.user.dob;
+            cached.memberSince = this.user.memberSince;
             localStorage.setItem('currentUser', JSON.stringify(cached));
           }
+
+          this.loadUserProfile();
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error updating profile:', err);
-          this.errorMessage = 'Failed to update profile.';
+          this.errorMessage = err.error?.message || 'Failed to update profile.';
           this.isLoading = false;
           this.cdr.detectChanges();
         }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -40,6 +41,9 @@ public class User {
 
     @Column(name = "member_since")
     private String memberSince;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dob;
 
     @Column(nullable = false)
     private String role = "USER";

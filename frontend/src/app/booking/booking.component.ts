@@ -359,8 +359,28 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   createReservation(): void {
-    if (!this.guestName || !this.email || !this.checkIn || !this.checkOut) {
-      alert('Please fill in all required fields.');
+    if (!this.guestName || this.guestName.trim().length < 3) {
+      alert('Please enter your full name (minimum 3 characters).');
+      return;
+    }
+    if (!this.address || this.address.trim().length < 3) {
+      alert('Please enter your address (minimum 3 characters).');
+      return;
+    }
+    if (!this.email) {
+      alert('Please enter your email address.');
+      return;
+    }
+    if (!this.dob) {
+      alert('Please enter your date of birth.');
+      return;
+    }
+    if (!this.idNumber || this.idNumber.trim().length < 3) {
+      alert('Please enter your ID number (minimum 3 characters).');
+      return;
+    }
+    if (!this.checkIn || !this.checkOut) {
+      alert('Please select check-in and check-out dates.');
       return;
     }
 
@@ -410,6 +430,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+
     this.reservationService.checkAvailability(
       this.roomId,
       this.checkIn,
@@ -441,7 +462,7 @@ export class BookingComponent implements OnInit, OnDestroy {
           idNumber: this.idNumber
         };
 
-        console.log('Sending reservation with user ID:', userId);
+        console.log('Sending reservation with all fields:', reservation);
 
         this.reservationService.createReservation(reservation).subscribe({
           next: (response) => {
@@ -543,23 +564,20 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   confirmReservation(reservationId: number): void {
-    // ✅ If payment method is 'hotel', create a hotel payment record
     if (this.paymentMethod === 'hotel') {
-      // Create hotel payment record
       this.paymentService.processHotelPayment(reservationId).subscribe({
         next: (payment) => {
-          console.log('✅ Hotel payment record created:', payment);
+          console.log('Hotel payment record created:', payment);
 
-          // Then confirm the reservation
           this.reservationService.confirmReservation(reservationId).subscribe({
             next: () => {
-              alert(`✅ Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
+              alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
               this.isLoading = false;
               this.isProcessingPayment = false;
               this.router.navigate(['/reservations']);
             },
             error: (error) => {
-              console.error('❌ Error confirming reservation:', error);
+              console.error('Error confirming reservation:', error);
               alert('Reservation created but confirmation failed. Please contact support.');
               this.isLoading = false;
               this.isProcessingPayment = false;
@@ -567,17 +585,16 @@ export class BookingComponent implements OnInit, OnDestroy {
           });
         },
         error: (error) => {
-          console.error('❌ Error creating hotel payment:', error);
-          // Still confirm the reservation even if payment creation fails
+          console.error('Error creating hotel payment:', error);
           this.reservationService.confirmReservation(reservationId).subscribe({
             next: () => {
-              alert(`✅ Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
+              alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)} (Pay at hotel)`);
               this.isLoading = false;
               this.isProcessingPayment = false;
               this.router.navigate(['/reservations']);
             },
             error: (error) => {
-              console.error('❌ Error confirming reservation:', error);
+              console.error('Error confirming reservation:', error);
               alert('Reservation created but confirmation failed. Please contact support.');
               this.isLoading = false;
               this.isProcessingPayment = false;
@@ -586,16 +603,15 @@ export class BookingComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      // ✅ For online payments, just confirm the reservation
       this.reservationService.confirmReservation(reservationId).subscribe({
         next: () => {
-          alert(`✅ Reservation confirmed! Total: $${this.totalAmount.toFixed(2)}`);
+          alert(`Reservation confirmed! Total: $${this.totalAmount.toFixed(2)}`);
           this.isLoading = false;
           this.isProcessingPayment = false;
           this.router.navigate(['/reservations']);
         },
         error: (error) => {
-          console.error('❌ Error confirming reservation:', error);
+          console.error('Error confirming reservation:', error);
           alert('Reservation created but confirmation failed. Please contact support.');
           this.isLoading = false;
           this.isProcessingPayment = false;

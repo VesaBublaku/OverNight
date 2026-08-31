@@ -110,6 +110,8 @@ public class UserService {
         if (updatedUser.getPhone() != null) user.setPhone(updatedUser.getPhone());
         if (updatedUser.getAddress() != null) user.setAddress(updatedUser.getAddress());
         if (updatedUser.getEmail() != null) user.setEmail(updatedUser.getEmail());
+        if (updatedUser.getDob() != null) user.setDob(updatedUser.getDob());
+        if (updatedUser.getMemberSince() != null) user.setMemberSince(updatedUser.getMemberSince());
 
         User savedUser = userRepo.save(user);
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,6 +29,12 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
     private Room room;
+
+    @Column(name = "guest_address")
+    private String guestAddress;
+
+    @Column(name = "guest_dob")
+    private LocalDate guestDob;
 
     @Column(name = "check_in_date", nullable = false)
     private String checkInDate;

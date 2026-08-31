@@ -11,6 +11,7 @@ export interface User {
   lastName: string;
   phone?: string;
   address?: string;
+  dob?: string;
   memberSince?: string;
   isActive?: boolean;
   createdAt?: string;
@@ -27,7 +28,7 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   register(user: User): Observable<any> {
-    console.log('📤 UserService.register called with:', user);
+    console.log('UserService.register called with:', user);
     return this.http.post(`${this.apiUrl}/register`, user);
   }
 
@@ -36,7 +37,7 @@ export class UserService {
       email: email,
       password: password
     };
-    console.log('📤 UserService.login called with:', loginRequest);
+    console.log('UserService.login called with:', loginRequest);
     return this.http.post(`${this.apiUrl}/login`, loginRequest);
   }
 
