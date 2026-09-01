@@ -5,8 +5,9 @@ import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HotelService, Hotel } from '../services/hotel.service';
-import { RoomService, Room } from '../services/room.service';
+import {RoomService, Room} from '../services/room.service';
 import {Service, ServiceService} from '../services/service.service';
+import {Review, ReviewService} from '../services/review.service';
 
 @Component({
   selector: 'app-hotel-details',
@@ -22,11 +23,14 @@ export class HotelDetailsComponent implements OnInit {
   errorMessage: string = '';
   rooms: Room[] = [];
   services: Service[] = [];
+  reviews: Review[] = [];
+  isLoadingReviews: boolean = false;
 
   constructor(
     private hotelService: HotelService,
     private roomService: RoomService,
     private serviceService: ServiceService,
+    private reviewService: ReviewService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -43,6 +47,7 @@ export class HotelDetailsComponent implements OnInit {
         this.loadHotelDetails();
         this.loadHotelRooms();
         this.loadHotelServices();
+        this.loadHotelReviews();
       } else {
         this.errorMessage = 'No hotel ID provided';
         this.isLoading = false;
@@ -119,6 +124,25 @@ export class HotelDetailsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading services for hotel:', err);
+      }
+    });
+  }
+
+  loadHotelReviews(): void {
+    if (!this.hotelId) return;
+
+    this.isLoadingReviews = true;
+    this.reviewService.getReviewsByHotel(this.hotelId).subscribe({
+      next: (data) => {
+        console.log('Reviews for hotel:', data);
+        this.reviews = data || [];
+        this.isLoadingReviews = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading reviews for hotel:', err);
+        this.isLoadingReviews = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -145,6 +145,40 @@
           </button>
         </div>
 
+        <!-- Guest Reviews -->
+        <div class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50">
+          <div class="flex items-center justify-between mb-8">
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase">Guest Reviews</div>
+            <span class="bg-[#FAF5EF] text-[#BCA47B] border border-[#E8E3DB] px-3 py-1 rounded-full text-[10px] font-semibold tracking-[0.1em]">{{ reviews.length }} Reviews</span>
+          </div>
+
+          <div *ngIf="isLoadingReviews" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#BCA47B] border-t-transparent"></div>
+          </div>
+
+          <div *ngIf="!isLoadingReviews && reviews.length === 0" class="text-center py-8">
+             <p class="text-gray-500 text-sm font-light">No reviews yet for this hotel.</p>
+          </div>
+
+          <div *ngIf="!isLoadingReviews && reviews.length > 0" class="space-y-6">
+            <div *ngFor="let review of reviews" class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <div class="text-sm font-semibold text-gray-900">{{ review.guestName || 'Anonymous Guest' }}</div>
+                  <div class="text-xs text-gray-400 mt-1">{{ review.createdAt | date: 'mediumDate' }}</div>
+                </div>
+                <!-- Star Rating -->
+                <div class="text-[#D9BE84] text-sm">
+                  <span *ngFor="let star of [1,2,3,4,5]">
+                    {{ star <= review.rating ? '★' : '☆' }}
+                  </span>
+                </div>
+              </div>
+              <p class="text-gray-700 text-sm font-light whitespace-pre-wrap break-words italic">"{{ review.comment }}"</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Right Column -->

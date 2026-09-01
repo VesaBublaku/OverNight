@@ -96,6 +96,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reservations/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reservations/user/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/reservations/{id}/confirm").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/api/payments/create-intent").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/confirm/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/payments/status/**").permitAll()

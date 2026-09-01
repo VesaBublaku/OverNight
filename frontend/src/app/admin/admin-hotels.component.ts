@@ -7,6 +7,7 @@ import { HotelChainService, HotelChain } from '../services/hotel-chain.service';
 import { CityService, City } from '../services/city.service';
 import { RoomTypeService, RoomType } from '../services/room-type.service';
 import { RoomAmenityService, RoomAmenity } from '../services/room-amenity.service';
+import { ReviewService, Review } from '../services/review.service';
 
 @Component({
   selector: 'app-admin-hotels',
@@ -15,7 +16,7 @@ import { RoomAmenityService, RoomAmenity } from '../services/room-amenity.servic
   templateUrl: './admin-hotels.component.html',
 })
 export class AdminHotelsComponent implements OnInit {
-  activeTab: 'hotels' | 'rooms' = 'hotels';
+  activeTab: 'hotels' | 'rooms' | 'reviews' = 'hotels';
   selectedHotelId: number | null = null;
 
   showHotelModal = false;
@@ -41,6 +42,9 @@ export class AdminHotelsComponent implements OnInit {
   cityMap: Map<number, City> = new Map();
   chainMap: Map<number, HotelChain> = new Map();
 
+  reviews: Review[] = [];
+  isLoadingReviews = false;
+
   constructor(
     private hotelService: HotelService,
     private roomService: RoomService,
@@ -48,6 +52,7 @@ export class AdminHotelsComponent implements OnInit {
     private cityService: CityService,
     private roomTypeService: RoomTypeService,
     private roomAmenityService: RoomAmenityService,
+    private reviewService: ReviewService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -55,7 +60,7 @@ export class AdminHotelsComponent implements OnInit {
     this.loadHotels();
     this.loadHotelChains();
     this.loadCities();
-    this.loadRoomTypes(); // This will stay empty until a hotel is selected
+    this.loadRoomTypes();
     this.loadRoomAmenities();
   }
 
@@ -172,7 +177,6 @@ export class AdminHotelsComponent implements OnInit {
     });
   }
 
-  // Fixed to fetch from DB and strip prices
   loadRoomTypes(): void {
     if (!this.selectedHotelId) {
       this.roomTypes = [];
@@ -379,32 +383,26 @@ export class AdminHotelsComponent implements OnInit {
     delete hotelData.rooms;
 
     if (this.editingHotel.id) {
-      // EDIT: Get old hotel data before updating
       const oldHotel = this.hotels.find(h => h.id === this.editingHotel.id);
       const oldChainId = oldHotel?.hotelChainId;
       const newChainId = hotelData.hotelChain?.id;
 
       this.hotelService.updateHotel(this.editingHotel.id, hotelData as Hotel).subscribe({
         next: () => {
-          // Update chain counts if chain changed
           if (oldChainId && oldChainId !== newChainId) {
-            // Decrement old chain
             this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
               error: (err) => console.error('Error decrementing chain count:', err)
             });
             if (newChainId) {
-              // Increment new chain
               this.hotelChainService.incrementHotelCount(newChainId).subscribe({
                 error: (err) => console.error('Error incrementing chain count:', err)
               });
             }
           } else if (newChainId && !oldChainId) {
-            // Hotel was assigned to a chain for the first time
             this.hotelChainService.incrementHotelCount(newChainId).subscribe({
               error: (err) => console.error('Error incrementing chain count:', err)
             });
           } else if (oldChainId && !newChainId) {
-            // Hotel was removed from a chain
             this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
               error: (err) => console.error('Error decrementing chain count:', err)
             });
@@ -423,12 +421,10 @@ export class AdminHotelsComponent implements OnInit {
         }
       });
     } else {
-      // CREATE NEW HOTEL
       const chainId = hotelData.hotelChain?.id;
 
       this.hotelService.createHotel(hotelData as Hotel).subscribe({
         next: (newHotel) => {
-          // Increment chain count if hotel has a chain
           if (chainId) {
             this.hotelChainService.incrementHotelCount(chainId).subscribe({
               next: () => console.log('Chain count incremented'),
@@ -548,14 +544,11 @@ export class AdminHotelsComponent implements OnInit {
   }
 
   confirmDelete(type: 'hotel' | 'room', id: number) {
-    // For hotels, store the chain ID for later use
     if (type === 'hotel') {
       const hotel = this.hotels.find(h => h.id === id);
-      // Store the chain ID in the deleteTarget
       this.deleteTarget = {
         type,
         id,
-        // Add extra data for hotel deletion
         chainId: hotel?.hotelChainId
       };
     } else {
@@ -569,13 +562,11 @@ export class AdminHotelsComponent implements OnInit {
     this.isLoading = true;
 
     if (this.deleteTarget.type === 'hotel') {
-      // Get the hotel before deleting to know which chain to update
       const hotel = this.hotels.find(h => h.id === this.deleteTarget?.id);
       const chainId = hotel?.hotelChainId;
 
       this.hotelService.deleteHotel(this.deleteTarget.id).subscribe({
         next: () => {
-          // Decrement chain count if hotel had a chain
           if (chainId) {
             this.hotelChainService.decrementHotelCount(chainId).subscribe({
               next: () => console.log('Chain count decremented'),
@@ -597,7 +588,6 @@ export class AdminHotelsComponent implements OnInit {
         }
       });
     } else {
-      // Delete room
       this.roomService.deleteRoom(this.deleteTarget.id).subscribe({
         next: () => {
           this.loadHotels();
@@ -620,10 +610,49 @@ export class AdminHotelsComponent implements OnInit {
     this.selectedHotelId = id;
     this.activeTab = 'rooms';
     this.loadRoomsForHotel(id);
-    this.loadRoomTypes(); // Added this line to load the types for the selected hotel!
+    this.loadRoomTypes();
   }
 
   starsArray(n: number) {
     return Array(5).fill(0).map((_, i) => i < n);
+  }
+
+  loadReviewsForHotel(hotelId: number): void {
+    this.isLoadingReviews = true;
+    this.reviewService.getReviewsByHotel(hotelId).subscribe({
+      next: (data) => {
+        this.reviews = data || [];
+        this.isLoadingReviews = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading reviews for hotel:', err);
+        this.reviews = [];
+        this.isLoadingReviews = false;
+      }
+    });
+  }
+
+
+  deleteReview(id: number): void {
+    if (!confirm('Are you sure you want to delete this review?')) return;
+
+    this.reviewService.deleteReview(id).subscribe({
+      next: () => {
+        this.reviews = this.reviews.filter(r => r.id !== id);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error deleting review:', err);
+        alert('Failed to delete review.');
+      }
+    });
+  }
+
+  selectReviewsTab() {
+    this.activeTab = 'reviews';
+    if (this.selectedHotelId) {
+      this.loadReviewsForHotel(this.selectedHotelId);
+    }
   }
 }

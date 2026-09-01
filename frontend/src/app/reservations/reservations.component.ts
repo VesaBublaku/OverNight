@@ -7,11 +7,13 @@ import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {Reservation, ReservationService} from '../services/reservation.service';
 import {AuthService} from '../services/auth.service';
+import {ReviewService} from '../services/review.service';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [CommonModule, Header, Footer, RouterModule],
+  imports: [CommonModule, Header, Footer, RouterModule, FormsModule],
   templateUrl: './reservations.component.html',
   styleUrls: ['./reservations.component.css']
 })
@@ -23,9 +25,17 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   private subscriptions: Subscription[] = [];
 
+  showReviewModal = false;
+  selectedReservation: any = null;
+  reviewRating = 5;
+  reviewComment = '';
+  isSubmittingReview = false;
+  reviewError: string | null = null;
+
   constructor(
     private reservationService: ReservationService,
     private authService: AuthService,
+    private reviewService: ReviewService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -105,20 +115,21 @@ export class ReservationsComponent implements OnInit, OnDestroy {
         total: `CA$${res.totalPrice?.toFixed(2) || '0.00'}`,
         status: this.getStatusDisplay(res.status || 'pending'),
         image: this.getHotelImage(res.room?.hotel?.name || 'hotel'),
+        rawStatus: (res.status || 'pending').toLowerCase(),
         rawCheckIn: res.checkInDate,
         rawCheckOut: res.checkOutDate
       };
     });
 
     this.upcomingReservations = formattedReservations
-      .filter(r => r.rawCheckIn && new Date(r.rawCheckIn) >= today)
+      .filter(r => r.rawStatus !== 'completed' && r.rawCheckIn && new Date(r.rawCheckIn) >= today)
       .sort((a, b) => {
         if (!a.rawCheckIn || !b.rawCheckIn) return 0;
         return new Date(a.rawCheckIn).getTime() - new Date(b.rawCheckIn).getTime();
       });
 
     this.pastReservations = formattedReservations
-      .filter(r => r.rawCheckIn && new Date(r.rawCheckIn) < today)
+      .filter(r => r.rawStatus === 'completed' || (r.rawCheckIn && new Date(r.rawCheckIn) < today))
       .sort((a, b) => {
         if (!a.rawCheckIn || !b.rawCheckIn) return 0;
         return new Date(b.rawCheckIn).getTime() - new Date(a.rawCheckIn).getTime();
@@ -142,6 +153,55 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     } catch (e) {
       return dateString;
     }
+  }
+
+  openReviewModal(reservation: any) {
+    this.selectedReservation = reservation;
+    this.reviewRating = 5;
+    this.reviewComment = '';
+    this.reviewError = null;
+    this.showReviewModal = true;
+  }
+
+  closeReviewModal() {
+    this.showReviewModal = false;
+    this.selectedReservation = null;
+  }
+
+  submitReview() {
+    if (!this.selectedReservation) return;
+    if (!this.reviewComment.trim()) {
+      this.reviewError = 'Please write a comment.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.isSubmittingReview = true;
+    this.reviewError = null;
+    this.cdr.detectChanges();
+
+    this.reviewService.createReview(this.selectedReservation.reservationId, {
+      rating: this.reviewRating,
+      comment: this.reviewComment
+    }).subscribe({
+      next: () => {
+        alert('Thank you for your review!');
+        this.isSubmittingReview = false;
+        this.closeReviewModal();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error submitting review:', err);
+        this.reviewError = 'Failed to submit review. Please try again.';
+        this.isSubmittingReview = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  isCompleted(status: string): boolean {
+    const s = status.toLowerCase();
+    return s === 'completed' || s === 'checked_out';
   }
 
   private getStatusDisplay(status: string): string {

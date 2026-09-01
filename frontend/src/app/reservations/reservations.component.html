@@ -113,9 +113,19 @@
               <div class="text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-1">{{res.checkIn}}</div>
               <h4 class="text-lg font-serif text-gray-900 mb-1">{{res.hotelName}}</h4>
               <div class="text-sm text-gray-500 font-light mb-3">{{res.city}} &bull; Room #{{res.room}}</div>
-              <a [routerLink]="['/room-details']" [queryParams]="{id: res.id}" class="text-[#D9BE84] hover:text-[#C2AA76] text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-1">
-                Book Again <span>&rarr;</span>
-              </a>
+
+              <div class="flex gap-3">
+                <!-- The button only shows if isCompleted returns true -->
+                <button *ngIf="isCompleted(res.rawStatus)" (click)="openReviewModal(res)" class="bg-[#BCA47B] hover:bg-[#A8926B] text-white px-4 py-2 rounded-full text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">
+                  Leave a Review
+                </button>
+
+                <a [routerLink]="['/room-details']" [queryParams]="{id: res.roomId}" class="text-[#D9BE84] hover:text-[#C2AA76] text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors flex items-center gap-1">
+                  Book Again <span>&rarr;</span>
+                </a>
+              </div>
+              <!-- END CORRECTED BLOCK -->
+
             </div>
           </div>
         </div>
@@ -125,5 +135,46 @@
 
   </div>
 </section>
+
+<!-- REVIEW MODAL -->
+<div *ngIf="showReviewModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+    <h3 class="text-2xl font-serif text-gray-900 mb-2">Leave a Review</h3>
+    <p class="text-sm text-gray-500 font-light mb-6">{{ selectedReservation?.hotelName }}</p>
+
+    <div class="mb-6">
+      <label class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2 block">Your Rating</label>
+      <div class="flex gap-2 text-3xl">
+        <span *ngFor="let star of [1,2,3,4,5]"
+              (click)="reviewRating = star"
+              class="cursor-pointer transition-colors"
+              [ngClass]="star <= reviewRating ? 'text-[#BCA47B]' : 'text-gray-300'">
+          ★
+        </span>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2 block">Your Comment</label>
+      <textarea [(ngModel)]="reviewComment"
+                rows="4"
+                class="w-full border border-gray-200 rounded-xl p-4 text-sm font-light focus:outline-none focus:border-[#BCA47B] transition-colors"
+                placeholder="Tell others about your stay..."></textarea>
+    </div>
+
+    <div *ngIf="reviewError" class="mb-4 text-sm text-red-600">{{ reviewError }}</div>
+
+    <div class="flex justify-end gap-3">
+      <button (click)="closeReviewModal()" class="px-6 py-2.5 text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 hover:text-gray-700 transition-colors">
+        Cancel
+      </button>
+      <button (click)="submitReview()"
+              [disabled]="isSubmittingReview"
+              class="bg-[#111827] hover:bg-black text-white px-8 py-2.5 rounded-full text-[10px] font-bold tracking-[0.15em] uppercase transition-colors disabled:opacity-50">
+        {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+      </button>
+    </div>
+  </div>
+</div>
 
 <app-footer></app-footer>
