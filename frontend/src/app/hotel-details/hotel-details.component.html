@@ -151,26 +151,40 @@
       <div class="lg:col-span-5">
 
         <div class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50 h-full">
-          <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-6">Highlights</div>
+          <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-6">Services & Highlights</div>
 
-          <ul class="space-y-4 mb-8">
-            <li class="flex items-start gap-3">
-              <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
-              <span class="text-gray-600 text-sm font-light">Elegant interiors and calm atmosphere</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
-              <span class="text-gray-600 text-sm font-light">Seamless booking flow for guests</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
-              <span class="text-gray-600 text-sm font-light">Perfect for business & leisure stays</span>
-            </li>
-            <li *ngIf="hotel.rating" class="flex items-start gap-3">
-              <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
-              <span class="text-gray-600 text-sm font-light">{{ hotel.rating }}-star rated premium accommodation</span>
-            </li>
-          </ul>
+          <!-- 👈 SERVICES LIST -->
+          <div *ngIf="services.length > 0" class="mb-8">
+            <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-3">Hotel Services</div>
+            <ul class="space-y-3">
+              <li *ngFor="let service of services" class="flex items-start gap-3">
+                <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
+                <span class="text-gray-600 text-sm font-light">{{ service.description }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 👈 STATIC HIGHLIGHTS (shown if no services) -->
+          <div *ngIf="services.length === 0" class="mb-8">
+            <ul class="space-y-4 mb-8">
+              <li class="flex items-start gap-3">
+                <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
+                <span class="text-gray-600 text-sm font-light">Elegant interiors and calm atmosphere</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
+                <span class="text-gray-600 text-sm font-light">Seamless booking flow for guests</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
+                <span class="text-gray-600 text-sm font-light">Perfect for business & leisure stays</span>
+              </li>
+              <li *ngIf="hotel.rating" class="flex items-start gap-3">
+                <span class="text-[#D9BE84] mt-1 text-[10px]">✦</span>
+                <span class="text-gray-600 text-sm font-light">{{ hotel.rating }}-star rated premium accommodation</span>
+              </li>
+            </ul>
+          </div>
 
           <!-- Small highlight image -->
           <div class="rounded-2xl overflow-hidden h-40 mb-8 border border-gray-100">

@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
 import { HotelChainService, HotelChain } from '../services/hotel-chain.service';
+import {ImageUrlPipe} from '../pipes/image-url.pipe';
 
 @Component({
   selector: 'app-chain',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header, Footer],
+  imports: [CommonModule, FormsModule, Header, Footer,ImageUrlPipe],
   templateUrl: './chain.component.html',
   styleUrls: ['./chain.component.css']
 })

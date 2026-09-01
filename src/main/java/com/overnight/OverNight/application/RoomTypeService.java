@@ -131,4 +131,15 @@ public class RoomTypeService {
     public long countRoomTypesByHotel(Long hotelId) {
         return roomTypeRepo.findActiveByHotelId(hotelId).size();
     }
+
+    @Transactional(readOnly = true)
+    public List<RoomType> getUniqueRoomTypesWithoutPriceForHotel(Long hotelId) {
+        List<RoomType> roomTypes = roomTypeRepo.findActiveByHotelId(hotelId);
+
+        for (RoomType rt : roomTypes) {
+            rt.setBasePrice(null);
+        }
+
+        return roomTypes;
+    }
 }

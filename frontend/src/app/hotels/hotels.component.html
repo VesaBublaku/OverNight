@@ -5,7 +5,7 @@
   <div class="max-w-[85rem] mx-auto sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
       <div>
-        <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-4">Hotels</div>
+        <div class="text-[10px] font-semibold text-[#BCA47B] tracking-[0.3em] uppercase mb-4">Hotels</div>
         <h1 class="text-4xl md:text-5xl font-serif text-gray-900 mb-3">
           {{ selectedChainName ? selectedChainName + ' Hotels' : 'Explore hotels in style.' }}
         </h1>
@@ -16,7 +16,7 @@
           {{ filteredHotels.length }} hotels found
         </p>
 
-        <!-- ✅ Chain filter indicator -->
+
         <div *ngIf="selectedChainName" class="mt-4 inline-flex items-center gap-2 bg-[#FAF5EF] border border-[#E8E3DB] rounded-full px-4 py-2">
           <span class="text-xs text-gray-600">Filtering by: <strong>{{ selectedChainName }}</strong></span>
           <button (click)="clearChainFilter()" class="text-xs text-gray-400 hover:text-gray-900 transition-colors">

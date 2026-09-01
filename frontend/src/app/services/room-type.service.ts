@@ -6,7 +6,7 @@ export interface RoomType {
   id: number;
   name: string;
   description?: string;
-  basePrice: number;
+  basePrice?: number;
   maxOccupancy: number;
   icon?: string;
   isActive?: boolean;
@@ -35,4 +35,5 @@ export class RoomTypeService {
   getRoomTypesByHotel(hotelId: number): Observable<RoomType[]> {
     return this.http.get<RoomType[]>(`${this.apiUrl}/hotel/${hotelId}`);
   }
+
 }

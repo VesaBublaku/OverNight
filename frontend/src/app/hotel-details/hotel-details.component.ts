@@ -6,6 +6,7 @@ import { Footer } from '../footer/footer';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HotelService, Hotel } from '../services/hotel.service';
 import { RoomService, Room } from '../services/room.service';
+import {Service, ServiceService} from '../services/service.service';
 
 @Component({
   selector: 'app-hotel-details',
@@ -20,25 +21,28 @@ export class HotelDetailsComponent implements OnInit {
   isLoading: boolean = true;
   errorMessage: string = '';
   rooms: Room[] = [];
+  services: Service[] = [];
 
   constructor(
     private hotelService: HotelService,
     private roomService: RoomService,
+    private serviceService: ServiceService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    console.log('🏨 HotelDetailsComponent initialized!');
+    console.log('HotelDetailsComponent initialized!');
 
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
       if (id) {
         this.hotelId = parseInt(id);
-        console.log('🔗 Loading hotel with ID:', this.hotelId);
+        console.log('Loading hotel with ID:', this.hotelId);
         this.loadHotelDetails();
         this.loadHotelRooms();
+        this.loadHotelServices();
       } else {
         this.errorMessage = 'No hotel ID provided';
         this.isLoading = false;
@@ -54,7 +58,7 @@ export class HotelDetailsComponent implements OnInit {
 
     this.hotelService.getHotelById(this.hotelId).subscribe({
       next: (data) => {
-        console.log('✅ Hotel details loaded:', data);
+        console.log('Hotel details loaded:', data);
         this.hotel = {
           ...data,
           isActive: data.isActive === true,
@@ -73,7 +77,7 @@ export class HotelDetailsComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Error loading hotel details:', err);
+        console.error('Error loading hotel details:', err);
         this.errorMessage = 'Failed to load hotel details. Please try again.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -86,7 +90,7 @@ export class HotelDetailsComponent implements OnInit {
 
     this.roomService.getRoomsByHotel(this.hotelId).subscribe({
       next: (data) => {
-        console.log('✅ Rooms for hotel:', data);
+        console.log('Rooms for hotel:', data);
         this.rooms = (data || []).map(room => ({
           ...room,
           isExtendable: room.isExtendable === true,
@@ -104,7 +108,21 @@ export class HotelDetailsComponent implements OnInit {
     });
   }
 
-  // ✅ Add this method
+  loadHotelServices(): void {
+    if (!this.hotelId) return;
+
+    this.serviceService.getServicesByHotel(this.hotelId).subscribe({
+      next: (data) => {
+        console.log('Services for hotel:', data);
+        this.services = data || [];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading services for hotel:', err);
+      }
+    });
+  }
+
   getCityName(hotel: Hotel): string {
     return hotel.cityName || hotel.city || 'Unknown City';
   }

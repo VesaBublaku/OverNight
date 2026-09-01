@@ -55,7 +55,7 @@ export class AdminHotelsComponent implements OnInit {
     this.loadHotels();
     this.loadHotelChains();
     this.loadCities();
-    this.loadRoomTypes();
+    this.loadRoomTypes(); // This will stay empty until a hotel is selected
     this.loadRoomAmenities();
   }
 
@@ -172,19 +172,33 @@ export class AdminHotelsComponent implements OnInit {
     });
   }
 
+  // Fixed to fetch from DB and strip prices
   loadRoomTypes(): void {
-    this.roomTypeService.getAllRoomTypes().subscribe({
+    if (!this.selectedHotelId) {
+      this.roomTypes = [];
+      return;
+    }
+
+    this.roomTypeService.getRoomTypesByHotel(this.selectedHotelId).subscribe({
       next: (data) => {
-        this.roomTypes = data || [];
+        if (!data) {
+          this.roomTypes = [];
+          return;
+        }
+
+        const uniqueRoomTypes = data.filter(
+          (rt, index, self) => self.findIndex(t => t.name === rt.name) === index
+        );
+
+        this.roomTypes = uniqueRoomTypes.map(rt => ({
+          id: rt.id,
+          name: rt.name,
+          maxOccupancy: rt.maxOccupancy
+        }));
       },
       error: (err) => {
-        console.error('Error loading room types:', err);
-        this.roomTypes = [
-          { id: 1, name: 'Standard', basePrice: 150, maxOccupancy: 2 },
-          { id: 2, name: 'Deluxe', basePrice: 250, maxOccupancy: 4 },
-          { id: 3, name: 'Suite', basePrice: 400, maxOccupancy: 6 },
-          { id: 4, name: 'Penthouse', basePrice: 600, maxOccupancy: 8 },
-        ];
+        console.error('Error loading room types for hotel:', err);
+        this.roomTypes = [];
       }
     });
   }
@@ -606,6 +620,7 @@ export class AdminHotelsComponent implements OnInit {
     this.selectedHotelId = id;
     this.activeTab = 'rooms';
     this.loadRoomsForHotel(id);
+    this.loadRoomTypes(); // Added this line to load the types for the selected hotel!
   }
 
   starsArray(n: number) {
