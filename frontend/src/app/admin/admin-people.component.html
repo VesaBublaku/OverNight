@@ -281,12 +281,6 @@
         <div>
           <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Role</label>
           <select [(ngModel)]="editingStaff.role" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-            <option value="Front Desk">Front Desk</option>
-            <option value="Manager">Manager</option>
-            <option value="Concierge">Concierge</option>
-            <option value="Housekeeping">Housekeeping</option>
-            <option value="Security">Security</option>
-            <option value="Chef">Chef</option>
             <option value="ADMIN">Admin</option>
             <option value="STAFF">Staff</option>
           </select>
@@ -302,8 +296,10 @@
 
       <!-- Row 4: Since -->
       <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Since (Year)</label>
-        <input [(ngModel)]="editingStaff.since" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="2025" />
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Member Since</label>
+        <div class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500 italic">
+          {{ editingStaff.since || 'N/A' }} <span class="text-[10px] text-gray-400 ml-2">(set automatically on creation)</span>
+        </div>
       </div>
     </div>
 

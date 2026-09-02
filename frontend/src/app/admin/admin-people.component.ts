@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';  // ADD ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService, User as Customer } from '../services/user.service';
@@ -49,7 +49,7 @@ export class AdminPeopleComponent implements OnInit {
   constructor(
     private userService: UserService,
     private staffService: StaffService,
-    private cdr: ChangeDetectorRef  // ADD THIS
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -121,7 +121,6 @@ export class AdminPeopleComponent implements OnInit {
         console.error('Error fetching staff:', err);
         this.errorMessage = 'Failed to load staff. Please try again.';
         this.isLoading = false;
-        // Fallback with mock data
         this.staff = [
           {
             id: 1,
@@ -237,7 +236,7 @@ export class AdminPeopleComponent implements OnInit {
       lastName: '',
       email: '',
       phone: '',
-      role: 'Front Desk',
+      role: 'staff',
       isActive: true
     };
     this.showStaffModal = true;
@@ -253,12 +252,47 @@ export class AdminPeopleComponent implements OnInit {
     this.errorMessage = '';
 
     if (this.editingStaff.id) {
-      this.staffService.updateStaff(this.editingStaff.id, this.editingStaff as Staff).subscribe({
+      const staffId = this.editingStaff.id;
+      const currentStaff = this.staff.find(s => s.id === staffId);
+
+      const newIsActive = this.editingStaff.isActive === true || (this.editingStaff.isActive as any) === 'true';
+      const oldIsActive = currentStaff?.isActive === true;
+
+      const updateData = {
+        firstName: this.editingStaff.firstName,
+        lastName: this.editingStaff.lastName,
+        email: this.editingStaff.email,
+        phone: this.editingStaff.phone,
+        role: this.editingStaff.role
+      };
+
+      this.staffService.updateStaff(staffId, updateData as Staff).subscribe({
         next: () => {
-          this.loadStaff();
-          this.showStaffModal = false;
-          this.isLoading = false;
-          this.cdr.detectChanges();
+          if (oldIsActive !== newIsActive) {
+            const statusObservable = newIsActive
+              ? this.staffService.activateStaff(staffId)
+              : this.staffService.deactivateStaff(staffId);
+
+            statusObservable.subscribe({
+              next: () => {
+                this.loadStaff();
+                this.showStaffModal = false;
+                this.isLoading = false;
+                this.cdr.detectChanges();
+              },
+              error: (err) => {
+                console.error('Error updating status:', err);
+                this.errorMessage = 'Failed to update staff status.';
+                this.isLoading = false;
+                this.cdr.detectChanges();
+              }
+            });
+          } else {
+            this.loadStaff();
+            this.showStaffModal = false;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }
         },
         error: (err) => {
           console.error('Error updating staff:', err);
@@ -274,7 +308,7 @@ export class AdminPeopleComponent implements OnInit {
         firstName: this.editingStaff.firstName || '',
         lastName: this.editingStaff.lastName || '',
         phone: this.editingStaff.phone || '',
-        role: this.editingStaff.role || 'Front Desk',
+        role: this.editingStaff.role || 'staff',
         isActive: true
       };
       this.staffService.register(newStaff as Staff).subscribe({

@@ -389,25 +389,6 @@ export class AdminHotelsComponent implements OnInit {
 
       this.hotelService.updateHotel(this.editingHotel.id, hotelData as Hotel).subscribe({
         next: () => {
-          if (oldChainId && oldChainId !== newChainId) {
-            this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
-              error: (err) => console.error('Error decrementing chain count:', err)
-            });
-            if (newChainId) {
-              this.hotelChainService.incrementHotelCount(newChainId).subscribe({
-                error: (err) => console.error('Error incrementing chain count:', err)
-              });
-            }
-          } else if (newChainId && !oldChainId) {
-            this.hotelChainService.incrementHotelCount(newChainId).subscribe({
-              error: (err) => console.error('Error incrementing chain count:', err)
-            });
-          } else if (oldChainId && !newChainId) {
-            this.hotelChainService.decrementHotelCount(oldChainId).subscribe({
-              error: (err) => console.error('Error decrementing chain count:', err)
-            });
-          }
-
           this.loadHotels();
           this.showHotelModal = false;
           this.isLoading = false;
@@ -425,13 +406,6 @@ export class AdminHotelsComponent implements OnInit {
 
       this.hotelService.createHotel(hotelData as Hotel).subscribe({
         next: (newHotel) => {
-          if (chainId) {
-            this.hotelChainService.incrementHotelCount(chainId).subscribe({
-              next: () => console.log('Chain count incremented'),
-              error: (err) => console.error('Error incrementing chain count:', err)
-            });
-          }
-
           this.loadHotels();
           this.showHotelModal = false;
           this.isLoading = false;
@@ -567,13 +541,6 @@ export class AdminHotelsComponent implements OnInit {
 
       this.hotelService.deleteHotel(this.deleteTarget.id).subscribe({
         next: () => {
-          if (chainId) {
-            this.hotelChainService.decrementHotelCount(chainId).subscribe({
-              next: () => console.log('Chain count decremented'),
-              error: (err) => console.error('Error decrementing chain count:', err)
-            });
-          }
-
           this.loadHotels();
           this.showDeleteConfirm = false;
           this.deleteTarget = null;

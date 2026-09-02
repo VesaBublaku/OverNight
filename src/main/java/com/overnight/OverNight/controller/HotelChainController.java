@@ -57,6 +57,14 @@ public class HotelChainController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/fix-prishtina")
+    public ResponseEntity<String> fixPrishtina() {
+        HotelChain chain = hotelChainService.getHotelChainByName("Prishtina Hotel");
+        chain.setHotelCount(1);
+        hotelChainService.updateHotelChain(chain.getId(), chain);
+        return ResponseEntity.ok("Fixed");
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<HotelChain> createHotelChain(@RequestBody HotelChain hotelChain) {

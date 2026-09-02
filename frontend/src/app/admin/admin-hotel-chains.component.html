@@ -121,13 +121,19 @@
         </div>
       </div>
 
-      <!-- Status -->
-      <div>
-        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
-        <select [(ngModel)]="editingChain.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
-          <option [value]="true">Active</option>
-          <option [value]="false">Inactive</option>
-        </select>
+      <!-- Hotel Count & Status -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel Count</label>
+          <input [(ngModel)]="editingChain.hotelCount" type="number" min="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+          <select [(ngModel)]="editingChain.isActive" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
       </div>
     </div>
 
