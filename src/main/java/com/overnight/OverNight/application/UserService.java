@@ -183,4 +183,11 @@ public class UserService {
     public void logout(User user) {
         activityLogService.logLogout(user);
     }
+
+    @Transactional
+    public void incrementStays(Long userId) {
+        User user = findById(userId);
+        user.setStays((user.getStays() != null ? user.getStays() : 0) + 1);
+        userRepo.save(user);
+    }
 }

@@ -69,10 +69,9 @@ export class AdminPeopleComponent implements OnInit {
           idType: 'Passport',
           idNumber: 'N/A',
           joined: user.memberSince || new Date().getFullYear().toString(),
-          reservations: 0
+          reservations: user.stays || 0
         }));
         this.isLoading = false;
-
         this.cdr.detectChanges();
       },
       error: (err) => {

@@ -173,7 +173,25 @@ public class ReservationService {
     public Reservation checkOut(Long id) {
         Reservation reservation = getReservationById(id);
         reservation.setStatus("COMPLETED");
-        return reservationRepo.save(reservation);
+        Reservation saved = reservationRepo.save(reservation);
+        if (saved.getUser() != null && saved.getUser().getId() != null) {
+            userService.incrementStays(saved.getUser().getId());
+        }
+        return saved;
+    }
+
+    @Transactional
+    public Reservation completeReservation(Long id) {
+        Reservation reservation = getReservationById(id);
+        if ("COMPLETED".equals(reservation.getStatus())) {
+            throw new RuntimeException("Reservation " + id + " is already completed");
+        }
+        reservation.setStatus("COMPLETED");
+        Reservation saved = reservationRepo.save(reservation);
+        if (saved.getUser() != null && saved.getUser().getId() != null) {
+            userService.incrementStays(saved.getUser().getId());
+        }
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -213,7 +231,6 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public boolean isRoomAvailable(Long roomId, String checkIn, String checkOut) {
-        // Check if there are any overlapping reservations
         long overlapping = reservationRepo.countOverlappingReservations(
                 roomId,
                 checkIn,

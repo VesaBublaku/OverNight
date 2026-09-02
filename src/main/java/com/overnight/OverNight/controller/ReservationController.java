@@ -154,4 +154,22 @@ public class ReservationController {
         Reservation confirmed = reservationService.confirmReservation(id);
         return ResponseEntity.ok(confirmed);
     }
+
+    @PutMapping("/{id}/complete")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    public ResponseEntity<?> completeReservation(@PathVariable Long id) {
+        try {
+            Reservation completed = reservationService.completeReservation(id);
+            return ResponseEntity.ok(completed);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("already completed")) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", e.getMessage());
+                return ResponseEntity.status(409).body(error);
+            }
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(404).body(error);
+        }
+    }
 }
