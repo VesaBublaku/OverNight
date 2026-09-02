@@ -65,4 +65,7 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
             "AND r.checkInDate >= :today")
     List<String> findUnavailableDates(@Param("roomId") Long roomId,
                                       @Param("today") String today);
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.user.id = :userId AND r.status = 'COMPLETED' AND r.deletedAt IS NULL")
+    Integer countCompletedReservationsByUserId(@Param("userId") Long userId);
 }

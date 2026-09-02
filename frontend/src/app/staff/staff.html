@@ -52,6 +52,14 @@
       </button>
     </div>
 
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" class="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm">
+      {{successMessage}}
+    </div>
+    <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+      {{errorMessage}}
+    </div>
+
     <!-- Customers Table -->
     <div class="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.03)]">
       <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 text-[9px] font-semibold text-gray-400 tracking-[0.2em] uppercase bg-[#FAF8F5]">
@@ -68,7 +76,6 @@
           <!-- Customer Info -->
           <div class="col-span-2 flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#D9BE84]/40 to-[#BCA47B]/40 flex items-center justify-center shrink-0 border border-[#D9BE84]/20">
-              <!-- FIX: Removed optional chain since firstName is required -->
               <span class="text-[#D9BE84] text-sm font-serif font-bold">{{c.firstName.charAt(0) || '?'}}</span>
             </div>
             <div>
@@ -87,9 +94,7 @@
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0; else noReservation">
               <div *ngFor="let r of getCustomerReservations(c.id)" class="mb-1 last:mb-0">
                 <div class="flex items-center gap-2">
-                  <!-- FIX: Use getRoomNumber helper -->
                   <span class="text-gray-900 text-sm font-medium">#{{getRoomNumber(r.room)}}</span>
-                  <!-- FIX: Use getHotelNameForRoom helper -->
                   <span class="text-gray-500 text-xs">{{getHotelNameForRoom(r.room)}}</span>
                 </div>
               </div>
@@ -113,12 +118,12 @@
           <div class="col-span-1">
             <ng-container *ngIf="getCustomerReservations(c.id).length > 0">
               <span *ngFor="let r of getCustomerReservations(c.id)"
-                    [class.bg-emerald-50]="r.status==='active' || r.status==='ACTIVE'"
-                    [class.text-emerald-600]="r.status==='active' || r.status==='ACTIVE'"
-                    [class.border-emerald-100]="r.status==='active' || r.status==='ACTIVE'"
-                    [class.bg-blue-50]="r.status==='upcoming' || r.status==='UPCOMING'"
-                    [class.text-blue-600]="r.status==='upcoming' || r.status==='UPCOMING'"
-                    [class.border-blue-100]="r.status==='upcoming' || r.status==='UPCOMING'"
+                    [class.bg-emerald-50]="r.status==='ACTIVE' || r.status==='active'"
+                    [class.text-emerald-600]="r.status==='ACTIVE' || r.status==='active'"
+                    [class.border-emerald-100]="r.status==='ACTIVE' || r.status==='active'"
+                    [class.bg-blue-50]="r.status==='UPCOMING' || r.status==='upcoming' || r.status==='CONFIRMED' || r.status==='confirmed'"
+                    [class.text-blue-600]="r.status==='UPCOMING' || r.status==='upcoming' || r.status==='CONFIRMED' || r.status==='confirmed'"
+                    [class.border-blue-100]="r.status==='UPCOMING' || r.status==='upcoming' || r.status==='CONFIRMED' || r.status==='confirmed'"
                     class="border px-2.5 py-1 rounded-full text-[9px] font-semibold tracking-[0.1em] uppercase inline-block">
                 {{r.status}}
               </span>
@@ -126,12 +131,49 @@
           </div>
 
           <!-- Actions -->
-          <div class="col-span-2 flex items-center justify-end gap-2">
-            <button (click)="openEditCustomer(c)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
+          <div class="col-span-2 flex items-center justify-end gap-1.5 flex-wrap">
+
+            <!-- Edit Reservation -->
+            <button *ngIf="getCustomerReservations(c.id).length > 0"
+                    (click)="openEditReservation(getCustomerReservations(c.id)[0])"
+                    title="Edit Reservation"
+                    class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-100 hover:border-blue-200 px-2.5 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.08em] uppercase transition-all duration-150 shadow-sm">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+              Res
+            </button>
+
+            <!-- Check In -->
+            <button *ngIf="getCustomerReservations(c.id).length > 0 && (getCustomerReservations(c.id)[0].status === 'UPCOMING' || getCustomerReservations(c.id)[0].status === 'upcoming' || getCustomerReservations(c.id)[0].status === 'CONFIRMED' || getCustomerReservations(c.id)[0].status === 'confirmed')"
+                    (click)="checkInReservation(getCustomerReservations(c.id)[0].id!)"
+                    title="Check In"
+                    class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 hover:border-emerald-200 px-2.5 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.08em] uppercase transition-all duration-150 shadow-sm">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0110.5 3h6a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0116.5 21h-6a2.25 2.25 0 01-2.25-2.25V15m-3 0l-3-3m0 0l3-3m-3 3H15"/></svg>
+              In
+            </button>
+
+            <!-- Check Out -->
+            <button *ngIf="getCustomerReservations(c.id).length > 0 && (getCustomerReservations(c.id)[0].status === 'ACTIVE' || getCustomerReservations(c.id)[0].status === 'active')"
+                    (click)="checkOutReservation(getCustomerReservations(c.id)[0].id!)"
+                    title="Check Out"
+                    class="inline-flex items-center gap-1 bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-100 hover:border-violet-200 px-2.5 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.08em] uppercase transition-all duration-150 shadow-sm">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+              Out
+            </button>
+
+            <!-- Edit Customer -->
+            <button (click)="openEditCustomer(c)"
+                    title="Edit Customer"
+                    class="inline-flex items-center gap-1 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 px-2.5 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.08em] uppercase transition-all duration-150 shadow-sm">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
               Edit
             </button>
-            <button (click)="c.id && confirmDelete('customer', c.id)" class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-[9px] font-semibold tracking-[0.1em] uppercase transition-colors">
-              Delete
+
+            <!-- Delete -->
+            <button (click)="c.id && confirmDelete('customer', c.id)"
+                    title="Delete Customer"
+                    class="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-500 border border-red-100 hover:border-red-200 px-2.5 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.08em] uppercase transition-all duration-150 shadow-sm">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+              Del
             </button>
           </div>
         </div>
@@ -151,7 +193,7 @@
   <div class="relative bg-white border border-gray-100 rounded-[2rem] p-10 w-full max-w-xl shadow-[0_24px_80px_rgb(0,0,0,0.12)] z-10 max-h-[90vh] overflow-y-auto">
     <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-3">{{editingReservation.id ? 'Edit' : 'New Reservation'}}</div>
     <h2 class="text-2xl font-serif text-gray-900 mb-1">{{editingReservation.id ? 'Edit Reservation' : 'Create Reservation'}}</h2>
-    <p class="text-gray-500 text-sm font-light mb-8">Book a room for a customer.</p>
+    <p class="text-gray-500 text-sm font-light mb-8">{{editingReservation.id ? 'Modify reservation details' : 'Book a room for a customer.'}}</p>
 
     <div class="space-y-5">
       <!-- Customer -->
@@ -168,7 +210,6 @@
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Hotel & Room</label>
         <select [ngModel]="editingReservation.room?.id" (ngModelChange)="editingReservation.room = {id: $event}" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
           <option [value]="undefined">Select a room</option>
-          <!-- FIX: Use getHotelNameForRoom and getRoomNumber -->
           <option *ngFor="let r of availableRooms" [value]="r.id">{{getHotelNameForRoom(r)}} - Room #{{getRoomNumber(r)}} (${{r.price}}/night)</option>
         </select>
       </div>
@@ -189,6 +230,18 @@
       <div>
         <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Guests</label>
         <input [(ngModel)]="editingReservation.guests" type="number" min="1" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors" placeholder="Number of guests" />
+      </div>
+
+      <!-- Status - Only show when editing -->
+      <div *ngIf="editingReservation.id">
+        <label class="block text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-2">Status</label>
+        <select [(ngModel)]="editingReservation.status" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#BCA47B] transition-colors appearance-none">
+          <option value="UPCOMING">Upcoming</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="ACTIVE">Active (Checked In)</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
       </div>
 
       <!-- Special Requests -->

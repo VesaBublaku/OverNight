@@ -2,6 +2,7 @@ package com.overnight.OverNight.application;
 
 import com.overnight.OverNight.config.JwtUtil;
 import com.overnight.OverNight.domain.User;
+import com.overnight.OverNight.infrastructure.ReservationRepo;
 import com.overnight.OverNight.infrastructure.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final ActivityLogService activityLogService;
+    private final ReservationRepo reservationRepo;
 
     public Map<String, Object> login(String email, String password, HttpServletRequest request) {
         System.out.println("Email: " + email);
@@ -134,7 +137,18 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        return userRepo.findAllActiveUsers();
+        List<User> users = userRepo.findAllActiveUsers();
+        return users.stream()
+                .map(user -> {
+                    Integer stays = calculateStays(user.getId());
+                    user.setStays(stays);
+                    return user;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Integer calculateStays(Long userId) {
+        return reservationRepo.countCompletedReservationsByUserId(userId);
     }
 
     @Transactional(readOnly = true)

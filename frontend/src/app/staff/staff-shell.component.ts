@@ -13,7 +13,7 @@ import { RouterModule, Router } from '@angular/router';
 
         <div class="h-20 flex items-center px-8 border-b border-gray-100">
           <a routerLink="/" class="flex items-baseline gap-2">
-            <span class="text-gray-900 text-2xl font-serif tracking-tight">LuxStay</span>
+            <span class="text-gray-900 text-2xl font-serif tracking-tight">OverNight</span>
             <span class="text-gray-400 text-[9px] font-semibold tracking-[0.2em] uppercase">Staff</span>
           </a>
         </div>
@@ -86,7 +86,7 @@ export class StaffShellComponent {
   constructor(private router: Router) {
     this.staffName = localStorage.getItem('staff_name') || 'Staff User';
     this.staffRole = localStorage.getItem('staff_role') || 'Staff';
-    this.staffHotel = localStorage.getItem('staff_hotel') || 'LuxStay';
+    this.staffHotel = localStorage.getItem('staff_hotel') || 'OverNight';
     this.staffInitial = this.staffName.charAt(0).toUpperCase();
   }
 

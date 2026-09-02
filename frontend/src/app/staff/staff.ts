@@ -37,6 +37,7 @@ export class StaffDashboardComponent implements OnInit {
   hotels: Hotel[] = [];
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
 
   constructor(
     private userService: UserService,
@@ -210,11 +211,14 @@ export class StaffDashboardComponent implements OnInit {
     if (!this.editingCustomer.id) return;
 
     this.isLoading = true;
+    this.errorMessage = '';
     this.userService.updateUser(this.editingCustomer.id, this.editingCustomer as User).subscribe({
       next: () => {
         this.loadCustomers();
         this.showCustomerModal = false;
         this.isLoading = false;
+        this.successMessage = 'Customer updated successfully!';
+        setTimeout(() => this.successMessage = '', 3000);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -240,12 +244,17 @@ export class StaffDashboardComponent implements OnInit {
   }
 
   openEditReservation(reservation: any): void {
-    this.editingReservation = { ...reservation };
+    this.editingReservation = {
+      ...reservation,
+      user: reservation.user ? { id: reservation.user.id } : null,
+      room: reservation.room ? { id: reservation.room.id } : null
+    };
     this.showReservationModal = true;
   }
 
   saveReservation(): void {
     this.isLoading = true;
+    this.errorMessage = '';
 
     const reservationData = {
       user: this.editingReservation.user ? { id: this.editingReservation.user.id } : null,
@@ -261,8 +270,11 @@ export class StaffDashboardComponent implements OnInit {
       this.reservationService.updateReservation(this.editingReservation.id, reservationData).subscribe({
         next: () => {
           this.loadReservations();
+          this.loadCustomers();
           this.showReservationModal = false;
           this.isLoading = false;
+          this.successMessage = 'Reservation updated successfully!';
+          setTimeout(() => this.successMessage = '', 3000);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -276,8 +288,11 @@ export class StaffDashboardComponent implements OnInit {
       this.reservationService.createReservation(reservationData).subscribe({
         next: () => {
           this.loadReservations();
+          this.loadCustomers();
           this.showReservationModal = false;
           this.isLoading = false;
+          this.successMessage = 'Reservation created successfully!';
+          setTimeout(() => this.successMessage = '', 3000);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -290,6 +305,94 @@ export class StaffDashboardComponent implements OnInit {
     }
   }
 
+  checkInReservation(reservationId: number): void {
+    if (!confirm('Confirm check-in for this reservation?')) return;
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.reservationService.checkIn(reservationId).subscribe({
+      next: () => {
+        this.loadReservations();
+        this.isLoading = false;
+        this.successMessage = 'Guest checked in successfully!';
+        setTimeout(() => this.successMessage = '', 3000);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error checking in:', err);
+        this.errorMessage = 'Failed to check in. Please try again.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  checkOutReservation(reservationId: number): void {
+    if (!confirm('Confirm check-out for this reservation? This will complete the stay and increment the guest\'s stays count.')) return;
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.reservationService.checkOut(reservationId).subscribe({
+      next: () => {
+        this.loadReservations();
+        this.loadCustomers();
+        this.isLoading = false;
+        this.successMessage = 'Guest checked out successfully! Stays count updated.';
+        setTimeout(() => this.successMessage = '', 4000);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error checking out:', err);
+        this.errorMessage = 'Failed to check out. Please try again.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  updateReservationStatus(reservationId: number, status: string): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.reservationService.updateStatus(reservationId, status).subscribe({
+      next: () => {
+        this.loadReservations();
+        this.isLoading = false;
+        this.successMessage = `Status updated to ${status}!`;
+        setTimeout(() => this.successMessage = '', 3000);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error updating status:', err);
+        this.errorMessage = 'Failed to update status.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  completeReservation(reservationId: number): void {
+    if (!confirm('Mark this reservation as completed?')) return;
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.reservationService.completeReservation(reservationId).subscribe({
+      next: () => {
+        this.loadReservations();
+        this.loadCustomers();
+        this.isLoading = false;
+        this.successMessage = 'Reservation completed! Stays count updated.';
+        setTimeout(() => this.successMessage = '', 4000);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error completing reservation:', err);
+        this.errorMessage = 'Failed to complete reservation.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   executeDelete(): void {
     if (!this.deleteTarget) return;
 
@@ -299,10 +402,13 @@ export class StaffDashboardComponent implements OnInit {
           this.loadReservations();
           this.showDeleteConfirm = false;
           this.deleteTarget = null;
+          this.successMessage = 'Reservation cancelled successfully.';
+          setTimeout(() => this.successMessage = '', 3000);
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cancelling reservation:', err);
+          this.errorMessage = 'Failed to cancel reservation.';
           this.cdr.detectChanges();
         }
       });

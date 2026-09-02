@@ -187,7 +187,7 @@
         <div class="bg-white rounded-[2rem] p-10 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-gray-50 h-full">
           <div class="text-[10px] font-semibold text-gray-400 tracking-[0.3em] uppercase mb-6">Services & Highlights</div>
 
-          <!-- 👈 SERVICES LIST -->
+          <!--  SERVICES LIST -->
           <div *ngIf="services.length > 0" class="mb-8">
             <div class="text-[10px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-3">Hotel Services</div>
             <ul class="space-y-3">
@@ -198,7 +198,7 @@
             </ul>
           </div>
 
-          <!-- 👈 STATIC HIGHLIGHTS (shown if no services) -->
+          <!-- STATIC HIGHLIGHTS (shown if no services) -->
           <div *ngIf="services.length === 0" class="mb-8">
             <ul class="space-y-4 mb-8">
               <li class="flex items-start gap-3">
@@ -225,12 +225,6 @@
             <img [src]="getImageUrl(hotel)" class="w-full h-full object-cover" />
           </div>
 
-          <!-- Badges -->
-          <div class="flex flex-wrap gap-2 mb-10">
-            <span *ngIf="hotel.rating && hotel.rating >= 4" class="bg-white border border-gray-200 text-gray-500 px-4 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Premium</span>
-            <span class="bg-white border border-gray-200 text-gray-500 px-4 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Quiet</span>
-            <span class="bg-white border border-gray-200 text-gray-500 px-4 py-1.5 rounded-full text-[9px] font-semibold tracking-[0.15em] uppercase">Refined</span>
-          </div>
 
           <!-- Back Button -->
           <button (click)="goBack()" class="w-full bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-full px-6 py-3.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors">

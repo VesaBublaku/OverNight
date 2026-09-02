@@ -468,10 +468,11 @@ export class BookingComponent implements OnInit, OnDestroy {
           next: (response) => {
             console.log('Reservation created:', response);
 
-            if (this.paymentMethod === 'online') {
+            if (response.id) {
               this.processStripePayment(response.id, this.totalAmount);
-            } else {
               this.confirmReservation(response.id);
+            } else {
+              console.error('Reservation ID is undefined');
             }
           },
           error: (error) => {

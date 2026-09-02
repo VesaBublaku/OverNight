@@ -42,57 +42,93 @@ export interface Reservation {
   providedIn: 'root'
 })
 export class ReservationService {
-  private apiUrl = 'http://localhost:8082/api';
+  private apiUrl = 'http://localhost:8082/api/reservations';
 
   constructor(private http: HttpClient) {}
 
+  getAllReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(this.apiUrl);
+  }
+
+  getReservationById(id: number): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.apiUrl}/${id}`);
+  }
+
+  getUserReservations(userId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/user/${userId}`);
+  }
+
+  getUpcomingReservationsByUser(userId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/user/${userId}/upcoming`);
+  }
+
+  getPastReservationsByUser(userId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/user/${userId}/past`);
+  }
+
+  getReservationsByRoom(roomId: number): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/room/${roomId}`);
+  }
+
+  getReservationsByStatus(status: string): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/status/${status}`);
+  }
+
+  getUpcomingReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/upcoming`);
+  }
+
+  getPastReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/past`);
+  }
+
+  createReservation(reservation: Reservation): Observable<Reservation> {
+    return this.http.post<Reservation>(this.apiUrl, reservation);
+  }
+
+  updateReservation(id: number, reservation: Reservation): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}`, reservation);
+  }
+
+  deleteReservation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  cancelReservation(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/cancel`, {});
+  }
+
+  checkIn(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/check-in`, {});
+  }
+
+  checkOut(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/check-out`, {});
+  }
+
+  updateStatus(id: number, status: string): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/status`, { status });
+  }
+
+  completeReservation(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/complete`, {});
+  }
+
+  confirmReservation(id: number): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.apiUrl}/${id}/confirm`, {});
+  }
+
   checkAvailability(roomId: number, checkIn: string, checkOut: string): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/reservations/check-availability`, {
-      params: {
-        roomId: roomId.toString(),
-        checkIn: checkIn,
-        checkOut: checkOut
-      }
+    return this.http.get<boolean>(`${this.apiUrl}/check-availability`, {
+      params: { roomId, checkIn, checkOut }
     });
   }
 
   getUnavailableDates(roomId: number): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/reservations/unavailable-dates/${roomId}`);
+    return this.http.get<string[]>(`${this.apiUrl}/unavailable-dates/${roomId}`);
   }
 
-  createReservation(reservation: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reservations`, reservation);
-  }
-
-  getAllReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations`);
-  }
-
-  getReservationById(id: number): Observable<Reservation> {
-    return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
-  }
-
-  updateReservation(id: number, reservation: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/reservations/${id}`, reservation);
-  }
-
-  deleteReservation(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/reservations/${id}`);
-  }
-
-  cancelReservation(id: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/reservations/${id}/cancel`, {});
-  }
-
-  confirmReservation(reservationId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/reservations/${reservationId}/confirm`, {});
-  }
-
-  processPayment(paymentData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/payments`, paymentData);
-  }
-
-  getUserReservations(userId: number): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/user/${userId}`);
+  getRevenueStats(): Observable<{ totalRevenue: number }> {
+    return this.http.get<{ totalRevenue: number }>(`${this.apiUrl}/stats/revenue`);
   }
 }
