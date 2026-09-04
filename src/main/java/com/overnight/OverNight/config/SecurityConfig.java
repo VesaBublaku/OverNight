@@ -81,7 +81,13 @@ public class SecurityConfig {
                                 "/api/room-amenities/**",
                                 "/api/hotel-amenities/**",
                                 "/api/services/**",
-                                "/api/room-policies/**"
+                                "/api/room-policies/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/users/{id}").authenticated()
